@@ -1469,10 +1469,17 @@
                     <div class="video-content hidden" id="text-content">
                         </div>
                 </div>
-                <div id="question-id-tags" class="question-id-tags">
-                    <span id="question-id-display" class="question-id"></span>
-                    <span id="uni-tags-display"></span>
-                    <span id="level-tag-display"></span>
+                <div class="flex flex-row flex-wrap items-center justify-center gap-3 w-full my-2">
+                    
+                    <div id="question-id-tags" class="question-id-tags !m-0">
+                        <span id="question-id-display" class="question-id"></span>
+                        <span id="uni-tags-display"></span>
+                        <span id="level-tag-display"></span>
+                    </div>
+
+                    <button id="whiteboard-trigger-btn" class="text-blue-400 hover:text-white transition-all hover:scale-110 p-2 bg-gray-800 bg-opacity-80 rounded-full w-10 h-10 flex items-center justify-center border border-blue-400 shadow-lg" title="Abrir Pizarra de Cálculos">
+                        <i class="fas fa-pen-to-square"></i>
+                    </button>
                 </div>
                 <div id="options-container" class="w-full space-y-3"></div>
                 <div id="justification-box" class="justification w-full hidden">
@@ -1769,6 +1776,49 @@
             <div id="copyright">
                 &copy; CEPREDIX 2025 - Todos los derechos reservados. Versión CEP-1.1225
             </div>
+        </div>
+    </div>
+<div id="overlay-whiteboard" class="fixed inset-0 z-[9999] hidden" style="touch-action: none;">
+        <div class="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-none"></div>
+        
+        <canvas id="wb-canvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+
+        <button id="wb-close-btn" class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-50">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 border border-gray-700 p-2 rounded-full flex items-center gap-3 shadow-2xl z-50 overflow-x-auto max-w-[95%]">
+            
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-white bg-white hover:scale-110 transition-transform" data-color="#ffffff" title="Blanco"></button>
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#39ff14] hover:scale-110 transition-transform shadow-[0_0_10px_#39ff14]" data-color="#39ff14" title="Verde Neón"></button>
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#ff073a] hover:scale-110 transition-transform shadow-[0_0_10px_#ff073a]" data-color="#ff073a" title="Rojo Neón"></button>
+            
+            <button id="wb-eraser-btn" class="w-8 h-8 rounded-full border-2 border-gray-500 bg-gray-700 text-white hover:scale-110 transition-transform flex items-center justify-center ml-1" title="Borrador">
+                <i class="fas fa-eraser text-xs"></i>
+            </button>
+
+            <div class="w-px h-6 bg-gray-600 mx-1"></div>
+
+            <div class="flex items-center gap-2 px-1" title="Ajustar grosor">
+                <i class="fas fa-circle text-[4px] text-gray-400"></i>
+                <input type="range" id="wb-width-slider" min="1" max="30" value="3" class="w-24 cursor-pointer h-1 bg-gray-600 rounded-lg appearance-none">
+                <i class="fas fa-circle text-[10px] text-gray-400"></i>
+            </div>
+
+            <div class="w-px h-6 bg-gray-600 mx-1"></div>
+
+            <button id="wb-undo-btn" class="text-gray-300 hover:text-white p-2" title="Deshacer">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button id="wb-redo-btn" class="text-gray-300 hover:text-white p-2" title="Rehacer">
+                <i class="fas fa-redo"></i>
+            </button>
+            
+            <div class="w-px h-6 bg-gray-600 mx-1"></div>
+
+            <button id="wb-clear-btn" class="text-red-400 hover:text-red-300 p-2" title="Borrar todo">
+                <i class="fas fa-trash-alt"></i>
+            </button>
         </div>
     </div>
     <script>
@@ -5164,6 +5214,198 @@
                 });
 
                 updateDtVisuals();
+            }
+// ==========================================
+            // LÓGICA DE LA PIZARRA FLOTANTE (OVERLAY)
+            // ==========================================
+            const wbTriggerBtn = document.getElementById('whiteboard-trigger-btn');
+            const wbOverlay = document.getElementById('overlay-whiteboard');
+            const wbCanvas = document.getElementById('wb-canvas');
+            const wbCloseBtn = document.getElementById('wb-close-btn');
+            const wbCtx = wbCanvas ? wbCanvas.getContext('2d') : null;
+            
+            let wbIsDrawing = false;
+            let wbHistory = [];
+            let wbStep = -1;
+            let wbCurrentColor = '#ffffff';
+            let wbCurrentWidth = 3;
+
+            // Ajustar tamaño del canvas al abrir
+            function resizeWbCanvas() {
+                if(!wbCanvas) return;
+                wbCanvas.width = window.innerWidth;
+                wbCanvas.height = window.innerHeight;
+                // Restaurar imagen si existe historial
+                if (wbStep >= 0) {
+                    const img = new Image();
+                    img.src = wbHistory[wbStep];
+                    img.onload = () => wbCtx.drawImage(img, 0, 0);
+                }
+                // Reconfigurar contexto
+                wbCtx.lineCap = 'round';
+                wbCtx.lineJoin = 'round';
+                wbCtx.strokeStyle = wbCurrentColor;
+                wbCtx.lineWidth = wbCurrentWidth;
+            }
+
+            // Guardar estado para deshacer
+            function wbSaveState() {
+                if (wbStep < wbHistory.length - 1) {
+                    wbHistory = wbHistory.slice(0, wbStep + 1);
+                }
+                wbHistory.push(wbCanvas.toDataURL());
+                wbStep++;
+            }
+
+            if (wbTriggerBtn && wbOverlay) {
+                // Abrir Pizarra
+                wbTriggerBtn.addEventListener('click', () => {
+                    wbOverlay.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; // Bloquear scroll del fondo
+                    resizeWbCanvas();
+                    // Si no hay historial inicial, guardar el blanco
+                    if (wbStep === -1) wbSaveState();
+                });
+
+                // Cerrar Pizarra
+                wbCloseBtn.addEventListener('click', () => {
+                    wbOverlay.classList.add('hidden');
+                    document.body.style.overflow = 'auto'; // Restaurar scroll
+                });
+
+                // Eventos de Dibujo (Ratón y Táctil)
+                const getWbPos = (e) => {
+                    const rect = wbCanvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return { x: clientX - rect.left, y: clientY - rect.top };
+                };
+
+                const startWbDraw = (e) => {
+                    wbIsDrawing = true;
+                    wbCtx.beginPath();
+                    const pos = getWbPos(e);
+                    wbCtx.moveTo(pos.x, pos.y);
+                    // Solo prevenir default si es touch para evitar scroll
+                    if(e.type === 'touchstart') e.preventDefault(); 
+                };
+
+                const moveWbDraw = (e) => {
+                    if (!wbIsDrawing) return;
+                    const pos = getWbPos(e);
+                    wbCtx.lineTo(pos.x, pos.y);
+                    wbCtx.stroke();
+                    if(e.type === 'touchmove') e.preventDefault();
+                };
+
+                const endWbDraw = (e) => {
+                    if (wbIsDrawing) {
+                        wbCtx.closePath();
+                        wbIsDrawing = false;
+                        wbSaveState();
+                    }
+                };
+
+                wbCanvas.addEventListener('mousedown', startWbDraw);
+                wbCanvas.addEventListener('mousemove', moveWbDraw);
+                wbCanvas.addEventListener('mouseup', endWbDraw);
+                wbCanvas.addEventListener('mouseout', endWbDraw);
+                
+                wbCanvas.addEventListener('touchstart', startWbDraw, { passive: false });
+                wbCanvas.addEventListener('touchmove', moveWbDraw, { passive: false });
+                wbCanvas.addEventListener('touchend', endWbDraw);
+
+                // Control del Slider de Grosor
+                const wbWidthSlider = document.getElementById('wb-width-slider');
+                if(wbWidthSlider) {
+                    wbWidthSlider.addEventListener('input', (e) => {
+                        wbCurrentWidth = parseInt(e.target.value);
+                        wbCtx.lineWidth = wbCurrentWidth;
+                    });
+                }
+
+                // Herramientas: Colores (Pincel)
+                document.querySelectorAll('.wb-tool-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        wbCurrentColor = e.target.dataset.color;
+                        // Al tocar un color, activamos modo dibujo normal
+                        wbCtx.globalCompositeOperation = 'source-over';
+                        wbCtx.strokeStyle = wbCurrentColor;
+                        // Mantenemos el grosor que tenga el slider
+                        wbCtx.lineWidth = wbCurrentWidth;
+                    });
+                });
+
+                // Herramienta: Borrador
+                document.getElementById('wb-eraser-btn').addEventListener('click', () => {
+                    // Modo borrar
+                    wbCtx.globalCompositeOperation = 'destination-out'; 
+                    // Mantenemos el grosor del slider (así puedes borrar fino o grueso)
+                    wbCtx.lineWidth = wbCurrentWidth;
+                });
+
+                document.getElementById('wb-eraser-btn').addEventListener('click', () => {
+                    wbCurrentWidth = 20; // Borrador más grande
+                    wbCtx.lineWidth = wbCurrentWidth;
+                    wbCtx.globalCompositeOperation = 'destination-out'; // Modo borrar
+                });
+
+                document.getElementById('wb-clear-btn').addEventListener('click', () => {
+                    if(confirm("¿Borrar toda la pizarra?")) {
+                        wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                        wbSaveState();
+                    }
+                });
+
+                document.getElementById('wb-undo-btn').addEventListener('click', () => {
+                    if (wbStep > 0) {
+                        wbStep--;
+                        const img = new Image();
+                        img.src = wbHistory[wbStep];
+                        img.onload = () => {
+                            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                            wbCtx.globalCompositeOperation = 'source-over'; // Importante para redibujar imagen
+                            wbCtx.drawImage(img, 0, 0);
+                            // Restaurar estado del pincel actual
+                            wbCtx.globalCompositeOperation = wbCurrentWidth === 20 ? 'destination-out' : 'source-over';
+                        };
+                    }
+                });
+
+                document.getElementById('wb-redo-btn').addEventListener('click', () => {
+                    if (wbStep < wbHistory.length - 1) {
+                        wbStep++;
+                        const img = new Image();
+                        img.src = wbHistory[wbStep];
+                        img.onload = () => {
+                            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                            wbCtx.globalCompositeOperation = 'source-over';
+                            wbCtx.drawImage(img, 0, 0);
+                            wbCtx.globalCompositeOperation = wbCurrentWidth === 20 ? 'destination-out' : 'source-over';
+                        };
+                    }
+                });
+                
+                window.addEventListener('resize', () => {
+                    // Solo redimensionar si está visible para no perder datos innecesariamente
+                    if(!wbOverlay.classList.contains('hidden')) {
+                        // Guardar imagen actual temporalmente
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = wbCanvas.width;
+                        tempCanvas.height = wbCanvas.height;
+                        tempCanvas.getContext('2d').drawImage(wbCanvas, 0, 0);
+                        
+                        wbCanvas.width = window.innerWidth;
+                        wbCanvas.height = window.innerHeight;
+                        
+                        wbCtx.lineCap = 'round';
+                        wbCtx.lineJoin = 'round';
+                        wbCtx.strokeStyle = wbCurrentColor;
+                        wbCtx.lineWidth = wbCurrentWidth;
+                        
+                        wbCtx.drawImage(tempCanvas, 0, 0);
+                    }
+                });
             }
         });
     </script>
