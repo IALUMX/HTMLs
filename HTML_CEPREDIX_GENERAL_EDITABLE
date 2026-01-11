@@ -1787,36 +1787,36 @@
             <i class="fas fa-times"></i>
         </button>
 
-        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 border border-gray-700 p-2 rounded-full flex items-center gap-3 shadow-2xl z-50 overflow-x-auto max-w-[95%]">
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 border border-gray-700 p-2 rounded-full flex items-center gap-1 sm:gap-3 shadow-2xl z-50 overflow-x-auto max-w-[98%] sm:max-w-max">
             
-            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-white bg-white hover:scale-110 transition-transform" data-color="#ffffff" title="Blanco"></button>
-            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#39ff14] hover:scale-110 transition-transform shadow-[0_0_10px_#39ff14]" data-color="#39ff14" title="Verde Neón"></button>
-            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#ff073a] hover:scale-110 transition-transform shadow-[0_0_10px_#ff073a]" data-color="#ff073a" title="Rojo Neón"></button>
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-white bg-white hover:scale-110 transition-transform shrink-0" data-color="#ffffff" title="Blanco"></button>
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#39ff14] hover:scale-110 transition-transform shadow-[0_0_10px_#39ff14] shrink-0" data-color="#39ff14" title="Verde Neón"></button>
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#ff073a] hover:scale-110 transition-transform shadow-[0_0_10px_#ff073a] shrink-0" data-color="#ff073a" title="Rojo Neón"></button>
             
-            <button id="wb-eraser-btn" class="w-8 h-8 rounded-full border-2 border-gray-500 bg-gray-700 text-white hover:scale-110 transition-transform flex items-center justify-center ml-1" title="Borrador">
+            <button id="wb-eraser-btn" class="w-8 h-8 rounded-full border-2 border-gray-500 bg-gray-700 text-white hover:scale-110 transition-transform flex items-center justify-center ml-1 shrink-0" title="Borrador">
                 <i class="fas fa-eraser text-xs"></i>
             </button>
 
-            <div class="w-px h-6 bg-gray-600 mx-1"></div>
+            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
 
-            <div class="flex items-center gap-2 px-1" title="Ajustar grosor">
-                <i class="fas fa-circle text-[4px] text-gray-400"></i>
-                <input type="range" id="wb-width-slider" min="1" max="30" value="3" class="w-24 cursor-pointer h-1 bg-gray-600 rounded-lg appearance-none">
-                <i class="fas fa-circle text-[10px] text-gray-400"></i>
+            <div class="flex items-center gap-1 sm:gap-2 px-1 shrink-0" title="Ajustar grosor">
+                <i class="fas fa-circle text-[4px] text-gray-400 hidden sm:block"></i>
+                <input type="range" id="wb-width-slider" min="1" max="30" value="3" class="w-16 sm:w-24 cursor-pointer h-1 bg-gray-600 rounded-lg appearance-none">
+                <i class="fas fa-circle text-[10px] text-gray-400 hidden sm:block"></i>
             </div>
 
-            <div class="w-px h-6 bg-gray-600 mx-1"></div>
+            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
 
-            <button id="wb-undo-btn" class="text-gray-300 hover:text-white p-2" title="Deshacer">
+            <button id="wb-undo-btn" class="text-gray-300 hover:text-white p-2 shrink-0" title="Deshacer">
                 <i class="fas fa-undo"></i>
             </button>
-            <button id="wb-redo-btn" class="text-gray-300 hover:text-white p-2" title="Rehacer">
+            <button id="wb-redo-btn" class="text-gray-300 hover:text-white p-2 shrink-0" title="Rehacer">
                 <i class="fas fa-redo"></i>
             </button>
             
-            <div class="w-px h-6 bg-gray-600 mx-1"></div>
+            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
 
-            <button id="wb-clear-btn" class="text-red-400 hover:text-red-300 p-2" title="Borrar todo">
+            <button id="wb-clear-btn" class="text-red-400 hover:text-red-300 p-2 shrink-0" title="Borrar todo">
                 <i class="fas fa-trash-alt"></i>
             </button>
         </div>
