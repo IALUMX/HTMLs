@@ -1284,7 +1284,7 @@
                     <label for="whatsapp-input" class="font-medium">WhatsApp (10 dígitos sin espacios)</label>
                     <input type="password" id="whatsapp-input" class="w-full p-3 mt-1 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="••••••••••" maxlength="10" inputmode="numeric" required>
                 </div>
-                <button id="login-btn" type="submit" class="btn btn-primary w-full text-lg">
+                <button id="login-btn" type="submit" class="btn btn-correct w-full text-lg">
                     <span id="login-btn-text">Verificar y Entrar</span>
                     <span id="login-btn-spinner" class="hidden animate-spin">&#9696;</span>
                 </button>
@@ -1349,14 +1349,18 @@
             <div class="space-y-2">
                 <label for="answered-ids-input" class="font-medium">Pegar IDs de ejercicios ya respondidos (opcional)</label>
                 <textarea id="answered-ids-input" rows="3" class="w-full p-3 mt-1 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="CEPCOL8Ht, CEPCOL4aA, ..."></textarea>
-                <div class="text-sm text-gray-300 space-y-1">
-                    <div id="question-stats-total" class="flex justify-between">
-                        <span>Total Banco:</span>
-                        <span><strong id="stats-total">0</strong> | Respondidas: <strong id="stats-answered-total" class="text-blue-400">0</strong> | Restantes: <strong id="stats-remaining-total" class="text-green-400">0</strong></span>
+                <div class="text-sm text-gray-300 space-y-2 mt-2 bg-gray-800 p-3 rounded-lg">
+                    <div class="flex justify-between">
+                        <span>📚 Total Banco:</span> 
+                        <strong id="stats-total">0</strong>
                     </div>
-                    <div id="question-stats-filtered" class="flex justify-between font-semibold">
-                        <span>Total con Filtros (Proceso y Nivel):</span>
-                        <span><strong id="stats-total-filtered">0</strong> | Respondidas: <strong id="stats-answered-filtered" class="text-blue-400">0</strong> | Restantes: <strong id="stats-remaining-filtered" class="text-green-400">0</strong></span>
+                    <div class="flex justify-between">
+                        <span>🔍 Con Filtros (Nivel/Proceso):</span> 
+                        <strong id="stats-total-filtered">0</strong>
+                    </div>
+                    <div class="flex justify-between text-green-400 font-bold border-t border-gray-600 pt-1 mt-1">
+                        <span>✨ Preguntas Restantes:</span> 
+                        <strong id="stats-remaining-filtered">0</strong>
                     </div>
                 </div>
             </div>
@@ -1807,10 +1811,7 @@
             const levelTagsContainer = document.getElementById('level-tags-container');
             const answeredIdsInput = document.getElementById('answered-ids-input');
             const statsTotal = document.getElementById('stats-total');
-            const statsAnsweredTotal = document.getElementById('stats-answered-total');
-            const statsRemainingTotal = document.getElementById('stats-remaining-total');
             const statsTotalFiltered = document.getElementById('stats-total-filtered');
-            const statsAnsweredFiltered = document.getElementById('stats-answered-filtered');
             const statsRemainingFiltered = document.getElementById('stats-remaining-filtered');
             const startQuizBtn = document.getElementById('start-quiz-btn');
             const errorMessage = document.getElementById('error-message');
@@ -3904,10 +3905,14 @@
                 const pastedText = answeredIdsInput.value.trim();
                 const pastedIds = pastedText ? pastedText.split(/[\s,]+/).map(id => id.trim()).filter(id => id) : [];
                 pastedAnsweredIds = new Set(pastedIds.filter(id => allValidIds.has(id)));
-                statsAnsweredTotal.textContent = pastedAnsweredIds.size;
-                statsRemainingTotal.textContent = allQuestions.length - pastedAnsweredIds.size;
+                
+                // 1. Total Banco
+                if(statsTotal) statsTotal.textContent = allQuestions.length;
+
+                // Calcular Filtros
                 const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                 const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                
                 let filteredQuestions = allQuestions;
                 if (selectedUniTags.length > 0 && selectedLevelTags.length > 0) {
                     filteredQuestions = allQuestions.filter(q => {
@@ -3924,10 +3929,15 @@
                         q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag))
                     );
                 }
+                
+                // 2. Preguntas con Filtros
+                if(statsTotalFiltered) statsTotalFiltered.textContent = filteredQuestions.length;
+
+                // 3. Preguntas Restantes (Filtros menos IDs pegados)
                 const answeredInFilter = filteredQuestions.filter(q => pastedAnsweredIds.has(q.id)).length;
-                statsTotalFiltered.textContent = filteredQuestions.length;
-                statsAnsweredFiltered.textContent = answeredInFilter;
-                statsRemainingFiltered.textContent = filteredQuestions.length - answeredInFilter;
+                const remaining = Math.max(0, filteredQuestions.length - answeredInFilter);
+                
+                if(statsRemainingFiltered) statsRemainingFiltered.textContent = remaining;
             }
             
             answeredIdsInput.addEventListener('input', updateQuestionStats);
@@ -4246,7 +4256,13 @@
                 }
                 if (question.collapsible_text) {
                     textSectionContainer.classList.remove('hidden');
-                    textContent.innerHTML = question.collapsible_text;
+                    // Detectar enlaces y convertirlos en HTML cliqueable
+                    let processedText = question.collapsible_text || '';
+                    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+                    processedText = processedText.replace(urlRegex, function(url) {
+                        return '<a href="' + url + '" target="_blank" class="text-blue-400 underline break-all" style="position: relative; z-index: 50;">' + url + '</a>';
+                    });
+                    textContent.innerHTML = processedText;
                     textContent.classList.add('hidden');
                     textToggle.querySelector('.fa-chevron-down, .fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
                 } else {
