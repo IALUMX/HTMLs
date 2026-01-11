@@ -2651,13 +2651,18 @@
                 if (!finishBtn) return;
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
                 const minQuestionsRequired = 10;
-                finishBtn.disabled = answeredCount < minQuestionsRequired;
-                finishBtn.classList.toggle('btn-disabled', answeredCount < minQuestionsRequired);
+                
+                // En modo continuo, bloqueamos el botón hasta llegar a 10, pero no detenemos al usuario.
                 if (answeredCount < minQuestionsRequired) {
-                    finishBtn.innerHTML = `EVALUAR AVANCE (${answeredCount}/${minQuestionsRequired})`;
+                    finishBtn.disabled = true;
+                    finishBtn.classList.add('btn-disabled');
+                    finishBtn.innerHTML = `MÍNIMO PARA EVALUAR (${answeredCount}/${minQuestionsRequired})`;
                 } else {
-                    finishBtn.innerHTML = 'EVALUAR AVANCE ✓';
+                    finishBtn.disabled = false;
+                    finishBtn.classList.remove('btn-disabled');
+                    finishBtn.innerHTML = 'TERMINAR Y EVALUAR AVANCE ✓';
                 }
+                
                 finishBtn.classList.toggle('hidden', !isContinuousMode);
             }
 
@@ -4331,11 +4336,34 @@
                     }
 
                     button.dataset.text = option.text;
+                    
+                    // Variables para controlar el triple clic
+                    let clickCount = 0;
+                    let clickTimer = null;
+
                     button.addEventListener('click', () => {
                         if (currentAnswer.status === 'unanswered') {
+                            // 1. Selección normal (un solo clic)
                             document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
                             button.classList.add('selected');
                             evaluateBtn.disabled = false;
+
+                            // 2. Lógica de Triple Clic para evaluar
+                            clickCount++;
+                            
+                            // Si hay un temporizador activo, lo limpiamos para reiniciar la cuenta del lapso
+                            if (clickTimer) clearTimeout(clickTimer);
+
+                            if (clickCount === 3) {
+                                // Se detectó el tercer clic
+                                clickCount = 0;
+                                evaluateCurrentAnswer(); // Función que evalúa la pregunta
+                            } else {
+                                // Esperamos 400ms para ver si el usuario da otro clic
+                                clickTimer = setTimeout(() => {
+                                    clickCount = 0;
+                                }, 400); 
+                            }
                         }
                     });
                     optionsContainer.appendChild(button);
