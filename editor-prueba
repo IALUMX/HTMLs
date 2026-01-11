@@ -1,17 +1,21 @@
+No soy programador, con ayuda de IA he creado un código HTML para generar un programa con bancos de preguntas para estudiantes. Necesito algunas modificaciones. 
+
+Instrucciones críticas:
+* NO alteres nada del CORS.
+* No alteres nada del diseño a menos que explicitamente se solicite.
+* NO alteres ninguna función a menos que explicitamente se solicite.
+* Asegura que el código este optimizado para ajustarse al dispositivo en el que se visualice: ordenador, tablet, smartphone.
+
+
+Estos son los cambios que requiero:
+1) 
+
+
+Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+****************************** Este es el código actual ******************************
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1298,7 +1302,7 @@
                     <label for="whatsapp-input" class="font-medium">WhatsApp (10 dígitos sin espacios)</label>
                     <input type="password" id="whatsapp-input" class="w-full p-3 mt-1 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="••••••••••" maxlength="10" inputmode="numeric" required>
                 </div>
-                <button id="login-btn" type="submit" class="btn btn-primary w-full text-lg">
+                <button id="login-btn" type="submit" class="btn btn-correct w-full text-lg">
                     <span id="login-btn-text">Verificar y Entrar</span>
                     <span id="login-btn-spinner" class="hidden animate-spin">&#9696;</span>
                 </button>
@@ -1363,14 +1367,18 @@
             <div class="space-y-2">
                 <label for="answered-ids-input" class="font-medium">Pegar IDs de ejercicios ya respondidos (opcional)</label>
                 <textarea id="answered-ids-input" rows="3" class="w-full p-3 mt-1 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="CEPCOL8Ht, CEPCOL4aA, ..."></textarea>
-                <div class="text-sm text-gray-300 space-y-1">
-                    <div id="question-stats-total" class="flex justify-between">
-                        <span>Total Banco:</span>
-                        <span><strong id="stats-total">0</strong> | Respondidas: <strong id="stats-answered-total" class="text-blue-400">0</strong> | Restantes: <strong id="stats-remaining-total" class="text-green-400">0</strong></span>
+                <div class="text-sm text-gray-300 space-y-2 mt-2 bg-gray-800 p-3 rounded-lg">
+                    <div class="flex justify-between">
+                        <span>📚 Total Banco:</span> 
+                        <strong id="stats-total">0</strong>
                     </div>
-                    <div id="question-stats-filtered" class="flex justify-between font-semibold">
-                        <span>Total con Filtros (Proceso y Nivel):</span>
-                        <span><strong id="stats-total-filtered">0</strong> | Respondidas: <strong id="stats-answered-filtered" class="text-blue-400">0</strong> | Restantes: <strong id="stats-remaining-filtered" class="text-green-400">0</strong></span>
+                    <div class="flex justify-between">
+                        <span>🔍 Con Filtros (Nivel/Proceso):</span> 
+                        <strong id="stats-total-filtered">0</strong>
+                    </div>
+                    <div class="flex justify-between text-green-400 font-bold border-t border-gray-600 pt-1 mt-1">
+                        <span>✨ Preguntas Restantes:</span> 
+                        <strong id="stats-remaining-filtered">0</strong>
                     </div>
                 </div>
             </div>
@@ -1479,10 +1487,17 @@
                     <div class="video-content hidden" id="text-content">
                         </div>
                 </div>
-                <div id="question-id-tags" class="question-id-tags">
-                    <span id="question-id-display" class="question-id"></span>
-                    <span id="uni-tags-display"></span>
-                    <span id="level-tag-display"></span>
+                <div class="flex flex-row flex-wrap items-center justify-center gap-3 w-full my-2">
+                    
+                    <div id="question-id-tags" class="question-id-tags !m-0">
+                        <span id="question-id-display" class="question-id"></span>
+                        <span id="uni-tags-display"></span>
+                        <span id="level-tag-display"></span>
+                    </div>
+
+                    <button id="whiteboard-trigger-btn" class="text-blue-400 hover:text-white transition-all hover:scale-110 p-2 bg-gray-800 bg-opacity-80 rounded-full w-10 h-10 flex items-center justify-center border border-blue-400 shadow-lg" title="Abrir Pizarra de Cálculos">
+                        <i class="fas fa-pen-to-square"></i>
+                    </button>
                 </div>
                 <div id="options-container" class="w-full space-y-3"></div>
                 <div id="justification-box" class="justification w-full hidden">
@@ -1781,6 +1796,49 @@
             </div>
         </div>
     </div>
+<div id="overlay-whiteboard" class="fixed inset-0 z-[9999] hidden" style="touch-action: none;">
+        <div class="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-none"></div>
+        
+        <canvas id="wb-canvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+
+        <button id="wb-close-btn" class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-50">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 border border-gray-700 p-2 rounded-full flex items-center gap-1 sm:gap-3 shadow-2xl z-50 overflow-x-auto max-w-[98%] sm:max-w-max">
+            
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-white bg-white hover:scale-110 transition-transform shrink-0" data-color="#ffffff" title="Blanco"></button>
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#39ff14] hover:scale-110 transition-transform shadow-[0_0_10px_#39ff14] shrink-0" data-color="#39ff14" title="Verde Neón"></button>
+            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#ff073a] hover:scale-110 transition-transform shadow-[0_0_10px_#ff073a] shrink-0" data-color="#ff073a" title="Rojo Neón"></button>
+            
+            <button id="wb-eraser-btn" class="w-8 h-8 rounded-full border-2 border-gray-500 bg-gray-700 text-white hover:scale-110 transition-transform flex items-center justify-center ml-1 shrink-0" title="Borrador">
+                <i class="fas fa-eraser text-xs"></i>
+            </button>
+
+            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
+
+            <div class="flex items-center gap-1 sm:gap-2 px-1 shrink-0" title="Ajustar grosor">
+                <i class="fas fa-circle text-[4px] text-gray-400 hidden sm:block"></i>
+                <input type="range" id="wb-width-slider" min="1" max="30" value="3" class="w-16 sm:w-24 cursor-pointer h-1 bg-gray-600 rounded-lg appearance-none">
+                <i class="fas fa-circle text-[10px] text-gray-400 hidden sm:block"></i>
+            </div>
+
+            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
+
+            <button id="wb-undo-btn" class="text-gray-300 hover:text-white p-2 shrink-0" title="Deshacer">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button id="wb-redo-btn" class="text-gray-300 hover:text-white p-2 shrink-0" title="Rehacer">
+                <i class="fas fa-redo"></i>
+            </button>
+            
+            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
+
+            <button id="wb-clear-btn" class="text-red-400 hover:text-red-300 p-2 shrink-0" title="Borrar todo">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/JSON_PRUEBA_011225.json';
@@ -1821,10 +1879,7 @@
             const levelTagsContainer = document.getElementById('level-tags-container');
             const answeredIdsInput = document.getElementById('answered-ids-input');
             const statsTotal = document.getElementById('stats-total');
-            const statsAnsweredTotal = document.getElementById('stats-answered-total');
-            const statsRemainingTotal = document.getElementById('stats-remaining-total');
             const statsTotalFiltered = document.getElementById('stats-total-filtered');
-            const statsAnsweredFiltered = document.getElementById('stats-answered-filtered');
             const statsRemainingFiltered = document.getElementById('stats-remaining-filtered');
             const startQuizBtn = document.getElementById('start-quiz-btn');
             const errorMessage = document.getElementById('error-message');
@@ -2664,13 +2719,18 @@
                 if (!finishBtn) return;
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
                 const minQuestionsRequired = 10;
-                finishBtn.disabled = answeredCount < minQuestionsRequired;
-                finishBtn.classList.toggle('btn-disabled', answeredCount < minQuestionsRequired);
+                
+                // En modo continuo, bloqueamos el botón hasta llegar a 10, pero no detenemos al usuario.
                 if (answeredCount < minQuestionsRequired) {
-                    finishBtn.innerHTML = `EVALUAR AVANCE (${answeredCount}/${minQuestionsRequired})`;
+                    finishBtn.disabled = true;
+                    finishBtn.classList.add('btn-disabled');
+                    finishBtn.innerHTML = `MÍNIMO PARA EVALUAR (${answeredCount}/${minQuestionsRequired})`;
                 } else {
-                    finishBtn.innerHTML = 'EVALUAR AVANCE ✓';
+                    finishBtn.disabled = false;
+                    finishBtn.classList.remove('btn-disabled');
+                    finishBtn.innerHTML = 'TERMINAR Y EVALUAR AVANCE ✓';
                 }
+                
                 finishBtn.classList.toggle('hidden', !isContinuousMode);
             }
 
@@ -3918,10 +3978,14 @@
                 const pastedText = answeredIdsInput.value.trim();
                 const pastedIds = pastedText ? pastedText.split(/[\s,]+/).map(id => id.trim()).filter(id => id) : [];
                 pastedAnsweredIds = new Set(pastedIds.filter(id => allValidIds.has(id)));
-                statsAnsweredTotal.textContent = pastedAnsweredIds.size;
-                statsRemainingTotal.textContent = allQuestions.length - pastedAnsweredIds.size;
+                
+                // 1. Total Banco
+                if(statsTotal) statsTotal.textContent = allQuestions.length;
+
+                // Calcular Filtros
                 const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                 const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                
                 let filteredQuestions = allQuestions;
                 if (selectedUniTags.length > 0 && selectedLevelTags.length > 0) {
                     filteredQuestions = allQuestions.filter(q => {
@@ -3938,10 +4002,15 @@
                         q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag))
                     );
                 }
+                
+                // 2. Preguntas con Filtros
+                if(statsTotalFiltered) statsTotalFiltered.textContent = filteredQuestions.length;
+
+                // 3. Preguntas Restantes (Filtros menos IDs pegados)
                 const answeredInFilter = filteredQuestions.filter(q => pastedAnsweredIds.has(q.id)).length;
-                statsTotalFiltered.textContent = filteredQuestions.length;
-                statsAnsweredFiltered.textContent = answeredInFilter;
-                statsRemainingFiltered.textContent = filteredQuestions.length - answeredInFilter;
+                const remaining = Math.max(0, filteredQuestions.length - answeredInFilter);
+                
+                if(statsRemainingFiltered) statsRemainingFiltered.textContent = remaining;
             }
             
             answeredIdsInput.addEventListener('input', updateQuestionStats);
@@ -4260,7 +4329,13 @@
                 }
                 if (question.collapsible_text) {
                     textSectionContainer.classList.remove('hidden');
-                    textContent.innerHTML = question.collapsible_text;
+                    // Detectar enlaces y convertirlos en HTML cliqueable
+                    let processedText = question.collapsible_text || '';
+                    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+                    processedText = processedText.replace(urlRegex, function(url) {
+                        return '<a href="' + url + '" target="_blank" class="text-blue-400 underline break-all" style="position: relative; z-index: 50;">' + url + '</a>';
+                    });
+                    textContent.innerHTML = processedText;
                     textContent.classList.add('hidden');
                     textToggle.querySelector('.fa-chevron-down, .fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
                 } else {
@@ -4329,11 +4404,34 @@
                     }
 
                     button.dataset.text = option.text;
+                    
+                    // Variables para controlar el triple clic
+                    let clickCount = 0;
+                    let clickTimer = null;
+
                     button.addEventListener('click', () => {
                         if (currentAnswer.status === 'unanswered') {
+                            // 1. Selección normal (un solo clic)
                             document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
                             button.classList.add('selected');
                             evaluateBtn.disabled = false;
+
+                            // 2. Lógica de Triple Clic para evaluar
+                            clickCount++;
+                            
+                            // Si hay un temporizador activo, lo limpiamos para reiniciar la cuenta del lapso
+                            if (clickTimer) clearTimeout(clickTimer);
+
+                            if (clickCount === 3) {
+                                // Se detectó el tercer clic
+                                clickCount = 0;
+                                evaluateCurrentAnswer(); // Función que evalúa la pregunta
+                            } else {
+                                // Esperamos 400ms para ver si el usuario da otro clic
+                                clickTimer = setTimeout(() => {
+                                    clickCount = 0;
+                                }, 400); 
+                            }
                         }
                     });
                     optionsContainer.appendChild(button);
@@ -5134,6 +5232,198 @@
                 });
 
                 updateDtVisuals();
+            }
+// ==========================================
+            // LÓGICA DE LA PIZARRA FLOTANTE (OVERLAY)
+            // ==========================================
+            const wbTriggerBtn = document.getElementById('whiteboard-trigger-btn');
+            const wbOverlay = document.getElementById('overlay-whiteboard');
+            const wbCanvas = document.getElementById('wb-canvas');
+            const wbCloseBtn = document.getElementById('wb-close-btn');
+            const wbCtx = wbCanvas ? wbCanvas.getContext('2d') : null;
+            
+            let wbIsDrawing = false;
+            let wbHistory = [];
+            let wbStep = -1;
+            let wbCurrentColor = '#ffffff';
+            let wbCurrentWidth = 3;
+
+            // Ajustar tamaño del canvas al abrir
+            function resizeWbCanvas() {
+                if(!wbCanvas) return;
+                wbCanvas.width = window.innerWidth;
+                wbCanvas.height = window.innerHeight;
+                // Restaurar imagen si existe historial
+                if (wbStep >= 0) {
+                    const img = new Image();
+                    img.src = wbHistory[wbStep];
+                    img.onload = () => wbCtx.drawImage(img, 0, 0);
+                }
+                // Reconfigurar contexto
+                wbCtx.lineCap = 'round';
+                wbCtx.lineJoin = 'round';
+                wbCtx.strokeStyle = wbCurrentColor;
+                wbCtx.lineWidth = wbCurrentWidth;
+            }
+
+            // Guardar estado para deshacer
+            function wbSaveState() {
+                if (wbStep < wbHistory.length - 1) {
+                    wbHistory = wbHistory.slice(0, wbStep + 1);
+                }
+                wbHistory.push(wbCanvas.toDataURL());
+                wbStep++;
+            }
+
+            if (wbTriggerBtn && wbOverlay) {
+                // Abrir Pizarra
+                wbTriggerBtn.addEventListener('click', () => {
+                    wbOverlay.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; // Bloquear scroll del fondo
+                    resizeWbCanvas();
+                    // Si no hay historial inicial, guardar el blanco
+                    if (wbStep === -1) wbSaveState();
+                });
+
+                // Cerrar Pizarra
+                wbCloseBtn.addEventListener('click', () => {
+                    wbOverlay.classList.add('hidden');
+                    document.body.style.overflow = 'auto'; // Restaurar scroll
+                });
+
+                // Eventos de Dibujo (Ratón y Táctil)
+                const getWbPos = (e) => {
+                    const rect = wbCanvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return { x: clientX - rect.left, y: clientY - rect.top };
+                };
+
+                const startWbDraw = (e) => {
+                    wbIsDrawing = true;
+                    wbCtx.beginPath();
+                    const pos = getWbPos(e);
+                    wbCtx.moveTo(pos.x, pos.y);
+                    // Solo prevenir default si es touch para evitar scroll
+                    if(e.type === 'touchstart') e.preventDefault(); 
+                };
+
+                const moveWbDraw = (e) => {
+                    if (!wbIsDrawing) return;
+                    const pos = getWbPos(e);
+                    wbCtx.lineTo(pos.x, pos.y);
+                    wbCtx.stroke();
+                    if(e.type === 'touchmove') e.preventDefault();
+                };
+
+                const endWbDraw = (e) => {
+                    if (wbIsDrawing) {
+                        wbCtx.closePath();
+                        wbIsDrawing = false;
+                        wbSaveState();
+                    }
+                };
+
+                wbCanvas.addEventListener('mousedown', startWbDraw);
+                wbCanvas.addEventListener('mousemove', moveWbDraw);
+                wbCanvas.addEventListener('mouseup', endWbDraw);
+                wbCanvas.addEventListener('mouseout', endWbDraw);
+                
+                wbCanvas.addEventListener('touchstart', startWbDraw, { passive: false });
+                wbCanvas.addEventListener('touchmove', moveWbDraw, { passive: false });
+                wbCanvas.addEventListener('touchend', endWbDraw);
+
+                // Control del Slider de Grosor
+                const wbWidthSlider = document.getElementById('wb-width-slider');
+                if(wbWidthSlider) {
+                    wbWidthSlider.addEventListener('input', (e) => {
+                        wbCurrentWidth = parseInt(e.target.value);
+                        wbCtx.lineWidth = wbCurrentWidth;
+                    });
+                }
+
+                // Herramientas: Colores (Pincel)
+                document.querySelectorAll('.wb-tool-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        wbCurrentColor = e.target.dataset.color;
+                        // Al tocar un color, activamos modo dibujo normal
+                        wbCtx.globalCompositeOperation = 'source-over';
+                        wbCtx.strokeStyle = wbCurrentColor;
+                        // Mantenemos el grosor que tenga el slider
+                        wbCtx.lineWidth = wbCurrentWidth;
+                    });
+                });
+
+                // Herramienta: Borrador
+                document.getElementById('wb-eraser-btn').addEventListener('click', () => {
+                    // Modo borrar
+                    wbCtx.globalCompositeOperation = 'destination-out'; 
+                    // Mantenemos el grosor del slider (así puedes borrar fino o grueso)
+                    wbCtx.lineWidth = wbCurrentWidth;
+                });
+
+                document.getElementById('wb-eraser-btn').addEventListener('click', () => {
+                    wbCurrentWidth = 20; // Borrador más grande
+                    wbCtx.lineWidth = wbCurrentWidth;
+                    wbCtx.globalCompositeOperation = 'destination-out'; // Modo borrar
+                });
+
+                document.getElementById('wb-clear-btn').addEventListener('click', () => {
+                    if(confirm("¿Borrar toda la pizarra?")) {
+                        wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                        wbSaveState();
+                    }
+                });
+
+                document.getElementById('wb-undo-btn').addEventListener('click', () => {
+                    if (wbStep > 0) {
+                        wbStep--;
+                        const img = new Image();
+                        img.src = wbHistory[wbStep];
+                        img.onload = () => {
+                            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                            wbCtx.globalCompositeOperation = 'source-over'; // Importante para redibujar imagen
+                            wbCtx.drawImage(img, 0, 0);
+                            // Restaurar estado del pincel actual
+                            wbCtx.globalCompositeOperation = wbCurrentWidth === 20 ? 'destination-out' : 'source-over';
+                        };
+                    }
+                });
+
+                document.getElementById('wb-redo-btn').addEventListener('click', () => {
+                    if (wbStep < wbHistory.length - 1) {
+                        wbStep++;
+                        const img = new Image();
+                        img.src = wbHistory[wbStep];
+                        img.onload = () => {
+                            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                            wbCtx.globalCompositeOperation = 'source-over';
+                            wbCtx.drawImage(img, 0, 0);
+                            wbCtx.globalCompositeOperation = wbCurrentWidth === 20 ? 'destination-out' : 'source-over';
+                        };
+                    }
+                });
+                
+                window.addEventListener('resize', () => {
+                    // Solo redimensionar si está visible para no perder datos innecesariamente
+                    if(!wbOverlay.classList.contains('hidden')) {
+                        // Guardar imagen actual temporalmente
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = wbCanvas.width;
+                        tempCanvas.height = wbCanvas.height;
+                        tempCanvas.getContext('2d').drawImage(wbCanvas, 0, 0);
+                        
+                        wbCanvas.width = window.innerWidth;
+                        wbCanvas.height = window.innerHeight;
+                        
+                        wbCtx.lineCap = 'round';
+                        wbCtx.lineJoin = 'round';
+                        wbCtx.strokeStyle = wbCurrentColor;
+                        wbCtx.lineWidth = wbCurrentWidth;
+                        
+                        wbCtx.drawImage(tempCanvas, 0, 0);
+                    }
+                });
             }
         });
     </script>
