@@ -8,10 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Durante las evaluaciones al presionar "Volver al menú" la página solo carga el footer. 
-2) Necesito que en MODO AVANCE CONTINUO aparezca el botón "EVALUAR AVANCE" pero que solo se active hasta haber respondido 10 ejercicios y que permita responder más preguntas y evaluar cuando el estudiante quiera.
-3) Quiero que presente el siguinete Thumbnail: https://raw.githubusercontent.com/IALUMX/img_cepredix/refs/heads/main/Thumbnail-CEP-HTML.png
-4) Quiero integrar este FAVICON: https://raw.githubusercontent.com/IALUMX/img_cepredix/refs/heads/main/00-WEBLogo-circular-cepredix.png
+1) Elimina la herramienta
 
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
@@ -25,6 +22,17 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRUEBA (Global)</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/00-WEBLogo-circular-cepredix.png" type="image/png">
+    
+    <meta property="og:image" content="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/Thumbnail-CEP-HTML.png">
+    <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/Thumbnail-CEP-HTML.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <meta property="og:title" content="PRUEBA (Global) - CEPREDIX">
+    <meta property="og:description" content="Plataforma de evaluación educativa.">
+    <meta property="og:type" content="website">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2720,21 +2728,34 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
             function updateEvaluationButton() {
                 if (!finishBtn) return;
+                
+                // Solo mostrar en modo continuo
+                if (!isContinuousMode) {
+                    finishBtn.classList.add('hidden');
+                    return;
+                }
+
+                finishBtn.classList.remove('hidden');
+                
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
                 const minQuestionsRequired = 10;
                 
-                // En modo continuo, bloqueamos el botón hasta llegar a 10, pero no detenemos al usuario.
                 if (answeredCount < minQuestionsRequired) {
+                    // Menos de 10 respuestas: Botón visible pero bloqueado
                     finishBtn.disabled = true;
                     finishBtn.classList.add('btn-disabled');
-                    finishBtn.innerHTML = `MÍNIMO PARA EVALUAR (${answeredCount}/${minQuestionsRequired})`;
+                    // Estilo visual para indicar bloqueo
+                    finishBtn.style.opacity = "0.6"; 
+                    finishBtn.style.cursor = "not-allowed";
+                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> MÍNIMO 10 RESPUESTAS (${answeredCount}/${minQuestionsRequired})`;
                 } else {
+                    // 10 o más respuestas: Botón activo
                     finishBtn.disabled = false;
                     finishBtn.classList.remove('btn-disabled');
-                    finishBtn.innerHTML = 'TERMINAR Y EVALUAR AVANCE ✓';
+                    finishBtn.style.opacity = "1";
+                    finishBtn.style.cursor = "pointer";
+                    finishBtn.innerHTML = `TERMINAR Y EVALUAR (${answeredCount} RESPONDIDAS) ✓`;
                 }
-                
-                finishBtn.classList.toggle('hidden', !isContinuousMode);
             }
 
             function startEvaluateEmojiAnimation() {
@@ -4606,6 +4627,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 dtIsRunning = false;
 
                 screens.quiz.classList.add('hidden');
+                screens.setup.classList.remove('hidden'); // CORRECCIÓN: Vuelve a mostrar el menú
+                if(logoutBtn) logoutBtn.style.display = 'flex'; // Asegura que el botón de salir reaparezca
                 
                 correctSound.pause();
                 incorrectSound.pause();
