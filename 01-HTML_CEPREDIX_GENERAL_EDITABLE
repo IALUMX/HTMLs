@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRUEBA (Global)</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/IALUMX/img_cepredix/refs/heads/main/00-WEBLogo-circular-cepredix.png" type="image/png">
+    <meta property="og:image" content="https://raw.githubusercontent.com/IALUMX/img_cepredix/refs/heads/main/Thumbnail-CEP-HTML.png">
+    <meta property="og:title" content="PRUEBA (Global) - CEPREDIX">
+    <meta property="og:description" content="Plataforma de evaluación educativa.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2699,21 +2703,34 @@
 
             function updateEvaluationButton() {
                 if (!finishBtn) return;
+                
+                // Solo mostrar en modo continuo
+                if (!isContinuousMode) {
+                    finishBtn.classList.add('hidden');
+                    return;
+                }
+
+                finishBtn.classList.remove('hidden');
+                
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
                 const minQuestionsRequired = 10;
                 
-                // En modo continuo, bloqueamos el botón hasta llegar a 10, pero no detenemos al usuario.
                 if (answeredCount < minQuestionsRequired) {
+                    // Menos de 10 respuestas: Botón visible pero bloqueado
                     finishBtn.disabled = true;
                     finishBtn.classList.add('btn-disabled');
-                    finishBtn.innerHTML = `MÍNIMO PARA EVALUAR (${answeredCount}/${minQuestionsRequired})`;
+                    // Estilo visual para indicar bloqueo
+                    finishBtn.style.opacity = "0.6"; 
+                    finishBtn.style.cursor = "not-allowed";
+                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> MÍNIMO 10 RESPUESTAS (${answeredCount}/${minQuestionsRequired})`;
                 } else {
+                    // 10 o más respuestas: Botón activo
                     finishBtn.disabled = false;
                     finishBtn.classList.remove('btn-disabled');
-                    finishBtn.innerHTML = 'TERMINAR Y EVALUAR AVANCE ✓';
+                    finishBtn.style.opacity = "1";
+                    finishBtn.style.cursor = "pointer";
+                    finishBtn.innerHTML = `TERMINAR Y EVALUAR (${answeredCount} RESPONDIDAS) ✓`;
                 }
-                
-                finishBtn.classList.toggle('hidden', !isContinuousMode);
             }
 
             function startEvaluateEmojiAnimation() {
@@ -4585,6 +4602,8 @@
                 dtIsRunning = false;
 
                 screens.quiz.classList.add('hidden');
+                screens.setup.classList.remove('hidden'); // CORRECCIÓN: Vuelve a mostrar el menú
+                if(logoutBtn) logoutBtn.style.display = 'flex'; // Asegura que el botón de salir reaparezca
                 
                 correctSound.pause();
                 incorrectSound.pause();
