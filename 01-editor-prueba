@@ -1829,7 +1829,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
             <div class="flex items-center gap-1 sm:gap-2 px-1 shrink-0" title="Ajustar grosor">
                 <i class="fas fa-circle text-[4px] text-gray-400 hidden sm:block"></i>
-                <input type="range" id="wb-width-slider" min="1" max="30" value="3" class="w-16 sm:w-24 cursor-pointer h-1 bg-gray-600 rounded-lg appearance-none">
+                <input type="range" id="wb-width-slider" min="1" max="10" value="2" class="w-16 sm:w-24 cursor-pointer h-1 bg-gray-600 rounded-lg appearance-none">
                 <i class="fas fa-circle text-[10px] text-gray-400 hidden sm:block"></i>
             </div>
 
@@ -2802,49 +2802,54 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 const correctOption = question.options.find(opt => opt.correct);
                 const isCorrect = correctOption && correctOption.text === selectedOption;
                 
+                // Actualizar datos de la respuesta
+                currentAnswer.selected = selectedOption;
+                currentAnswer.timeSpent = timeSpent;
+
+                // --- LÓGICA DE EVALUACIÓN ---
+                
                 if (selectedOption === "No puedo identificar la respuesta 😥") {
                     currentAnswer.status = 'unidentified';
                     if (effectsVolume > 0) {
                         incorrectSound.currentTime = 0;
                         incorrectSound.volume = effectsVolume;
-                        incorrectSound.play().catch(e => console.error("Error al reproducir sonido incorrecto:", e));
+                        incorrectSound.play().catch(e => console.error(e));
                     }
+                    // En modo simulacro, "no identificar" también quita vida (opcional, pero recomendado)
+                    if (isGameMode) handleGameModeLifeLoss();
+
                 } else if (isCorrect) {
                     currentAnswer.status = 'correct';
                     if (effectsVolume > 0) {
                         correctSound.currentTime = 0;
                         correctSound.volume = effectsVolume;
-                        correctSound.play().catch(e => console.error("Error al reproducir sonido correcto:", e));
+                        correctSound.play().catch(e => console.error(e));
                     }
+                    
+                    // Lógica de Vidas en Modo Simulacro (Ganar vida)
                     if (isGameMode) {
                         consecutiveCorrect++;
-                        if (consecutiveCorrect === 3) {
-                            gameModeLives = Math.min(3, gameModeLives + 1);
-                            consecutiveCorrect = 0;
+                        if (consecutiveCorrect >= 3) {
+                            if (gameModeLives < 3) {
+                                gameModeLives++;
+                                showTemporaryMessage("¡3 aciertos seguidos! +1 Vida ❤️", "bg-green-600");
+                            }
+                            consecutiveCorrect = 0; // Reiniciar racha tras dar la vida
                             updateGameModeLivesDisplay();
-                            showTemporaryMessage("¡3 respuestas correctas seguidas! Has recuperado una vida.", "bg-green-600");
                         }
                     }
+
                 } else {
                     currentAnswer.status = 'incorrect';
                     if (effectsVolume > 0) {
                         incorrectSound.currentTime = 0;
                         incorrectSound.volume = effectsVolume;
-                        incorrectSound.play().catch(e => console.error("Error al reproducir sonido incorrecto:", e));
+                        incorrectSound.play().catch(e => console.error(e));
                     }
-                    if (isGameMode) {
-                        gameModeLives--;
-                        consecutiveCorrect = 0;
-                        updateGameModeLivesDisplay();
-                        if (gameModeLives <= 0) {
-                            handleGameModeLoss("¡Te has quedado sin vidas!");
-                            return;
-                        }
-                    }
+                    
+                    // Lógica de Vidas en Modo Simulacro (Perder vida)
+                    if (isGameMode) handleGameModeLifeLoss();
                 }
-                
-                currentAnswer.selected = selectedOption;
-                currentAnswer.timeSpent = timeSpent;
                 
                 if (isContinuousMode && currentAnswer.status !== 'unanswered') {
                     answeredIdsInContinuousMode.add(question.id);
@@ -2855,11 +2860,25 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 showFeedback();
                 updateButtonStates();
                 
+                // Publicidad para invitados
                 if (isGuest && (isContinuousMode || isGameMode)) {
                     questionCountInGuestMode++;
                     if (questionCountInGuestMode % 5 === 0) {
                         setTimeout(showAd, 500);
                     }
+                }
+            }
+
+            // Función auxiliar para manejar la pérdida de vida
+            function handleGameModeLifeLoss() {
+                gameModeLives--;
+                consecutiveCorrect = 0; // Perder racha
+                updateGameModeLivesDisplay();
+                
+                if (gameModeLives <= 0) {
+                    setTimeout(() => {
+                        handleGameModeLoss("¡Te has quedado sin vidas! ☠");
+                    }, 500); // Pequeña pausa para que el usuario vea que se equivocó
                 }
             }
 
@@ -5271,7 +5290,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             let wbHistory = [];
             let wbStep = -1;
             let wbCurrentColor = '#ffffff';
-            let wbCurrentWidth = 3;
+            let wbCurrentWidth = 2;
 
             // Ajustar tamaño del canvas al abrir
             function resizeWbCanvas() {
@@ -5379,18 +5398,15 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     });
                 });
 
-                // Herramienta: Borrador
+                // Herramienta: Borrador (Corregido)
                 document.getElementById('wb-eraser-btn').addEventListener('click', () => {
-                    // Modo borrar
-                    wbCtx.globalCompositeOperation = 'destination-out'; 
-                    // Mantenemos el grosor del slider (así puedes borrar fino o grueso)
+                    wbCurrentWidth = 10; // Tamaño fijo y pequeño para el borrador
                     wbCtx.lineWidth = wbCurrentWidth;
-                });
-
-                document.getElementById('wb-eraser-btn').addEventListener('click', () => {
-                    wbCurrentWidth = 20; // Borrador más grande
-                    wbCtx.lineWidth = wbCurrentWidth;
-                    wbCtx.globalCompositeOperation = 'destination-out'; // Modo borrar
+                    wbCtx.globalCompositeOperation = 'destination-out'; // Activar modo borrar
+                    
+                    // Actualizamos visualmente el slider para que coincida
+                    const slider = document.getElementById('wb-width-slider');
+                    if(slider) slider.value = 10;
                 });
 
                 document.getElementById('wb-clear-btn').addEventListener('click', () => {
