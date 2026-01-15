@@ -153,6 +153,8 @@
         .justification {
             background: rgba(40, 40, 50, 0.9); border-radius: 10px; padding: 15px;
             margin-top: 20px; text-align: left; border-left: 4px solid #4fc3f7;
+            overflow-x: auto; /* Agrega scroll horizontal si es necesario */
+            word-wrap: break-word; /* Rompe palabras largas */
         }
         .justification h4 { color: #4fc3f7; margin-bottom: 8px; font-size: 1.2rem; }
         @keyframes shake {
@@ -349,9 +351,13 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.3); object-fit: contain;
         }
         #image-container {
-            position: relative; width: 100%; max-width: 400px; aspect-ratio: 1 / 1;
+            position: relative; width: 100%; max-width: 100%; 
+            height: 45vh; /* Usa el 45% de la altura de la pantalla del dispositivo */
+            max-height: 500px; /* Límite para que no sea gigante en PC */
+            min-height: 250px; /* Límite para que no sea muy chica en móviles */
             background-size: contain; background-position: center; background-repeat: no-repeat;
             overflow: hidden; margin: 15px auto; border-radius: 10px;
+            background-color: rgba(0,0,0,0.2); /* Fondo sutil para distinguir el área */
         }
         #watermark-overlay {
             position: absolute; inset: -50%; width: 200%; height: 200%;
@@ -1378,12 +1384,17 @@
             <button id="start-quiz-btn" class="btn btn-primary w-full text-lg">Empezar Cuestionario</button>
             <p id="error-message" class="text-red-400 text-center text-sm h-4"></p>
             <div class="space-y-2 border-t border-gray-600 pt-4 mt-4">
-                <p class="font-medium">Verificar Pregunta por ID</p>
-                <div class="flex gap-2">
-                    <input type="text" id="lookup-id-input" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="Introduce el ID del reactivo">
-                    <button id="lookup-btn" class="btn btn-secondary !m-0">Buscar</button>
+                <div class="video-toggle" id="lookup-toggle">
+                    <span><i class="fas fa-search mr-2"></i> Verificar Pregunta por ID</span>
+                    <i class="fas fa-chevron-down"></i>
                 </div>
-                <div id="lookup-result-container" class="mt-2 p-4 bg-gray-800 rounded-lg hidden text-left">
+                <div id="lookup-section-content" class="hidden mt-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="lookup-id-input" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="Introduce el ID del reactivo">
+                        <button id="lookup-btn" class="btn btn-secondary !m-0">Buscar</button>
+                    </div>
+                    <div id="lookup-result-container" class="mt-2 p-4 bg-gray-800 rounded-lg hidden text-left">
+                    </div>
                 </div>
             </div>
         </div>
@@ -1568,37 +1579,6 @@
                             <input type="text" id="chatbot-input" placeholder="Ej. mitocondria">
                             <button id="chatbot-send">Consultar</button>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div id="chalkboard-section" class="w-full">
-                <div id="chalkboard-toggle">
-                    <span><i class="fas fa-chalkboard mr-2"></i> Pizarra de Apuntes</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div id="chalkboard-content" class="hidden">
-                    <div id="canvas-container" style="background-image: url('https://raw.githubusercontent.com/IALUMX/img_cepredix/refs/heads/main/Pizarra_html.png');">
-                        <canvas id="chalkboard"></canvas>
-                    </div>
-                    <div id="chalkboard-controls">
-                        <button id="undo-button" title="Deshacer" class="control-btn bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-lg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
-                        </button>
-                        <button id="shape-assist-button" title="Ajustar Forma" class="control-btn bg-purple-600 hover:bg-purple-700 text-white font-bold p-2 rounded-lg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-1.342-1.342L16.5 8.803l-1.14-1.14a1 1 0 0 0-1.415 0l-1.14 1.14-2.28 2.28a1 1 0 0 0 0 1.414l2.28 2.28 1.14 1.14a1 1 0 0 0 1.415 0l1.14-1.14 3.332-3.332z"/><path d="m7 21-4-4"/><path d="M21 3v4h-4"/></svg>
-                        </button>
-                        <button id="white-brush" class="p-1 rounded-md bg-white" title="Pincel Blanco"><div class="w-5 h-5"></div></button>
-                        <button id="green-brush" class="p-1 rounded-md bg-green-500" title="Pincel Verde"><div class="w-5 h-5"></div></button>
-                        <div class="color-picker-wrapper" title="Color Personalizado">
-                            <div id="color-preview" class="color-preview" style="background-color: #ff0000;"></div>
-                            <input type="color" id="color-picker" value="#ff0000">
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-xs font-medium text-gray-300">Grosor:</span>
-                            <input type="range" id="brush-size" min="1" max="10" value="5" class="w-24 cursor-pointer">
-                            <span id="brush-size-value" class="text-xs font-semibold w-5 text-center">5</span>
-                        </div>
-                        <button id="clear-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-lg transition-colors text-sm">Limpiar</button>
                     </div>
                 </div>
             </div>
@@ -1834,7 +1814,7 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/JSON_PRUEBA_011225.json';
+            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/JSON_PRUEBA_150126.json';
             const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS5sU2hYNByYHNDESXxZPoe3dikV115hY_TII15wZtF8E0NWBFmnLSW2ad7ZqDdwk-jTPQfX-92n6zQ/pub?gid=0&single=true&output=csv';
             const CORS_PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(GOOGLE_SHEET_URL);
             const RESULTS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYESY3dBy0h5QrY5EyJ_jfHwlEwnhByFcPTywwK4jJhGa3rvrnIzR9OXleZUZ7zVqUqw/exec';
@@ -1922,6 +1902,8 @@
             const lookupIdInput = document.getElementById('lookup-id-input');
             const lookupBtn = document.getElementById('lookup-btn');
             const lookupResultContainer = document.getElementById('lookup-result-container');
+            const lookupToggle = document.getElementById('lookup-toggle');
+            const lookupSectionContent = document.getElementById('lookup-section-content');
             const gameModeRules = document.getElementById('game-mode-rules');
             const gameModeLivesDisplay = document.getElementById('game-mode-lives');
             const videoContainer = document.getElementById('video-container');
@@ -2137,240 +2119,7 @@
                 }
             }
 
-            const chalkboardToggle = document.getElementById('chalkboard-toggle');
-            const chalkboardContent = document.getElementById('chalkboard-content');
-            const canvas = document.getElementById('chalkboard');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                const container = document.getElementById('canvas-container');
-                let isDrawing = false;
-                let lastX = 0;
-                let lastY = 0;
-                let history = [];
-                let currentPoints = [];
-                let isShapeAssistActive = false;
-                let canvasStateBeforeStroke = null;
-                const whiteBrushBtn = document.getElementById('white-brush');
-                const greenBrushBtn = document.getElementById('green-brush');
-                const colorPicker = document.getElementById('color-picker');
-                const colorPreview = document.getElementById('color-preview');
-                const brushSizeSlider = document.getElementById('brush-size');
-                const brushSizeValue = document.getElementById('brush-size-value');
-                const clearButton = document.getElementById('clear-button');
-                const undoButton = document.getElementById('undo-button');
-                const shapeAssistButton = document.getElementById('shape-assist-button');
-
-                function setInitialBrush() {
-                    ctx.strokeStyle = '#FFFFFF';
-                    ctx.lineWidth = 5;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                }
-
-                function saveState() {
-                    if (history.length > 20) { history.shift(); }
-                    history.push(canvas.toDataURL());
-                }
-
-                function undo() {
-                    if (history.length > 1) {
-                        history.pop();
-                        const lastStateUrl = history[history.length - 1];
-                        const img = new Image();
-                        img.src = lastStateUrl;
-                        img.onload = () => {
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            ctx.drawImage(img, 0, 0);
-                        };
-                    } else if (history.length === 1) {
-                        history.pop();
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        saveState();
-                    }
-                }
-
-                function resizeCanvas() {
-                    const currentImageDataUrl = canvas.toDataURL();
-                    const size = container.clientWidth;
-                    canvas.width = size;
-                    canvas.height = size * (3/4);
-                    const tempStroke = ctx.strokeStyle;
-                    const tempWidth = ctx.lineWidth;
-                    setInitialBrush();
-                    ctx.strokeStyle = tempStroke;
-                    ctx.lineWidth = tempWidth;
-                    const img = new Image();
-                    img.src = currentImageDataUrl;
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    };
-                }
-
-                function getPos(canvasEl, evt) {
-                    const rect = canvasEl.getBoundingClientRect();
-                    const touch = evt.touches ? evt.touches[0] : evt;
-                    return {
-                        x: touch.clientX - rect.left,
-                        y: touch.clientY - rect.top
-                    };
-                }
-
-                function startDrawing(e) {
-                    canvasStateBeforeStroke = canvas.toDataURL();
-                    isDrawing = true;
-                    const pos = getPos(canvas, e);
-                    [lastX, lastY] = [pos.x, pos.y];
-                    currentPoints = [{x: pos.x, y: pos.y}];
-                }
-
-                function draw(e) {
-                    if (!isDrawing) return;
-                    e.preventDefault();
-                    const pos = getPos(canvas, e);
-                    ctx.beginPath();
-                    ctx.moveTo(lastX, lastY);
-                    ctx.lineTo(pos.x, pos.y);
-                    ctx.stroke();
-                    [lastX, lastY] = [pos.x, pos.y];
-                    currentPoints.push({x: pos.x, y: pos.y});
-                }
-
-                function stopDrawing() {
-                    if (!isDrawing) return;
-                    isDrawing = false;
-                    if (isShapeAssistActive && currentPoints.length > 10) {
-                        const img = new Image();
-                        img.src = canvasStateBeforeStroke;
-                        img.onload = () => {
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            ctx.drawImage(img, 0, 0);
-                            recognizeAndDrawShape();
-                            saveState();
-                        };
-                    } else {
-                        saveState();
-                    }
-                    canvasStateBeforeStroke = null;
-                }
-                
-                function recognizeAndDrawShape() {
-                    const simplifiedPoints = simplify(currentPoints, 2.5);
-                    const start = simplifiedPoints[0];
-                    const end = simplifiedPoints[simplifiedPoints.length - 1];
-                    const distance = Math.hypot(end.x - start.x, end.y - start.y);
-                    const isClosed = distance < 35;
-                    ctx.beginPath();
-                    if (isClosed && (simplifiedPoints.length < 3 || simplifiedPoints.length > 7)) {
-                        drawEllipse(currentPoints);
-                    } else {
-                        const vertices = isClosed ? simplifiedPoints.slice(0, -1) : simplifiedPoints;
-                        if (vertices.length > 1) {
-                            ctx.moveTo(vertices[0].x, vertices[0].y);
-                            for (let i = 1; i < vertices.length; i++) {
-                                ctx.lineTo(vertices[i].x, vertices[i].y);
-                            }
-                            if (isClosed) {
-                                ctx.closePath();
-                            }
-                        }
-                    }
-                    ctx.stroke();
-                }
-                
-                function getPerpendicularDistance(point, lineStart, lineEnd) {
-                    const dx = lineEnd.x - lineStart.x;
-                    const dy = lineEnd.y - lineStart.y;
-                    if (dx === 0 && dy === 0) return Math.hypot(point.x - lineStart.x, point.y - lineStart.y);
-                    const t = ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / (dx * dx + dy * dy);
-                    const closestX = lineStart.x + t * dx;
-                    const closestY = lineStart.y + t * dy;
-                    return Math.hypot(point.x - closestX, point.y - closestY);
-                }
-
-                function simplify(points, tolerance) {
-                    if (points.length < 3) return points;
-                    let dmax = 0;
-                    let index = 0;
-                    const end = points.length - 1;
-                    for (let i = 1; i < end; i++) {
-                        const d = getPerpendicularDistance(points[i], points[0], points[end]);
-                        if (d > dmax) {
-                            index = i;
-                            dmax = d;
-                        }
-                    }
-                    if (dmax > tolerance) {
-                        const recResults1 = simplify(points.slice(0, index + 1), tolerance);
-                        const recResults2 = simplify(points.slice(index), tolerance);
-                        return recResults1.slice(0, recResults1.length - 1).concat(recResults2);
-                    } else {
-                        return [points[0], points[end]];
-                    }
-                }
-
-                function drawEllipse(points) {
-                    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-                    points.forEach(p => {
-                        minX = Math.min(minX, p.x);
-                        maxX = Math.max(maxX, p.x);
-                        minY = Math.min(minY, p.y);
-                        maxY = Math.max(maxY, p.y);
-                    });
-                    const centerX = (minX + maxX) / 2;
-                    const centerY = (minY + maxY) / 2;
-                    const radiusX = (maxX - minX) / 2;
-                    const radiusY = (maxY - minY) / 2;
-                    if (radiusX > 0 && radiusY > 0) {
-                        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
-                    }
-                }
-
-                chalkboardToggle.addEventListener('click', () => {
-                    const isHidden = chalkboardContent.classList.toggle('hidden');
-                    const icon = chalkboardToggle.querySelector('.fa-chevron-down, .fa-chevron-up');
-                    if (isHidden) {
-                        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
-                    } else {
-                        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
-                        setTimeout(resizeCanvas, 0);
-                    }
-                });
-
-                canvas.addEventListener('mousedown', startDrawing);
-                canvas.addEventListener('mousemove', draw);
-                canvas.addEventListener('mouseup', stopDrawing);
-                canvas.addEventListener('mouseout', stopDrawing);
-                canvas.addEventListener('touchstart', startDrawing, { passive: false });
-                canvas.addEventListener('touchmove', draw, { passive: false });
-                canvas.addEventListener('touchend', stopDrawing);
-                canvas.addEventListener('touchcancel', stopDrawing);
-                whiteBrushBtn.addEventListener('click', () => { ctx.strokeStyle = '#FFFFFF'; });
-                greenBrushBtn.addEventListener('click', () => { ctx.strokeStyle = '#22c55e'; });
-                const updateColor = (e) => {
-                    ctx.strokeStyle = e.target.value;
-                    colorPreview.style.backgroundColor = e.target.value;
-                };
-                colorPicker.addEventListener('input', updateColor);
-                colorPicker.addEventListener('change', updateColor);
-                brushSizeSlider.addEventListener('input', (e) => {
-                    ctx.lineWidth = e.target.value;
-                    brushSizeValue.textContent = e.target.value;
-                });
-                clearButton.addEventListener('click', () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    saveState();
-                });
-                undoButton.addEventListener('click', undo);
-                shapeAssistButton.addEventListener('click', () => {
-                    isShapeAssistActive = !isShapeAssistActive;
-                    shapeAssistButton.classList.toggle('active', isShapeAssistActive);
-                });
-                window.addEventListener('resize', resizeCanvas);
-                setInitialBrush();
-                resizeCanvas();
-                saveState();
-            }
-
+            
             privacyLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 privacyModal.style.display = 'flex';
@@ -5037,7 +4786,18 @@
                 }
                 return array;
             }
-            
+
+            if (lookupToggle) {
+                lookupToggle.addEventListener('click', () => {
+                    const isHidden = lookupSectionContent.classList.toggle('hidden');
+                    const icon = lookupToggle.querySelector('.fa-chevron-down, .fa-chevron-up');
+                    if (isHidden) {
+                        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                    } else {
+                        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                    }
+                });
+            }
             lookupBtn.addEventListener('click', () => {
                 if (isGuest) {
                     showTemporaryMessage("Esta función no está disponible para invitados", "bg-yellow-600");
@@ -5393,10 +5153,8 @@
                 });
 
                 document.getElementById('wb-clear-btn').addEventListener('click', () => {
-                    if(confirm("¿Borrar toda la pizarra?")) {
-                        wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
-                        wbSaveState();
-                    }
+                    wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                    wbSaveState();
                 });
 
                 document.getElementById('wb-undo-btn').addEventListener('click', () => {
