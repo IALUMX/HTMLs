@@ -1284,7 +1284,9 @@
             <button id="logout-btn" class="logout-btn" title="Cerrar sesión">
                 <i class="fas fa-power-off"></i>
             </button>
-            <div class="logo"></div>
+            <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" title="Ir a Web CEPREDIX">
+                <div class="logo"></div>
+            </a>
             <h1 class="text-2xl sm:text-3xl font-bold">PRUEBA (Global)</h1>
             <h2 class="text-xl sm:text-2xl">Diseñado con pasión 💜 por el CEPREDIX</h2>
             <p class="text-sm sm:text-base">Prueba tus conocimientos con este cuestionario interactivo de opción múltiple 🧠</p>
@@ -1767,23 +1769,32 @@
     <div id="footer">
         <div id="footer-content">
             <div id="footer-links">
-                <a href="#" id="privacy-link" class="footer-link">Aviso de Privacidad</a>
+                <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" class="footer-link social-link">
+                    <i class="fas fa-globe"></i> WEB CEPREDIX
+                </a>
                 <span class="text-gray-500">|</span>
+
                 <a href="https://www.facebook.com/cepredix/" target="_blank" class="footer-link social-link">
                     <i class="fab fa-facebook"></i> Facebook
                 </a>
                 <span class="text-gray-500">|</span>
+
                 <a href="https://www.instagram.com/cepredix/" target="_blank" class="footer-link social-link">
                     <i class="fab fa-instagram"></i> Instagram
                 </a>
                 <span class="text-gray-500">|</span>
+
                 <a href="https://www.tiktok.com/@cepredix" target="_blank" class="footer-link social-link">
                     <i class="fab fa-tiktok"></i> TikTok
                 </a>
                 <span class="text-gray-500">|</span>
+
                 <a href="https://www.youtube.com/@Cepredix" target="_blank" class="footer-link social-link">
                     <i class="fab fa-youtube"></i> YouTube
                 </a>
+                <span class="text-gray-500">|</span>
+
+                <a href="#" id="privacy-link" class="footer-link">Aviso de Privacidad</a>
             </div>
             <div id="copyright">
                 &copy; CEPREDIX 2026 - Todos los derechos reservados. Versión CEP-2.1501
