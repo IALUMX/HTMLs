@@ -384,6 +384,18 @@
             width: fit-content;
         }
         .question-id { color: #4fc3f7; }
+        .mini-nav-btn {
+            width: 32px; height: 32px; border-radius: 50%; 
+            background: rgba(30, 30, 40, 0.8); border: 1px solid #4fc3f7; 
+            color: #4fc3f7; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease; font-size: 0.9rem;
+        }
+        .mini-nav-btn:hover:not(:disabled) {
+            background: rgba(79, 195, 247, 0.3); transform: scale(1.1);
+        }
+        .mini-nav-btn:disabled {
+            opacity: 0.3; cursor: not-allowed; border-color: #555; color: #777;
+        }
         .uni-tag-display { color: #81c784; }
         .options-grid-mode {
             display: grid;
@@ -1491,16 +1503,25 @@
                     <div class="video-content hidden" id="text-content">
                         </div>
                 </div>
-                <div class="flex flex-row flex-wrap items-center justify-center gap-3 w-full my-2">
-                    
-                    <div id="question-id-tags" class="question-id-tags !m-0">
-                        <span id="question-id-display" class="question-id"></span>
-                        <span id="uni-tags-display"></span>
-                        <span id="level-tag-display"></span>
+                <div class="flex flex-row flex-nowrap items-center justify-between w-full my-2 gap-2 px-1">
+                    <button id="mini-prev-btn" class="mini-nav-btn" title="Pregunta Anterior" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <div class="flex flex-row flex-wrap items-center justify-center gap-2">
+                        <div id="question-id-tags" class="question-id-tags !m-0">
+                            <span id="question-id-display" class="question-id"></span>
+                            <span id="uni-tags-display"></span>
+                            <span id="level-tag-display"></span>
+                        </div>
+
+                        <button id="whiteboard-trigger-btn" class="text-blue-400 hover:text-white transition-all hover:scale-110 p-2 bg-gray-800 bg-opacity-80 rounded-full w-10 h-10 flex items-center justify-center border border-blue-400 shadow-lg" title="Abrir Pizarra de Cálculos">
+                            <i class="fas fa-pen-to-square"></i>
+                        </button>
                     </div>
 
-                    <button id="whiteboard-trigger-btn" class="text-blue-400 hover:text-white transition-all hover:scale-110 p-2 bg-gray-800 bg-opacity-80 rounded-full w-10 h-10 flex items-center justify-center border border-blue-400 shadow-lg" title="Abrir Pizarra de Cálculos">
-                        <i class="fas fa-pen-to-square"></i>
+                    <button id="mini-next-btn" class="mini-nav-btn" title="Siguiente Pregunta" disabled>
+                        <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
                 <div id="options-container" class="w-full space-y-3"></div>
@@ -1765,7 +1786,7 @@
                 </a>
             </div>
             <div id="copyright">
-                &copy; CEPREDIX 2025 - Todos los derechos reservados. Versión CEP-1.1225
+                &copy; CEPREDIX 2026 - Todos los derechos reservados. Versión CEP-2.1501
             </div>
         </div>
     </div>
@@ -1980,6 +2001,8 @@
             const guestSubmitBtn = document.getElementById('guest-submit-btn');
             const guestCancelBtn = document.getElementById('guest-cancel-btn');
             const logoutBtn = document.getElementById('logout-btn');
+            const miniPrevBtn = document.getElementById('mini-prev-btn');
+            const miniNextBtn = document.getElementById('mini-next-btn');
             
             let allQuestions = [], quizQuestions = [], userAnswers = [], pastedAnsweredIds = new Set();
             let currentQuestionIndex = 0, timer, seconds = 0, resultsChart;
@@ -4241,10 +4264,13 @@
                 return match[1];
             }
             
-            function updateButtonStates() {
+           function updateButtonStates() {
                 const isAnswered = userAnswers[currentQuestionIndex].status !== 'unanswered';
                 const isLastQuestion = currentQuestionIndex === userAnswers.length - 1;
+                
+                // Actualizar estado de botones principales
                 prevBtn.disabled = currentQuestionIndex === 0;
+                
                 if (isAnswered) {
                     nextBtn.disabled = false;
                     evaluateBtn.disabled = true;
@@ -4258,6 +4284,18 @@
                     nextBtn.disabled = true;
                 }
                 finishBtn.classList.toggle('hidden', !isContinuousMode);
+
+                // --- LÓGICA NUEVA PARA FLECHAS MINI ---
+                if (miniPrevBtn) {
+                    miniPrevBtn.disabled = prevBtn.disabled;
+                    // Clonar funcionalidad: al hacer clic en mini, hace clic en el grande
+                    miniPrevBtn.onclick = () => prevBtn.click();
+                }
+                if (miniNextBtn) {
+                    miniNextBtn.disabled = nextBtn.disabled;
+                    // Clonar funcionalidad: al hacer clic en mini, hace clic en el grande
+                    miniNextBtn.onclick = () => nextBtn.click();
+                }
             }
 
             function showFeedback() {
