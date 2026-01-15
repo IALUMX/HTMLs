@@ -8,8 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Elimina la herramienta
-
+1) Requiero que se generen 
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -170,6 +169,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
         .justification {
             background: rgba(40, 40, 50, 0.9); border-radius: 10px; padding: 15px;
             margin-top: 20px; text-align: left; border-left: 4px solid #4fc3f7;
+            overflow-x: auto; /* Agrega scroll horizontal si es necesario */
+            word-wrap: break-word; /* Rompe palabras largas */
         }
         .justification h4 { color: #4fc3f7; margin-bottom: 8px; font-size: 1.2rem; }
         @keyframes shake {
@@ -366,9 +367,13 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             box-shadow: 0 10px 20px rgba(0,0,0,0.3); object-fit: contain;
         }
         #image-container {
-            position: relative; width: 100%; max-width: 400px; aspect-ratio: 1 / 1;
+            position: relative; width: 100%; max-width: 100%; 
+            height: 45vh; /* Usa el 45% de la altura de la pantalla del dispositivo */
+            max-height: 500px; /* Límite para que no sea gigante en PC */
+            min-height: 250px; /* Límite para que no sea muy chica en móviles */
             background-size: contain; background-position: center; background-repeat: no-repeat;
             overflow: hidden; margin: 15px auto; border-radius: 10px;
+            background-color: rgba(0,0,0,0.2); /* Fondo sutil para distinguir el área */
         }
         #watermark-overlay {
             position: absolute; inset: -50%; width: 200%; height: 200%;
@@ -1395,12 +1400,17 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             <button id="start-quiz-btn" class="btn btn-primary w-full text-lg">Empezar Cuestionario</button>
             <p id="error-message" class="text-red-400 text-center text-sm h-4"></p>
             <div class="space-y-2 border-t border-gray-600 pt-4 mt-4">
-                <p class="font-medium">Verificar Pregunta por ID</p>
-                <div class="flex gap-2">
-                    <input type="text" id="lookup-id-input" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="Introduce el ID del reactivo">
-                    <button id="lookup-btn" class="btn btn-secondary !m-0">Buscar</button>
+                <div class="video-toggle" id="lookup-toggle">
+                    <span><i class="fas fa-search mr-2"></i> Verificar Pregunta por ID</span>
+                    <i class="fas fa-chevron-down"></i>
                 </div>
-                <div id="lookup-result-container" class="mt-2 p-4 bg-gray-800 rounded-lg hidden text-left">
+                <div id="lookup-section-content" class="hidden mt-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="lookup-id-input" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="Introduce el ID del reactivo">
+                        <button id="lookup-btn" class="btn btn-secondary !m-0">Buscar</button>
+                    </div>
+                    <div id="lookup-result-container" class="mt-2 p-4 bg-gray-800 rounded-lg hidden text-left">
+                    </div>
                 </div>
             </div>
         </div>
@@ -1908,6 +1918,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             const lookupIdInput = document.getElementById('lookup-id-input');
             const lookupBtn = document.getElementById('lookup-btn');
             const lookupResultContainer = document.getElementById('lookup-result-container');
+            const lookupToggle = document.getElementById('lookup-toggle');
+            const lookupSectionContent = document.getElementById('lookup-section-content');
             const gameModeRules = document.getElementById('game-mode-rules');
             const gameModeLivesDisplay = document.getElementById('game-mode-lives');
             const videoContainer = document.getElementById('video-container');
@@ -4790,7 +4802,18 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 }
                 return array;
             }
-            
+
+            if (lookupToggle) {
+                lookupToggle.addEventListener('click', () => {
+                    const isHidden = lookupSectionContent.classList.toggle('hidden');
+                    const icon = lookupToggle.querySelector('.fa-chevron-down, .fa-chevron-up');
+                    if (isHidden) {
+                        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                    } else {
+                        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                    }
+                });
+            }
             lookupBtn.addEventListener('click', () => {
                 if (isGuest) {
                     showTemporaryMessage("Esta función no está disponible para invitados", "bg-yellow-600");
