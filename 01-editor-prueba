@@ -8,7 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que despúes de responder alguna pregunta, se habiliten dos flechas muy discretas, compatibles con el diseño del cuestionario, una señalando a la izuqierda y otra a la derecha a los extremos de la línea de donde están los tags y el botón de la pizarra, estos botones permitirán avanzar o regresar a la pregunta previa. 
+1) Requiero que 
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -1300,7 +1300,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             <button id="logout-btn" class="logout-btn" title="Cerrar sesión">
                 <i class="fas fa-power-off"></i>
             </button>
-            <div class="logo"></div>
+            <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" title="Ir a Web CEPREDIX">
+                <div class="logo"></div>
+            </a>
             <h1 class="text-2xl sm:text-3xl font-bold">PRUEBA (Global)</h1>
             <h2 class="text-xl sm:text-2xl">Diseñado con pasión 💜 por el CEPREDIX</h2>
             <p class="text-sm sm:text-base">Prueba tus conocimientos con este cuestionario interactivo de opción múltiple 🧠</p>
@@ -1783,23 +1785,32 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
     <div id="footer">
         <div id="footer-content">
             <div id="footer-links">
-                <a href="#" id="privacy-link" class="footer-link">Aviso de Privacidad</a>
+                <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" class="footer-link social-link">
+                    <i class="fas fa-globe"></i> WEB CEPREDIX
+                </a>
                 <span class="text-gray-500">|</span>
+
                 <a href="https://www.facebook.com/cepredix/" target="_blank" class="footer-link social-link">
                     <i class="fab fa-facebook"></i> Facebook
                 </a>
                 <span class="text-gray-500">|</span>
+
                 <a href="https://www.instagram.com/cepredix/" target="_blank" class="footer-link social-link">
                     <i class="fab fa-instagram"></i> Instagram
                 </a>
                 <span class="text-gray-500">|</span>
+
                 <a href="https://www.tiktok.com/@cepredix" target="_blank" class="footer-link social-link">
                     <i class="fab fa-tiktok"></i> TikTok
                 </a>
                 <span class="text-gray-500">|</span>
+
                 <a href="https://www.youtube.com/@Cepredix" target="_blank" class="footer-link social-link">
                     <i class="fab fa-youtube"></i> YouTube
                 </a>
+                <span class="text-gray-500">|</span>
+
+                <a href="#" id="privacy-link" class="footer-link">Aviso de Privacidad</a>
             </div>
             <div id="copyright">
                 &copy; CEPREDIX 2026 - Todos los derechos reservados. Versión CEP-2.1501
