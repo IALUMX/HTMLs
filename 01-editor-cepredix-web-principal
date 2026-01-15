@@ -1,3 +1,19 @@
+No soy programador, con ayuda de IA he creado un código HTML para generar un programa con bancos de preguntas para estudiantes. Necesito algunas modificaciones. 
+
+Instrucciones críticas:
+* No alteres nada del diseño a menos que explicitamente se solicite.
+* NO alteres ninguna función a menos que explicitamente se solicite.
+* Asegura que el código este optimizado para ajustarse al dispositivo en el que se visualice: ordenador, tablet, smartphone.
+
+
+Estos son los cambios que requiero:
+1) Elimina la herramienta
+
+
+Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
+
+
+****************************** Este es el código actual ******************************
 <!DOCTYPE html>
 <html class="dark" lang="es">
 <head>
@@ -762,3 +778,4 @@
 
 </body>
 </html>
+
