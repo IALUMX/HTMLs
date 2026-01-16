@@ -2112,7 +2112,7 @@
 
                 setTimeout(() => {
                     runPubBanner();
-                }, 50000); 
+                }, 20000); 
             }
 
             function runPubBanner() {
