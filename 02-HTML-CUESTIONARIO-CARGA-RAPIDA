@@ -1588,7 +1588,7 @@
             </div>
             <div id="chatbot-section" class="w-full">
                 <div id="chatbot-toggle">
-                    <span><i class="fas fa-robot mr-2"></i> Chatbot de Ayuda</span>
+                    <span><i class="fas fa-robot mr-2"></i> Túul  tu Chatbot de Ayuda</span>
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div id="chatbot-content" class="hidden">
