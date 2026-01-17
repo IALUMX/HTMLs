@@ -402,6 +402,35 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
         }
+        /* NUEVO ESTILO HÍBRIDO */
+        .hybrid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        .hybrid-group {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        .hybrid-group-title {
+            text-align: center;
+            color: #4fc3f7;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        @media (min-width: 768px) {
+            .hybrid-container {
+                flex-direction: row;
+            }
+            .hybrid-group {
+                flex: 1;
+            }
+        }
         .option-btn.is-image {
             padding: 5px !important;
             height: 200px;
@@ -1376,6 +1405,11 @@
                     <p class="text-xs text-gray-400">Selecciona el grado de dificultad de los ejercicios.</p>
                     <div id="level-tags-container" class="flex flex-wrap gap-2"></div>
                 </div>
+                <div class="space-y-2">
+                    <p class="font-medium">Tipo de Reactivo</p>
+                    <p class="text-xs text-gray-400">Selecciona el tipo de pregunta (ej. TEST, REAL, HÍBRIDO).</p>
+                    <div id="type-tags-container" class="flex flex-wrap gap-2"></div>
+                </div>
             </div>
             <div class="space-y-2">
                 <label for="answered-ids-input" class="font-medium">Pegar IDs de ejercicios ya respondidos (opcional)</label>
@@ -1846,7 +1880,7 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/JSON_PRUEBA_150126.json';
+            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/00-json-prueba-v2-170126.json';
             const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS5sU2hYNByYHNDESXxZPoe3dikV115hY_TII15wZtF8E0NWBFmnLSW2ad7ZqDdwk-jTPQfX-92n6zQ/pub?gid=0&single=true&output=csv';
             const CORS_PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(GOOGLE_SHEET_URL);
             const RESULTS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYESY3dBy0h5QrY5EyJ_jfHwlEwnhByFcPTywwK4jJhGa3rvrnIzR9OXleZUZ7zVqUqw/exec';
@@ -1880,8 +1914,9 @@
             const welcomeName = document.getElementById('welcome-name');
             const gameModeToggle = document.getElementById('game-mode-toggle');
             const continuousModeToggle = document.getElementById('continuous-mode-toggle');
-            const uniTagsContainer = document.getElementById('uni-tags-container');
+           const uniTagsContainer = document.getElementById('uni-tags-container');
             const levelTagsContainer = document.getElementById('level-tags-container');
+            const typeTagsContainer = document.getElementById('type-tags-container');
             const answeredIdsInput = document.getElementById('answered-ids-input');
             const statsTotal = document.getElementById('stats-total');
             const statsTotalFiltered = document.getElementById('stats-total-filtered');
@@ -2555,68 +2590,101 @@
                 const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
                 totalQuestionTime += timeSpent;
                 
-                let selectedOption = null;
-                const selectedButton = optionsContainer.querySelector('.option-btn.selected');
-                if (selectedButton) {
-                    selectedOption = selectedButton.dataset.text;
-                }
-                
-                if (!selectedOption) {
-                    selectedOption = "No puedo identificar la respuesta 😥";
-                }
-                
-                const correctOption = question.options.find(opt => opt.correct);
-                const isCorrect = correctOption && correctOption.text === selectedOption;
-                
-                // Actualizar datos de la respuesta
-                currentAnswer.selected = selectedOption;
-                currentAnswer.timeSpent = timeSpent;
+                let isCorrect = false;
+                let selectedTextForReport = "";
+                let statusResult = 'incorrect';
 
-                // --- LÓGICA DE EVALUACIÓN ---
+                // Detectar si es híbrido
+                const isHybrid = question.options.some(opt => 'text_op1' in opt);
+
+                if (isHybrid) {
+                    const sel1 = optionsContainer.querySelector('.option-btn[data-group="1"].selected');
+                    const sel2 = optionsContainer.querySelector('.option-btn[data-group="2"].selected');
+                    
+                    const val1 = sel1 ? sel1.dataset.text : "Sin responder";
+                    const val2 = sel2 ? sel2.dataset.text : "Sin responder";
+                    
+                    selectedTextForReport = `[1]: ${val1} | [2]: ${val2}`;
+
+                    const correctOp1 = question.options.find(o => 'text_op1' in o && o.correct)?.text_op1;
+                    const correctOp2 = question.options.find(o => 'text_op2' in o && o.correct)?.text_op2;
+
+                    // Lógica estricta: Ambas deben ser correctas y NO ser la opción de "No puedo identificar"
+                    const hit1 = (val1 === correctOp1);
+                    const hit2 = (val2 === correctOp2);
+
+                    if (val1.includes("No puedo identificar") || val2.includes("No puedo identificar")) {
+                        statusResult = 'unidentified';
+                    } else if (hit1 && hit2) {
+                        isCorrect = true;
+                        statusResult = 'correct';
+                    } else {
+                        statusResult = 'incorrect';
+                    }
+
+                } else {
+                    // Lógica Estándar
+                    const selectedButton = optionsContainer.querySelector('.option-btn.selected');
+                    const selectedOption = selectedButton ? selectedButton.dataset.text : "No puedo identificar la respuesta 😥";
+                    selectedTextForReport = selectedOption;
+
+                    const correctOption = question.options.find(opt => opt.correct);
+                    isCorrect = correctOption && correctOption.text === selectedOption;
+
+                    if (selectedOption.includes("No puedo identificar")) {
+                        statusResult = 'unidentified';
+                    } else if (isCorrect) {
+                        statusResult = 'correct';
+                    } else {
+                        statusResult = 'incorrect';
+                    }
+                }
                 
-                if (selectedOption === "No puedo identificar la respuesta 😥") {
-                    currentAnswer.status = 'unidentified';
+                // Actualizar respuesta
+                currentAnswer.selected = selectedTextForReport;
+                currentAnswer.timeSpent = timeSpent;
+                currentAnswer.status = statusResult;
+
+                // --- BLOQUE DE SONIDOS Y VIDAS (Igual que antes) ---
+                if (statusResult === 'unidentified') {
                     if (effectsVolume > 0) {
                         incorrectSound.currentTime = 0;
                         incorrectSound.volume = effectsVolume;
                         incorrectSound.play().catch(e => console.error(e));
                     }
-                    // En modo simulacro, "no identificar" también quita vida (opcional, pero recomendado)
                     if (isGameMode) handleGameModeLifeLoss();
 
-                } else if (isCorrect) {
-                    currentAnswer.status = 'correct';
+                } else if (statusResult === 'correct') {
                     if (effectsVolume > 0) {
                         correctSound.currentTime = 0;
                         correctSound.volume = effectsVolume;
                         correctSound.play().catch(e => console.error(e));
                     }
-                    
-                    // Lógica de Vidas en Modo Simulacro (Ganar vida)
                     if (isGameMode) {
                         consecutiveCorrect++;
+                        // Si es híbrido cuenta doble en la mente del usuario, pero en sistema es 1 acierto lógico. 
+                        // Sin embargo, podemos dar doble bonificación de racha si lo deseas, 
+                        // pero para mantener simpleza, mantendremos +1 a la racha normal.
                         if (consecutiveCorrect >= 3) {
                             if (gameModeLives < 3) {
                                 gameModeLives++;
                                 showTemporaryMessage("¡3 aciertos seguidos! +1 Vida ❤️", "bg-green-600");
                             }
-                            consecutiveCorrect = 0; // Reiniciar racha tras dar la vida
+                            consecutiveCorrect = 0;
                             updateGameModeLivesDisplay();
                         }
                     }
-
                 } else {
-                    currentAnswer.status = 'incorrect';
+                    // Incorrecto
                     if (effectsVolume > 0) {
                         incorrectSound.currentTime = 0;
                         incorrectSound.volume = effectsVolume;
                         incorrectSound.play().catch(e => console.error(e));
                     }
-                    
-                    // Lógica de Vidas en Modo Simulacro (Perder vida)
                     if (isGameMode) handleGameModeLifeLoss();
                 }
-                
+
+                // ... resto de la lógica (Continuous Mode, Live Score, etc.) se mantiene igual
                 if (isContinuousMode && currentAnswer.status !== 'unanswered') {
                     answeredIdsInContinuousMode.add(question.id);
                 }
@@ -2625,8 +2693,8 @@
                 updateEvaluationButton();
                 showFeedback();
                 updateButtonStates();
-                
-                // Publicidad para invitados
+
+                // Publicidad
                 if (isGuest && (isContinuousMode || isGameMode)) {
                     questionCountInGuestMode++;
                     if (questionCountInGuestMode % 5 === 0) {
@@ -3691,6 +3759,14 @@
                         tagEl.style.opacity = '0.5';
                     });
                     updateQuestionStats();
+                   // Bloquear tags de Tipo para invitado
+                    typeTagsContainer.querySelectorAll('.tag').forEach((tagEl, index) => {
+                        if (index === 0) { // O lógica de selección por defecto
+                            tagEl.classList.add('selected');
+                        }
+                        tagEl.style.pointerEvents = 'none';
+                        tagEl.style.opacity = '0.5';
+                    });
                 });
                 gameModeToggle.disabled = false;
                 gameModeToggle.checked = false;
@@ -3793,23 +3869,21 @@
                 // Calcular Filtros
                 const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                 const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                 
                 let filteredQuestions = allQuestions;
-                if (selectedUniTags.length > 0 && selectedLevelTags.length > 0) {
-                    filteredQuestions = allQuestions.filter(q => {
-                        const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
-                        const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
-                        return hasUniTag && hasLevelTag;
-                    });
-                } else if (selectedUniTags.length > 0) {
-                    filteredQuestions = allQuestions.filter(q =>
-                        q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag))
-                    );
-                } else if (selectedLevelTags.length > 0) {
-                    filteredQuestions = allQuestions.filter(q =>
-                        q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag))
-                    );
-                }
+
+                // Lógica de filtrado con los 3 tags
+                filteredQuestions = allQuestions.filter(q => {
+                    // Verificar Uni
+                    const hasUniTag = selectedUniTags.length === 0 || (q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag)));
+                    // Verificar Nivel
+                    const hasLevelTag = selectedLevelTags.length === 0 || (q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag)));
+                    // Verificar Tipo (NUEVO)
+                    const hasTypeTag = selectedTypeTags.length === 0 || (q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag)));
+
+                    return hasUniTag && hasLevelTag && hasTypeTag;
+                });
                 
                 // 2. Preguntas con Filtros
                 if(statsTotalFiltered) statsTotalFiltered.textContent = filteredQuestions.length;
@@ -3826,8 +3900,13 @@
             function populateTagFilters() {
                 const uniTags = [...new Set(allQuestions.flatMap(q => q.uni_tags || []))];
                 const levelTags = [...new Set(allQuestions.flatMap(q => q.level_tag || []))];
+                const typeTags = [...new Set(allQuestions.flatMap(q => q.type_tag || []))]; // Nuevo
+
                 uniTagsContainer.innerHTML = '';
                 levelTagsContainer.innerHTML = '';
+                typeTagsContainer.innerHTML = ''; // Nuevo
+
+                // Filtro Universidades
                 uniTags.forEach(tag => {
                     const tagEl = document.createElement('span');
                     tagEl.textContent = tag;
@@ -3842,6 +3921,8 @@
                     });
                     uniTagsContainer.appendChild(tagEl);
                 });
+
+                // Filtro Niveles
                 levelTags.forEach(tag => {
                     const tagEl = document.createElement('span');
                     tagEl.textContent = tag;
@@ -3856,6 +3937,24 @@
                     });
                     levelTagsContainer.appendChild(tagEl);
                 });
+
+                // NUEVO: Filtro Tipos
+                typeTags.forEach((tag, index) => {
+                    const tagEl = document.createElement('span');
+                    tagEl.textContent = tag;
+                    tagEl.className = 'tag';
+                    // Seleccionar el primer tag por defecto
+                    if (index === 0) {
+                        tagEl.classList.add('selected');
+                    }
+                    tagEl.addEventListener('click', () => {
+                        if (isGuest) return;
+                        tagEl.classList.toggle('selected');
+                        updateQuestionStats();
+                    });
+                    typeTagsContainer.appendChild(tagEl);
+                });
+
                 updateQuestionStats();
             }
 
@@ -3881,7 +3980,7 @@
                 }
             });
             
-            startQuizBtn.addEventListener('click', () => {
+           startQuizBtn.addEventListener('click', () => {
                 errorMessage.textContent = '';
                 isGameMode = gameModeToggle.checked;
                 isContinuousMode = continuousModeToggle.checked;
@@ -3893,46 +3992,39 @@
                 let finalQuestionPool = [];
 
                 if (isGuest) {
+                    // 1. Filtrar preguntas seguras (sin Imgur)
                     let safeQuestions = allQuestions.filter(q => {
                         const hasImgurMain = q.image && q.image.includes('imgur.com');
                         const hasImgurOption = q.options && q.options.some(opt => opt.text && opt.text.includes('imgur.com'));
                         return !hasImgurMain && !hasImgurOption;
                     });
 
+                    // 2. RESTRICCIÓN DE INVITADO: Solo acceso a las primeras 30 preguntas del banco seguro
+                    let guestPool = safeQuestions.slice(0, 30);
+
+                    if (guestPool.length === 0) {
+                        errorMessage.textContent = 'No hay preguntas disponibles para el modo invitado.';
+                        return;
+                    }
+
+                    // 3. Asignación según modo
                     if (isGameMode) {
-                        let first20 = safeQuestions.slice(0, 20);
-                        
-                        if (first20.length < 20) {
-                            errorMessage.textContent = `Error: El banco no tiene suficientes preguntas seguras (sin Imgur) para el simulacro de invitado.`;
-                            return;
-                        }
-                        finalQuestionPool = shuffleArray(first20);
-
-                    } else if (isContinuousMode) {
-                        const allowedEndings = ['A', 'B', 'C', 'D', 'E'];
-                        
-                        finalQuestionPool = safeQuestions.filter(q => {
-                            if (!q.id) return false;
-                            const lastChar = q.id.trim().toUpperCase().slice(-1);
-                            return allowedEndings.includes(lastChar);
-                        });
-                        
-                        finalQuestionPool = shuffleArray(finalQuestionPool);
-
+                        // Simulacro: Intenta tomar 20 al azar de las 30
+                        let count = Math.min(guestPool.length, 20);
+                        finalQuestionPool = shuffleArray([...guestPool]).slice(0, count);
                     } else {
-                        const allowedEndings = ['A', 'B', 'C', 'D', 'E'];
-                        let filtered = safeQuestions.filter(q => {
-                            if (!q.id) return false;
-                            const lastChar = q.id.trim().toUpperCase().slice(-1);
-                            return allowedEndings.includes(lastChar);
-                        });
-                        finalQuestionPool = shuffleArray(filtered).slice(0, 10);
+                        // MODO NORMAL / CONTINUO: Usa TODAS las disponibles en el pool de invitado (hasta 30)
+                        // Eliminamos el slice(0,10) para que puedan responder todas las que tengan permitidas
+                        finalQuestionPool = shuffleArray([...guestPool]);
                     }
 
                 } else {
+                    // --- MODO USUARIO REGISTRADO ---
                     const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                     const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                    const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                     
+                    // Validaciones de filtros vacíos
                     if (selectedUniTags.length === 0) {
                         errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión".';
                         return;
@@ -3941,11 +4033,17 @@
                         errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Nivel de Dificultad".';
                         return;
                     }
+                    if (selectedTypeTags.length === 0) {
+                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Tipo de Reactivo".';
+                        return;
+                    }
 
+                    // Filtrado Maestro
                     let availableQuestions = allQuestions.filter(q => {
-                        const hasUniTag = q.uni_tags && Array.isArray(q.uni_tags) && q.uni_tags.some(tag => selectedUniTags.includes(tag));
-                        const hasLevelTag = q.level_tag && Array.isArray(q.level_tag) && q.level_tag.some(tag => selectedLevelTags.includes(tag));
-                        return hasUniTag && hasLevelTag;
+                        const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
+                        const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
+                        const hasTypeTag = q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag));
+                        return hasUniTag && hasLevelTag && hasTypeTag;
                     });
 
                     let newQuestions = availableQuestions.filter(q => !pastedAnsweredIds.has(q.id));
@@ -3956,14 +4054,15 @@
                             return;
                         }
                         finalQuestionPool = shuffleArray(availableQuestions).slice(0, 20);
-                    } else if (isContinuousMode) {
-                        finalQuestionPool = shuffleArray(newQuestions);
                     } else {
+                        // MODO NORMAL / CONTINUO: 
+                        // Verificamos mínimo 5 (o 10 según prefieras, dejé 5 para no bloquear si quedan pocas)
                         if (newQuestions.length < 5) {
                             errorMessage.textContent = `Solo se encontraron ${newQuestions.length} ejercicios disponibles. Se necesita un mínimo de 5.`;
                             return;
                         }
-                        finalQuestionPool = shuffleArray(newQuestions).slice(0, 10);
+                        // CAMBIO CLAVE: Ya no cortamos a 10. Pasamos TODAS las preguntas filtradas.
+                        finalQuestionPool = shuffleArray(newQuestions);
                     }
                 }
                 
@@ -3971,25 +4070,27 @@
                 
                 if (availableCount === 0) {
                     errorMessage.textContent = isGuest 
-                        ? 'No hay preguntas disponibles para invitados con las restricciones actuales (IDs A-E).' 
+                        ? 'No hay preguntas disponibles para invitados con las restricciones actuales.' 
                         : 'No se encontraron ejercicios con los filtros aplicados.';
                     return;
                 }
                 
                 totalAvailableQuestions = availableCount;
                 
+                // Configurar el array de preguntas
+                // Ahora tanto Normal como Continuo usan todas las disponibles
                 if (isContinuousMode) {
                     availableQuestionsInContinuousMode = finalQuestionPool;
                     quizQuestions = [];
                     const firstQuestion = getNextQuestionInContinuousMode();
-                    
                     if (firstQuestion) {
                         quizQuestions = [firstQuestion];
                     } else {
-                        errorMessage.textContent = 'Ya has respondido todas las preguntas disponibles en esta modalidad.';
+                        errorMessage.textContent = 'Ya has respondido todas las preguntas disponibles.';
                         return;
                     }
                 } else {
+                    // Modo Normal ahora carga TODAS las preguntas filtradas en la lista
                     quizQuestions = finalQuestionPool;
                 }
                 
@@ -4150,100 +4251,163 @@
                     textSectionContainer.classList.add('hidden');
                 }
                 optionsContainer.innerHTML = '';
-                let options = [...question.options];
-                options.push({ text: "No puedo identificar la respuesta 😥", correct: false });
                 
-                let shuffledOptions = shuffleArray(options.filter(opt => !opt.text.includes('No puedo identificar')));
-                const noIdOption = options.find(opt => opt.text.includes('No puedo identificar'));
-                if(noIdOption) shuffledOptions.push(noIdOption);
+                // DETECCIÓN DE FORMATO HÍBRIDO
+                const isHybrid = question.options.some(opt => 'text_op1' in opt);
 
-                const hasImages = shuffledOptions.some(opt => isImageOption(opt.text));
-
-                if (hasImages) {
-                    optionsContainer.className = 'w-full options-grid-mode';
-                } else {
-                    optionsContainer.className = 'w-full space-y-3';
-                }
-
-                shuffledOptions.forEach((option, index) => {
-                    const isNoId = option.text.includes('No puedo identificar');
-                    const isImg = isImageOption(option.text);
-                    const button = document.createElement('button');
-                    const letterElement = document.createElement('div');
+                if (isHybrid) {
+                    optionsContainer.className = 'hybrid-container';
                     
-                    letterElement.className = 'option-letter';
+                    // Separar opciones
+                    let group1 = question.options.filter(o => 'text_op1' in o).map(o => ({ text: o.text_op1, correct: o.correct, group: 1 }));
+                    let group2 = question.options.filter(o => 'text_op2' in o).map(o => ({ text: o.text_op2, correct: o.correct, group: 2 }));
                     
-                    button.className = 'option-btn';
-                    
-                    if (isImg) {
-                        button.classList.add('is-image');
-                    }
+                    // Agregar opción de salida a ambos
+                    const noIdObj = { text: "No puedo identificar la respuesta 😥", correct: false, isNoId: true };
+                    group1.push({...noIdObj, group: 1});
+                    group2.push({...noIdObj, group: 2});
 
-                    if (isNoId && hasImages) {
-                        button.classList.add('full-width');
-                    }
+                    // Mezclar
+                    const shuffleGroup = (arr) => {
+                        let mainOpts = shuffleArray(arr.filter(o => !o.isNoId));
+                        let lastOpt = arr.find(o => o.isNoId);
+                        if(lastOpt) mainOpts.push(lastOpt);
+                        return mainOpts;
+                    };
 
-                    if (isNoId) {
-                        letterElement.style.display = 'none';
-                        if (!hasImages) button.style.paddingLeft = '15px';
-                    } else {
-                        letterElement.textContent = String.fromCharCode(65 + index);
-                    }
+                    const renderGroup = (opts, groupNum) => {
+                        const colDiv = document.createElement('div');
+                        colDiv.className = 'hybrid-group';
+                        colDiv.innerHTML = `<div class="hybrid-group-title">Columna ${groupNum}</div>`;
+                        
+                        opts.forEach((opt, idx) => {
+                            const btn = document.createElement('button');
+                            btn.className = 'option-btn';
+                            btn.dataset.text = opt.text;
+                            btn.dataset.group = groupNum;
+                            btn.style.fontSize = '0.9rem'; // Ligeramente más pequeño para caber
 
-                    button.appendChild(letterElement);
-
-                    if (isImg) {
-                        const img = document.createElement('img');
-                        img.src = option.text;
-                        img.className = 'option-image-content';
-                        img.alt = `Opción ${String.fromCharCode(65 + index)}`;
-                        button.appendChild(img);
-
-                        if (option.text.includes('imgur.com')) {
-                            const watermark = document.createElement('div');
-                            watermark.className = 'option-watermark';
-                            watermark.textContent = (currentUser.name + ' CEPREDIX ').repeat(50); 
-                            button.appendChild(watermark);
-                        }
-                    } else {
-                        const textSpan = document.createElement('span');
-                        textSpan.innerHTML = option.text;
-                        button.appendChild(textSpan);
-                    }
-
-                    button.dataset.text = option.text;
-                    
-                    // Variables para controlar el triple clic
-                    let clickCount = 0;
-                    let clickTimer = null;
-
-                    button.addEventListener('click', () => {
-                        if (currentAnswer.status === 'unanswered') {
-                            // 1. Selección normal (un solo clic)
-                            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-                            button.classList.add('selected');
-                            evaluateBtn.disabled = false;
-
-                            // 2. Lógica de Triple Clic para evaluar
-                            clickCount++;
+                            const letter = document.createElement('div');
+                            letter.className = 'option-letter';
                             
-                            // Si hay un temporizador activo, lo limpiamos para reiniciar la cuenta del lapso
-                            if (clickTimer) clearTimeout(clickTimer);
-
-                            if (clickCount === 3) {
-                                // Se detectó el tercer clic
-                                clickCount = 0;
-                                evaluateCurrentAnswer(); // Función que evalúa la pregunta
+                            // Letras: Columna 1 (A,B,C,D,E), Columna 2 (F,G,H,I,J)
+                            const letterCode = groupNum === 1 ? (65 + idx) : (70 + idx); 
+                            
+                            if (opt.isNoId) {
+                                letter.style.display = 'none';
+                                btn.style.paddingLeft = '15px';
                             } else {
-                                // Esperamos 400ms para ver si el usuario da otro clic
-                                clickTimer = setTimeout(() => {
-                                    clickCount = 0;
-                                }, 400); 
+                                letter.textContent = String.fromCharCode(letterCode);
                             }
+                            
+                            btn.appendChild(letter);
+                            const span = document.createElement('span');
+                            span.innerHTML = opt.text;
+                            btn.appendChild(span);
+
+                            // Evento Click Híbrido
+                            btn.addEventListener('click', () => {
+                                if (userAnswers[currentQuestionIndex].status !== 'unanswered') return;
+
+                                // Deseleccionar otros de este grupo
+                                colDiv.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                                btn.classList.add('selected');
+
+                                // Verificar si ambos grupos tienen selección para activar botón evaluar
+                                const g1Selected = optionsContainer.querySelector('.option-btn[data-group="1"].selected');
+                                const g2Selected = optionsContainer.querySelector('.option-btn[data-group="2"].selected');
+                                
+                                evaluateBtn.disabled = !(g1Selected && g2Selected);
+                            });
+
+                            colDiv.appendChild(btn);
+                        });
+                        return colDiv;
+                    };
+
+                    optionsContainer.appendChild(renderGroup(shuffleGroup(group1), 1));
+                    optionsContainer.appendChild(renderGroup(shuffleGroup(group2), 2));
+
+                } else {
+                    // --- LÓGICA ESTÁNDAR (FORMATO ACTUAL) ---
+                    let options = [...question.options];
+                    options.push({ text: "No puedo identificar la respuesta 😥", correct: false });
+                    
+                    let shuffledOptions = shuffleArray(options.filter(opt => !opt.text.includes('No puedo identificar')));
+                    const noIdOption = options.find(opt => opt.text.includes('No puedo identificar'));
+                    if(noIdOption) shuffledOptions.push(noIdOption);
+
+                    const hasImages = shuffledOptions.some(opt => isImageOption(opt.text));
+
+                    if (hasImages) {
+                        optionsContainer.className = 'w-full options-grid-mode';
+                    } else {
+                        optionsContainer.className = 'w-full space-y-3';
+                    }
+
+                    shuffledOptions.forEach((option, index) => {
+                        const isNoId = option.text.includes('No puedo identificar');
+                        const isImg = isImageOption(option.text);
+                        const button = document.createElement('button');
+                        const letterElement = document.createElement('div');
+                        
+                        letterElement.className = 'option-letter';
+                        button.className = 'option-btn';
+                        
+                        if (isImg) button.classList.add('is-image');
+                        if (isNoId && hasImages) button.classList.add('full-width');
+
+                        if (isNoId) {
+                            letterElement.style.display = 'none';
+                            if (!hasImages) button.style.paddingLeft = '15px';
+                        } else {
+                            letterElement.textContent = String.fromCharCode(65 + index);
                         }
+
+                        button.appendChild(letterElement);
+
+                        if (isImg) {
+                            const img = document.createElement('img');
+                            img.src = option.text;
+                            img.className = 'option-image-content';
+                            button.appendChild(img);
+                             if (option.text.includes('imgur.com')) {
+                                const watermark = document.createElement('div');
+                                watermark.className = 'option-watermark';
+                                watermark.textContent = (currentUser.name + ' CEPREDIX ').repeat(50);
+                                button.appendChild(watermark);
+                            }
+                        } else {
+                            const textSpan = document.createElement('span');
+                            textSpan.innerHTML = option.text;
+                            button.appendChild(textSpan);
+                        }
+
+                        button.dataset.text = option.text;
+                        
+                        // Triple clic logic standard
+                        let clickCount = 0;
+                        let clickTimer = null;
+
+                        button.addEventListener('click', () => {
+                            if (currentAnswer.status === 'unanswered') {
+                                document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+                                button.classList.add('selected');
+                                evaluateBtn.disabled = false;
+
+                                clickCount++;
+                                if (clickTimer) clearTimeout(clickTimer);
+                                if (clickCount === 3) {
+                                    clickCount = 0;
+                                    evaluateCurrentAnswer();
+                                } else {
+                                    clickTimer = setTimeout(() => { clickCount = 0; }, 400);
+                                }
+                            }
+                        });
+                        optionsContainer.appendChild(button);
                     });
-                    optionsContainer.appendChild(button);
-                });
+                }
                 setTimeout(() => {
                     MathJax.typesetPromise([questionText, optionsContainer, textContent]).then(() => {
                     }).catch((err) => console.log('Error renderizando formulas:', err));
@@ -4311,13 +4475,51 @@
 
             function showFeedback() {
                 const { question, selected, status } = userAnswers[currentQuestionIndex];
-                const correctOption = question.options.find(opt => opt.correct)?.text || null;
-                document.querySelectorAll('.option-btn').forEach(btn => {
-                    btn.disabled = true;
-                    if (btn.dataset.text === correctOption) btn.classList.add('correct');
-                    if (btn.dataset.text === selected && status === 'incorrect') btn.classList.add('incorrect');
-                    if (btn.dataset.text === selected) btn.classList.add('selected');
-                });
+                const isHybrid = question.options.some(opt => 'text_op1' in opt);
+
+                if (isHybrid) {
+                    const correctOp1 = question.options.find(o => 'text_op1' in o && o.correct)?.text_op1;
+                    const correctOp2 = question.options.find(o => 'text_op2' in o && o.correct)?.text_op2;
+                    
+                    document.querySelectorAll('.option-btn').forEach(btn => {
+                        btn.disabled = true;
+                        const txt = btn.dataset.text;
+                        const group = btn.dataset.group; // "1" o "2"
+                        const isSelected = btn.classList.contains('selected');
+
+                        // Colorear Correctas
+                        if ((group === "1" && txt === correctOp1) || (group === "2" && txt === correctOp2)) {
+                            btn.classList.add('correct');
+                        }
+                        
+                        // Colorear Incorrectas Seleccionadas
+                        if (isSelected && status !== 'correct') {
+                             // Si seleccionó esta y no era la correcta (ya verificado arriba)
+                             if (!((group === "1" && txt === correctOp1) || (group === "2" && txt === correctOp2))) {
+                                 btn.classList.add('incorrect');
+                             }
+                        }
+                    });
+
+                } else {
+                    // Estándar
+                    const correctOption = question.options.find(opt => opt.correct)?.text || null;
+                    // "selected" aquí es el texto guardado
+                    // Necesitamos recuperar cuál botón fue seleccionado visualmente si el texto no es único
+                    // pero .selected class ya está en el DOM
+                    
+                    document.querySelectorAll('.option-btn').forEach(btn => {
+                        btn.disabled = true;
+                        if (btn.dataset.text === correctOption) btn.classList.add('correct');
+                        
+                        if (btn.classList.contains('selected')) {
+                            if (status === 'incorrect' || status === 'unidentified') {
+                                if (btn.dataset.text !== correctOption) btn.classList.add('incorrect');
+                            }
+                        }
+                    });
+                }
+
                 if (question.explanation) {
                     justificationText.innerHTML = question.explanation;
                     justificationBox.classList.remove('hidden');
