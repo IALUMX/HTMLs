@@ -8,7 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que en modo invitado el usuario tenga acceso solamente a las primeras 30 preguntas del banco de preguntas, tanto en MODO avance continua como en simulacro, sin importar los filtros. 
+1) Requiero que
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -1421,6 +1421,11 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     <p class="text-xs text-gray-400">Selecciona el grado de dificultad de los ejercicios.</p>
                     <div id="level-tags-container" class="flex flex-wrap gap-2"></div>
                 </div>
+                <div class="space-y-2">
+                    <p class="font-medium">Tipo de Reactivo</p>
+                    <p class="text-xs text-gray-400">Selecciona el tipo de pregunta (ej. TEST, REAL, HÍBRIDO).</p>
+                    <div id="type-tags-container" class="flex flex-wrap gap-2"></div>
+                </div>
             </div>
             <div class="space-y-2">
                 <label for="answered-ids-input" class="font-medium">Pegar IDs de ejercicios ya respondidos (opcional)</label>
@@ -1891,7 +1896,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/JSON_PRUEBA_150126.json';
+            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/00-json-prueba-v2-170126.json';
             const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS5sU2hYNByYHNDESXxZPoe3dikV115hY_TII15wZtF8E0NWBFmnLSW2ad7ZqDdwk-jTPQfX-92n6zQ/pub?gid=0&single=true&output=csv';
             const CORS_PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(GOOGLE_SHEET_URL);
             const RESULTS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYESY3dBy0h5QrY5EyJ_jfHwlEwnhByFcPTywwK4jJhGa3rvrnIzR9OXleZUZ7zVqUqw/exec';
@@ -1925,8 +1930,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             const welcomeName = document.getElementById('welcome-name');
             const gameModeToggle = document.getElementById('game-mode-toggle');
             const continuousModeToggle = document.getElementById('continuous-mode-toggle');
-            const uniTagsContainer = document.getElementById('uni-tags-container');
+           const uniTagsContainer = document.getElementById('uni-tags-container');
             const levelTagsContainer = document.getElementById('level-tags-container');
+            const typeTagsContainer = document.getElementById('type-tags-container');
             const answeredIdsInput = document.getElementById('answered-ids-input');
             const statsTotal = document.getElementById('stats-total');
             const statsTotalFiltered = document.getElementById('stats-total-filtered');
@@ -3769,6 +3775,14 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         tagEl.style.opacity = '0.5';
                     });
                     updateQuestionStats();
+                   // Bloquear tags de Tipo para invitado
+                    typeTagsContainer.querySelectorAll('.tag').forEach((tagEl, index) => {
+                        if (index === 0) { // O lógica de selección por defecto
+                            tagEl.classList.add('selected');
+                        }
+                        tagEl.style.pointerEvents = 'none';
+                        tagEl.style.opacity = '0.5';
+                    });
                 });
                 gameModeToggle.disabled = false;
                 gameModeToggle.checked = false;
@@ -3871,23 +3885,21 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 // Calcular Filtros
                 const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                 const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                 
                 let filteredQuestions = allQuestions;
-                if (selectedUniTags.length > 0 && selectedLevelTags.length > 0) {
-                    filteredQuestions = allQuestions.filter(q => {
-                        const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
-                        const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
-                        return hasUniTag && hasLevelTag;
-                    });
-                } else if (selectedUniTags.length > 0) {
-                    filteredQuestions = allQuestions.filter(q =>
-                        q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag))
-                    );
-                } else if (selectedLevelTags.length > 0) {
-                    filteredQuestions = allQuestions.filter(q =>
-                        q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag))
-                    );
-                }
+
+                // Lógica de filtrado con los 3 tags
+                filteredQuestions = allQuestions.filter(q => {
+                    // Verificar Uni
+                    const hasUniTag = selectedUniTags.length === 0 || (q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag)));
+                    // Verificar Nivel
+                    const hasLevelTag = selectedLevelTags.length === 0 || (q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag)));
+                    // Verificar Tipo (NUEVO)
+                    const hasTypeTag = selectedTypeTags.length === 0 || (q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag)));
+
+                    return hasUniTag && hasLevelTag && hasTypeTag;
+                });
                 
                 // 2. Preguntas con Filtros
                 if(statsTotalFiltered) statsTotalFiltered.textContent = filteredQuestions.length;
@@ -3904,8 +3916,13 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             function populateTagFilters() {
                 const uniTags = [...new Set(allQuestions.flatMap(q => q.uni_tags || []))];
                 const levelTags = [...new Set(allQuestions.flatMap(q => q.level_tag || []))];
+                const typeTags = [...new Set(allQuestions.flatMap(q => q.type_tag || []))]; // Nuevo
+
                 uniTagsContainer.innerHTML = '';
                 levelTagsContainer.innerHTML = '';
+                typeTagsContainer.innerHTML = ''; // Nuevo
+
+                // Filtro Universidades
                 uniTags.forEach(tag => {
                     const tagEl = document.createElement('span');
                     tagEl.textContent = tag;
@@ -3920,6 +3937,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     });
                     uniTagsContainer.appendChild(tagEl);
                 });
+
+                // Filtro Niveles
                 levelTags.forEach(tag => {
                     const tagEl = document.createElement('span');
                     tagEl.textContent = tag;
@@ -3934,6 +3953,24 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     });
                     levelTagsContainer.appendChild(tagEl);
                 });
+
+                // NUEVO: Filtro Tipos
+                typeTags.forEach((tag, index) => {
+                    const tagEl = document.createElement('span');
+                    tagEl.textContent = tag;
+                    tagEl.className = 'tag';
+                    // Seleccionar el primer tag por defecto
+                    if (index === 0) {
+                        tagEl.classList.add('selected');
+                    }
+                    tagEl.addEventListener('click', () => {
+                        if (isGuest) return;
+                        tagEl.classList.toggle('selected');
+                        updateQuestionStats();
+                    });
+                    typeTagsContainer.appendChild(tagEl);
+                });
+
                 updateQuestionStats();
             }
 
@@ -3959,7 +3996,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 }
             });
             
-            startQuizBtn.addEventListener('click', () => {
+           startQuizBtn.addEventListener('click', () => {
                 errorMessage.textContent = '';
                 isGameMode = gameModeToggle.checked;
                 isContinuousMode = continuousModeToggle.checked;
@@ -3971,7 +4008,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 let finalQuestionPool = [];
 
                 if (isGuest) {
-                    // 1. Filtrar preguntas seguras (sin Imgur) para evitar errores de carga
+                    // 1. Filtrar preguntas seguras (sin Imgur)
                     let safeQuestions = allQuestions.filter(q => {
                         const hasImgurMain = q.image && q.image.includes('imgur.com');
                         const hasImgurOption = q.options && q.options.some(opt => opt.text && opt.text.includes('imgur.com'));
@@ -3986,24 +4023,24 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         return;
                     }
 
-                    // 3. Asignación según el modo seleccionado (usando solo las 30 preguntas permitidas)
+                    // 3. Asignación según modo
                     if (isGameMode) {
-                        // Modo Simulacro: Intenta tomar 20 al azar de las 30 permitidas
+                        // Simulacro: Intenta tomar 20 al azar de las 30
                         let count = Math.min(guestPool.length, 20);
                         finalQuestionPool = shuffleArray([...guestPool]).slice(0, count);
-                    } else if (isContinuousMode) {
-                        // Modo Continuo: Usa las 30 preguntas permitidas en orden aleatorio hasta agotarlas
-                        finalQuestionPool = shuffleArray([...guestPool]);
                     } else {
-                        // Modo Normal (Prueba rápida): Toma 10 al azar de las 30 permitidas
-                        let count = Math.min(guestPool.length, 10);
-                        finalQuestionPool = shuffleArray([...guestPool]).slice(0, count);
+                        // MODO NORMAL / CONTINUO: Usa TODAS las disponibles en el pool de invitado (hasta 30)
+                        // Eliminamos el slice(0,10) para que puedan responder todas las que tengan permitidas
+                        finalQuestionPool = shuffleArray([...guestPool]);
                     }
 
                 } else {
+                    // --- MODO USUARIO REGISTRADO ---
                     const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                     const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                    const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
                     
+                    // Validaciones de filtros vacíos
                     if (selectedUniTags.length === 0) {
                         errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión".';
                         return;
@@ -4012,11 +4049,17 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Nivel de Dificultad".';
                         return;
                     }
+                    if (selectedTypeTags.length === 0) {
+                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Tipo de Reactivo".';
+                        return;
+                    }
 
+                    // Filtrado Maestro
                     let availableQuestions = allQuestions.filter(q => {
-                        const hasUniTag = q.uni_tags && Array.isArray(q.uni_tags) && q.uni_tags.some(tag => selectedUniTags.includes(tag));
-                        const hasLevelTag = q.level_tag && Array.isArray(q.level_tag) && q.level_tag.some(tag => selectedLevelTags.includes(tag));
-                        return hasUniTag && hasLevelTag;
+                        const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
+                        const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
+                        const hasTypeTag = q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag));
+                        return hasUniTag && hasLevelTag && hasTypeTag;
                     });
 
                     let newQuestions = availableQuestions.filter(q => !pastedAnsweredIds.has(q.id));
@@ -4027,14 +4070,15 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                             return;
                         }
                         finalQuestionPool = shuffleArray(availableQuestions).slice(0, 20);
-                    } else if (isContinuousMode) {
-                        finalQuestionPool = shuffleArray(newQuestions);
                     } else {
+                        // MODO NORMAL / CONTINUO: 
+                        // Verificamos mínimo 5 (o 10 según prefieras, dejé 5 para no bloquear si quedan pocas)
                         if (newQuestions.length < 5) {
                             errorMessage.textContent = `Solo se encontraron ${newQuestions.length} ejercicios disponibles. Se necesita un mínimo de 5.`;
                             return;
                         }
-                        finalQuestionPool = shuffleArray(newQuestions).slice(0, 10);
+                        // CAMBIO CLAVE: Ya no cortamos a 10. Pasamos TODAS las preguntas filtradas.
+                        finalQuestionPool = shuffleArray(newQuestions);
                     }
                 }
                 
@@ -4042,25 +4086,27 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 
                 if (availableCount === 0) {
                     errorMessage.textContent = isGuest 
-                        ? 'No hay preguntas disponibles para invitados con las restricciones actuales (IDs A-E).' 
+                        ? 'No hay preguntas disponibles para invitados con las restricciones actuales.' 
                         : 'No se encontraron ejercicios con los filtros aplicados.';
                     return;
                 }
                 
                 totalAvailableQuestions = availableCount;
                 
+                // Configurar el array de preguntas
+                // Ahora tanto Normal como Continuo usan todas las disponibles
                 if (isContinuousMode) {
                     availableQuestionsInContinuousMode = finalQuestionPool;
                     quizQuestions = [];
                     const firstQuestion = getNextQuestionInContinuousMode();
-                    
                     if (firstQuestion) {
                         quizQuestions = [firstQuestion];
                     } else {
-                        errorMessage.textContent = 'Ya has respondido todas las preguntas disponibles en esta modalidad.';
+                        errorMessage.textContent = 'Ya has respondido todas las preguntas disponibles.';
                         return;
                     }
                 } else {
+                    // Modo Normal ahora carga TODAS las preguntas filtradas en la lista
                     quizQuestions = finalQuestionPool;
                 }
                 
