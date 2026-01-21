@@ -2529,32 +2529,36 @@
             function updateEvaluationButton() {
                 if (!finishBtn) return;
                 
-                // Solo mostrar en modo continuo
-                if (!isContinuousMode) {
+                // El botón debe ser visible tanto en modo continuo como en modo normal
+                // Solo se oculta si estamos en "Modo Simulacro Mortal"
+                if (isGameMode) {
                     finishBtn.classList.add('hidden');
                     return;
                 }
 
+                // Aseguramos que sea visible
                 finishBtn.classList.remove('hidden');
                 
+                // Contamos cuántas preguntas tienen una respuesta (correcta, incorrecta, omitida o no identificada)
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
                 const minQuestionsRequired = 10;
                 
                 if (answeredCount < minQuestionsRequired) {
-                    // Menos de 10 respuestas: Botón visible pero bloqueado
+                    // Si hay menos de 10, el botón se muestra pero está deshabilitado
                     finishBtn.disabled = true;
                     finishBtn.classList.add('btn-disabled');
-                    // Estilo visual para indicar bloqueo
-                    finishBtn.style.opacity = "0.6"; 
+                    finishBtn.style.opacity = "0.5"; 
                     finishBtn.style.cursor = "not-allowed";
-                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> MÍNIMO 10 RESPUESTAS (${answeredCount}/${minQuestionsRequired})`;
+                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> EVALUAR AVANCE (${answeredCount}/${minQuestionsRequired})`;
                 } else {
-                    // 10 o más respuestas: Botón activo
+                    // Si ya respondió 10 o más, el botón se habilita y cambia de color
                     finishBtn.disabled = false;
                     finishBtn.classList.remove('btn-disabled');
                     finishBtn.style.opacity = "1";
                     finishBtn.style.cursor = "pointer";
-                    finishBtn.innerHTML = `TERMINAR Y EVALUAR (${answeredCount} RESPONDIDAS) ✓`;
+                    // Le ponemos un color llamativo (azul/celeste) para indicar que ya puede finalizar
+                    finishBtn.style.background = "linear-gradient(45deg, #2196F3, #21CBF3)";
+                    finishBtn.innerHTML = `<i class="fas fa-check-circle"></i> EVALUAR AVANCE (${answeredCount} RESPONDIDAS)`;
                 }
             }
 
