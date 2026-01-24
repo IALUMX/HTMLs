@@ -8,7 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que analices este código, hay un bug o error que hace que el botón "EVALUAR AVANCE". El botón de habilitarse una vez que el estudiante ha contestado por lo menos 10 preguntas en varias ocasiones y con múltiples usuarios el botón ni siquiera aparece (la lógica programada es que sea visible pero se habilité hasta responder por lo menos 10 preguntas).  
+1) Requiero 
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -1384,7 +1384,11 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     </div>
                 </div>
             </div>
-            <div id="setup-volume-control" class="absolute top-4 right-4 flex items-center gap-2">
+           <div id="setup-volume-control" class="absolute top-4 right-4 flex items-center gap-2">
+                <button id="setup-wb-btn" class="volume-btn-new text-blue-400 border-blue-400 hover:text-white hover:bg-blue-600" title="Abrir Pizarra">
+                    <i class="fas fa-pen-to-square"></i>
+                </button>
+                <div class="h-6 w-px bg-gray-600 mx-1"></div>
                 <button class="volume-btn-new" data-action="down">-</button>
                 <i class="fas fa-volume-high text-gray-300 text-lg"></i>
                 <span id="volume-indicator-setup" class="text-sm font-semibold w-12 text-center">50%</span>
@@ -1852,48 +1856,61 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
         </div>
     </div>
 <div id="overlay-whiteboard" class="fixed inset-0 z-[9999] hidden" style="touch-action: none;">
-        <div class="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-none"></div>
-        
-        <canvas id="wb-canvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+    <div class="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-none"></div>
+    
+    <canvas id="wb-canvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
 
-        <button id="wb-close-btn" class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-50">
-            <i class="fas fa-times"></i>
+    <button id="wb-close-btn" class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white rounded-full w-10 h-10 lg:w-8 lg:h-8 flex items-center justify-center shadow-lg transition-transform hover:scale-110 z-50">
+        <i class="fas fa-times lg:text-sm"></i>
+    </button>
+
+    <div class="absolute top-1/2 right-4 transform -translate-y-1/2 flex flex-col gap-4 z-50">
+        <button id="wb-scroll-up" class="bg-gray-800 border border-gray-600 hover:bg-gray-700 text-white rounded-full w-12 h-12 lg:w-10 lg:h-10 flex items-center justify-center shadow-xl transition-transform active:scale-95" title="Subir pantalla">
+            <i class="fas fa-arrow-up lg:text-sm"></i>
+        </button>
+        <button id="wb-scroll-down" class="bg-gray-800 border border-gray-600 hover:bg-gray-700 text-white rounded-full w-12 h-12 lg:w-10 lg:h-10 flex items-center justify-center shadow-xl transition-transform active:scale-95" title="Bajar pantalla">
+            <i class="fas fa-arrow-down lg:text-sm"></i>
+        </button>
+    </div>
+
+    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 border border-gray-700 p-2 lg:p-1.5 rounded-full flex items-center gap-1 sm:gap-3 lg:gap-2 shadow-2xl z-50 overflow-x-auto max-w-[98%] sm:max-w-max">
+        
+        <button class="wb-tool-btn w-8 h-8 lg:w-6 lg:h-6 rounded-full border-2 border-white bg-white hover:scale-110 transition-transform shrink-0" data-color="#ffffff" title="Blanco"></button>
+        <button class="wb-tool-btn w-8 h-8 lg:w-6 lg:h-6 rounded-full border-2 border-gray-600 bg-[#39ff14] hover:scale-110 transition-transform shadow-[0_0_10px_#39ff14] shrink-0" data-color="#39ff14" title="Verde Neón"></button>
+        
+        <div class="relative w-8 h-8 lg:w-6 lg:h-6 rounded-full border-2 border-gray-600 shrink-0 overflow-hidden hover:scale-110 transition-transform shadow-[0_0_10px_#ff073a]" title="Color Personalizable (Default: Rojo)">
+            <input type="color" id="wb-custom-color-picker" value="#ff073a" class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 p-0 m-0 border-0 cursor-pointer opacity-0">
+            <div id="wb-custom-preview" class="w-full h-full bg-[#ff073a] pointer-events-none"></div>
+        </div>
+        
+        <button id="wb-eraser-btn" class="w-8 h-8 lg:w-6 lg:h-6 rounded-full border-2 border-gray-500 bg-gray-700 text-white hover:scale-110 transition-transform flex items-center justify-center ml-1 shrink-0" title="Borrador">
+            <i class="fas fa-eraser text-xs lg:text-[10px]"></i>
         </button>
 
-        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 border border-gray-700 p-2 rounded-full flex items-center gap-1 sm:gap-3 shadow-2xl z-50 overflow-x-auto max-w-[98%] sm:max-w-max">
-            
-            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-white bg-white hover:scale-110 transition-transform shrink-0" data-color="#ffffff" title="Blanco"></button>
-            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#39ff14] hover:scale-110 transition-transform shadow-[0_0_10px_#39ff14] shrink-0" data-color="#39ff14" title="Verde Neón"></button>
-            <button class="wb-tool-btn w-8 h-8 rounded-full border-2 border-gray-600 bg-[#ff073a] hover:scale-110 transition-transform shadow-[0_0_10px_#ff073a] shrink-0" data-color="#ff073a" title="Rojo Neón"></button>
-            
-            <button id="wb-eraser-btn" class="w-8 h-8 rounded-full border-2 border-gray-500 bg-gray-700 text-white hover:scale-110 transition-transform flex items-center justify-center ml-1 shrink-0" title="Borrador">
-                <i class="fas fa-eraser text-xs"></i>
-            </button>
+        <div class="w-px h-6 lg:h-4 bg-gray-600 mx-1 shrink-0"></div>
 
-            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
-
-            <div class="flex items-center gap-1 sm:gap-2 px-1 shrink-0" title="Ajustar grosor">
-                <i class="fas fa-circle text-[4px] text-gray-400 hidden sm:block"></i>
-                <input type="range" id="wb-width-slider" min="1" max="10" value="2" class="w-16 sm:w-24 cursor-pointer h-1 bg-gray-600 rounded-lg appearance-none">
-                <i class="fas fa-circle text-[10px] text-gray-400 hidden sm:block"></i>
-            </div>
-
-            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
-
-            <button id="wb-undo-btn" class="text-gray-300 hover:text-white p-2 shrink-0" title="Deshacer">
-                <i class="fas fa-undo"></i>
-            </button>
-            <button id="wb-redo-btn" class="text-gray-300 hover:text-white p-2 shrink-0" title="Rehacer">
-                <i class="fas fa-redo"></i>
-            </button>
-            
-            <div class="w-px h-6 bg-gray-600 mx-1 shrink-0"></div>
-
-            <button id="wb-clear-btn" class="text-red-400 hover:text-red-300 p-2 shrink-0" title="Borrar todo">
-                <i class="fas fa-trash-alt"></i>
-            </button>
+        <div class="flex items-center gap-1 sm:gap-2 px-1 shrink-0" title="Ajustar grosor">
+            <i class="fas fa-circle text-[4px] text-gray-400 hidden sm:block"></i>
+            <input type="range" id="wb-width-slider" min="1" max="10" value="2" class="w-16 sm:w-24 lg:w-20 cursor-pointer h-1 bg-gray-600 rounded-lg appearance-none">
+            <i class="fas fa-circle text-[10px] text-gray-400 hidden sm:block"></i>
         </div>
+
+        <div class="w-px h-6 lg:h-4 bg-gray-600 mx-1 shrink-0"></div>
+
+        <button id="wb-undo-btn" class="text-gray-300 hover:text-white p-2 lg:p-1 shrink-0" title="Deshacer">
+            <i class="fas fa-undo lg:text-sm"></i>
+        </button>
+        <button id="wb-redo-btn" class="text-gray-300 hover:text-white p-2 lg:p-1 shrink-0" title="Rehacer">
+            <i class="fas fa-redo lg:text-sm"></i>
+        </button>
+        
+        <div class="w-px h-6 lg:h-4 bg-gray-600 mx-1 shrink-0"></div>
+
+        <button id="wb-clear-btn" class="text-red-400 hover:text-red-300 p-2 lg:p-1 shrink-0" title="Borrar todo">
+            <i class="fas fa-trash-alt lg:text-sm"></i>
+        </button>
     </div>
+</div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/00-json-prueba-v2-170126.json';
@@ -5291,10 +5308,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
                 updateDtVisuals();
             }
-// ==========================================
-            // LÓGICA DE LA PIZARRA FLOTANTE (OVERLAY)
-            // ==========================================
-            const wbTriggerBtn = document.getElementById('whiteboard-trigger-btn');
+
+            const wbTriggerBtn = document.getElementById('whiteboard-trigger-btn'); // Botón del Quiz
+            const setupWbBtn = document.getElementById('setup-wb-btn'); // Nuevo Botón del Setup
             const wbOverlay = document.getElementById('overlay-whiteboard');
             const wbCanvas = document.getElementById('wb-canvas');
             const wbCloseBtn = document.getElementById('wb-close-btn');
@@ -5333,15 +5349,26 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 wbStep++;
             }
 
-            if (wbTriggerBtn && wbOverlay) {
-                // Abrir Pizarra
-                wbTriggerBtn.addEventListener('click', () => {
+            if (wbOverlay) {
+                // Función unificada para abrir pizarra
+                const openWhiteboard = () => {
                     wbOverlay.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden'; // Bloquear scroll del fondo
+                    // IMPORTANTE: No bloqueamos el scroll aquí para permitir que los botones funcionen
+                    // El "touch-action: none" del div overlay evitará que se mueva al dibujar con el dedo
                     resizeWbCanvas();
                     // Si no hay historial inicial, guardar el blanco
                     if (wbStep === -1) wbSaveState();
-                });
+                };
+
+                // Abrir Pizarra desde el Quiz
+                if (wbTriggerBtn) {
+                    wbTriggerBtn.addEventListener('click', openWhiteboard);
+                }
+
+                // Abrir Pizarra desde Configuración (Setup)
+                if (setupWbBtn) {
+                    setupWbBtn.addEventListener('click', openWhiteboard);
+                }
 
                 // Cerrar Pizarra
                 wbCloseBtn.addEventListener('click', () => {
@@ -5400,17 +5427,58 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     });
                 }
 
-                // Herramientas: Colores (Pincel)
+                // Herramientas: Colores Fijos
                 document.querySelectorAll('.wb-tool-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         wbCurrentColor = e.target.dataset.color;
-                        // Al tocar un color, activamos modo dibujo normal
                         wbCtx.globalCompositeOperation = 'source-over';
                         wbCtx.strokeStyle = wbCurrentColor;
-                        // Mantenemos el grosor que tenga el slider
                         wbCtx.lineWidth = wbCurrentWidth;
                     });
                 });
+
+                // Herramienta: Color Personalizable (Rojo por defecto)
+                const customPicker = document.getElementById('wb-custom-color-picker');
+                const customPreview = document.getElementById('wb-custom-preview');
+                
+                if (customPicker && customPreview) {
+                    // Al cambiar el input de color
+                    customPicker.addEventListener('input', (e) => {
+                        wbCurrentColor = e.target.value;
+                        wbCtx.globalCompositeOperation = 'source-over';
+                        wbCtx.strokeStyle = wbCurrentColor;
+                        wbCtx.lineWidth = wbCurrentWidth;
+                        customPreview.style.backgroundColor = wbCurrentColor;
+                        // Actualizar la sombra para efecto neón si se desea
+                        customPreview.parentElement.style.boxShadow = `0 0 10px ${wbCurrentColor}`;
+                    });
+
+                    // Al hacer clic en el contenedor (para reactivar el pincel si se usó borrador antes)
+                    customPicker.addEventListener('click', () => {
+                         wbCurrentColor = customPicker.value;
+                         wbCtx.globalCompositeOperation = 'source-over';
+                         wbCtx.strokeStyle = wbCurrentColor;
+                    });
+                }
+
+                // Lógica de los Botones de Scroll
+                const btnScrollUp = document.getElementById('wb-scroll-up');
+                const btnScrollDown = document.getElementById('wb-scroll-down');
+                const scrollAmount = 300; // Cantidad de píxeles a mover
+
+                if (btnScrollUp) {
+                    btnScrollUp.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Evitar pintar al hacer clic
+                        window.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
+                    });
+                }
+
+                if (btnScrollDown) {
+                    btnScrollDown.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Evitar pintar al hacer clic
+                        window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+                    });
+                }
 
                 // Herramienta: Borrador (Corregido)
                 document.getElementById('wb-eraser-btn').addEventListener('click', () => {
