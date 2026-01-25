@@ -2547,38 +2547,59 @@
             }
 
             function updateEvaluationButton() {
+                // Verificar si el botón existe en el HTML
                 if (!finishBtn) return;
-                
+
+                // REGLA: En "Modo Simulacro Mortal", este botón NO debe existir
                 if (isGameMode) {
                     finishBtn.classList.add('hidden');
                     return;
                 }
 
+                // En modos normales, aseguramos que sea VISIBLE
                 finishBtn.classList.remove('hidden');
-                
+
+                // Contamos cuántas ha respondido el alumno realmente
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
                 const totalQuestionsInQuiz = userAnswers.length;
-                
-                // REGLA: Mínimo 10 preguntas para evaluar, a menos que el cuestionario tenga menos de 10 en total.
+
+                // REGLA CORREGIDA: Mínimo 10 preguntas para desbloquear.
                 let minQuestionsRequired = 10;
-                if (totalQuestionsInQuiz < 10 && totalQuestionsInQuiz > 0) {
+                
+                // Excepción: Solo si NO es modo continuo y el banco real es pequeño, bajamos el requisito.
+                // Esto evita que en modo continuo se desbloquee con solo 1 pregunta.
+                if (!isContinuousMode && totalQuestionsInQuiz > 0 && totalQuestionsInQuiz < 10) {
                     minQuestionsRequired = totalQuestionsInQuiz;
                 }
-                
+
+                // LÓGICA DE BLOQUEO/DESBLOQUEO
                 if (answeredCount < minQuestionsRequired) {
-                    finishBtn.disabled = true;
-                    finishBtn.classList.add('btn-disabled');
-                    finishBtn.style.opacity = "0.5"; 
-                    finishBtn.style.cursor = "not-allowed";
-                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> EVALUAR (${answeredCount}/${minQuestionsRequired})`;
+                    // --- ESTADO BLOQUEADO ---
+                    finishBtn.disabled = true; // Bloquea el clic
+                    finishBtn.classList.add('btn-disabled'); // Añade clase css de deshabilitado
+                    
+                    // Forzamos estilos visuales para asegurar que se vea bloqueado en Móvil y PC
+                    finishBtn.style.opacity = "0.7"; 
+                    finishBtn.style.cursor = "not-allowed"; 
+                    finishBtn.style.background = "#546e7a"; 
+                    finishBtn.style.boxShadow = "none";
+                    finishBtn.style.transform = "none";
+                    
+                    // Texto informativo con candado
+                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> FALTA AVANCE (${answeredCount}/${minQuestionsRequired})`;
                 } else {
-                    finishBtn.disabled = false;
+                    // --- ESTADO DESBLOQUEADO ---
+                    finishBtn.disabled = false; // Permite el clic
                     finishBtn.classList.remove('btn-disabled');
+                    
+                    // Restauramos estilos visuales de botón activo
                     finishBtn.style.opacity = "1";
                     finishBtn.style.cursor = "pointer";
-                    finishBtn.style.background = "linear-gradient(45deg, #2196F3, #21CBF3)";
-                    // Texto modificado para indicar que pueden continuar
-                    finishBtn.innerHTML = `<i class="fas fa-check-circle"></i> EVALUAR AVANCE (${answeredCount} ✔️)`;
+                    finishBtn.style.background = "linear-gradient(45deg, #2196F3, #21CBF3)"; // Azul original
+                    finishBtn.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+                    
+                    // Texto de acción
+                    finishBtn.innerHTML = `<i class="fas fa-check-circle"></i> EVALUAR AVANCE (${answeredCount})`;
                 }
             }
 
@@ -4504,7 +4525,7 @@
                 } else {
                     nextBtn.disabled = true;
                 }
-                finishBtn.classList.toggle('hidden', !isContinuousMode);
+                // finishBtn.classList.toggle('hidden', !isContinuousMode); // LÍNEA ANULADA PARA CORREGIR VISIBILIDAD
 
                 // --- LÓGICA NUEVA PARA FLECHAS MINI ---
                 if (miniPrevBtn) {
