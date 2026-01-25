@@ -8,7 +8,8 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que en caso de que un estudinate se equeivoque, se puedan ver las respuestas erroneas al regresar para preguntas híbridas.
+1) Requiero que 
+
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -2563,38 +2564,57 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
 
             function updateEvaluationButton() {
+                // Verificar si el botón existe en el HTML
                 if (!finishBtn) return;
-                
+
+                // REGLA: En "Modo Simulacro Mortal", este botón NO debe existir
                 if (isGameMode) {
                     finishBtn.classList.add('hidden');
                     return;
                 }
 
+                // En modos normales, aseguramos que sea VISIBLE
                 finishBtn.classList.remove('hidden');
-                
+
+                // Contamos cuántas ha respondido el alumno realmente
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
                 const totalQuestionsInQuiz = userAnswers.length;
-                
-                // REGLA: Mínimo 10 preguntas para evaluar, a menos que el cuestionario tenga menos de 10 en total.
+
+                // REGLA: Mínimo 10 preguntas para desbloquear.
+                // Excepción: Si el banco tiene menos de 10 preguntas en total, se desbloquea al finalizar todas.
                 let minQuestionsRequired = 10;
-                if (totalQuestionsInQuiz < 10 && totalQuestionsInQuiz > 0) {
+                if (totalQuestionsInQuiz > 0 && totalQuestionsInQuiz < 10) {
                     minQuestionsRequired = totalQuestionsInQuiz;
                 }
-                
+
+                // LÓGICA DE BLOQUEO/DESBLOQUEO
                 if (answeredCount < minQuestionsRequired) {
-                    finishBtn.disabled = true;
-                    finishBtn.classList.add('btn-disabled');
-                    finishBtn.style.opacity = "0.5"; 
-                    finishBtn.style.cursor = "not-allowed";
-                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> EVALUAR (${answeredCount}/${minQuestionsRequired})`;
+                    // --- ESTADO BLOQUEADO (Menos de 10) ---
+                    finishBtn.disabled = true; // Bloquea el clic
+                    finishBtn.classList.add('btn-disabled'); // Añade clase css de deshabilitado
+                    
+                    // Forzamos estilos visuales para asegurar que se vea bloqueado en Móvil y PC
+                    finishBtn.style.opacity = "0.7"; 
+                    finishBtn.style.cursor = "not-allowed"; // Icono de prohibido al pasar mouse
+                    finishBtn.style.background = "#546e7a"; // Gris azulado oscuro (neutro)
+                    finishBtn.style.boxShadow = "none";
+                    finishBtn.style.transform = "none";
+                    
+                    // Texto informativo con candado
+                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> FALTA AVANCE (${answeredCount}/${minQuestionsRequired})`;
                 } else {
-                    finishBtn.disabled = false;
+                    // --- ESTADO DESBLOQUEADO (10 o más) ---
+                    finishBtn.disabled = false; // Permite el clic
                     finishBtn.classList.remove('btn-disabled');
+                    
+                    // Restauramos estilos visuales de botón activo
                     finishBtn.style.opacity = "1";
                     finishBtn.style.cursor = "pointer";
-                    finishBtn.style.background = "linear-gradient(45deg, #2196F3, #21CBF3)";
-                    // Texto modificado para indicar que pueden continuar
-                    finishBtn.innerHTML = `<i class="fas fa-check-circle"></i> EVALUAR AVANCE (${answeredCount} ✔️)`;
+                    finishBtn.style.background = "linear-gradient(45deg, #2196F3, #21CBF3)"; // Azul original
+                    finishBtn.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+                    
+                    // Texto de acción
+                    finishBtn.innerHTML = `<i class="fas fa-check-circle"></i> EVALUAR AVANCE (${answeredCount})`;
                 }
             }
 
