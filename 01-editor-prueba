@@ -8,8 +8,8 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que 
-
+1) 
+2) 
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -2580,30 +2580,32 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
                 const totalQuestionsInQuiz = userAnswers.length;
 
-                // REGLA: Mínimo 10 preguntas para desbloquear.
-                // Excepción: Si el banco tiene menos de 10 preguntas en total, se desbloquea al finalizar todas.
+                // REGLA CORREGIDA: Mínimo 10 preguntas para desbloquear.
                 let minQuestionsRequired = 10;
-                if (totalQuestionsInQuiz > 0 && totalQuestionsInQuiz < 10) {
+                
+                // Excepción: Solo si NO es modo continuo y el banco real es pequeño, bajamos el requisito.
+                // Esto evita que en modo continuo se desbloquee con solo 1 pregunta.
+                if (!isContinuousMode && totalQuestionsInQuiz > 0 && totalQuestionsInQuiz < 10) {
                     minQuestionsRequired = totalQuestionsInQuiz;
                 }
 
                 // LÓGICA DE BLOQUEO/DESBLOQUEO
                 if (answeredCount < minQuestionsRequired) {
-                    // --- ESTADO BLOQUEADO (Menos de 10) ---
+                    // --- ESTADO BLOQUEADO ---
                     finishBtn.disabled = true; // Bloquea el clic
                     finishBtn.classList.add('btn-disabled'); // Añade clase css de deshabilitado
                     
                     // Forzamos estilos visuales para asegurar que se vea bloqueado en Móvil y PC
                     finishBtn.style.opacity = "0.7"; 
-                    finishBtn.style.cursor = "not-allowed"; // Icono de prohibido al pasar mouse
-                    finishBtn.style.background = "#546e7a"; // Gris azulado oscuro (neutro)
+                    finishBtn.style.cursor = "not-allowed"; 
+                    finishBtn.style.background = "#546e7a"; 
                     finishBtn.style.boxShadow = "none";
                     finishBtn.style.transform = "none";
                     
                     // Texto informativo con candado
                     finishBtn.innerHTML = `<i class="fas fa-lock"></i> FALTA AVANCE (${answeredCount}/${minQuestionsRequired})`;
                 } else {
-                    // --- ESTADO DESBLOQUEADO (10 o más) ---
+                    // --- ESTADO DESBLOQUEADO ---
                     finishBtn.disabled = false; // Permite el clic
                     finishBtn.classList.remove('btn-disabled');
                     
@@ -4540,7 +4542,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 } else {
                     nextBtn.disabled = true;
                 }
-                finishBtn.classList.toggle('hidden', !isContinuousMode);
+                // finishBtn.classList.toggle('hidden', !isContinuousMode); // LÍNEA ANULADA PARA CORREGIR VISIBILIDAD
 
                 // --- LÓGICA NUEVA PARA FLECHAS MINI ---
                 if (miniPrevBtn) {
