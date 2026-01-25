@@ -8,7 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero 
+1) Requiero que en caso de que un estudinate se equeivoque, se puedan ver las respuestas erroneas al regresar para preguntas híbridas.
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -1459,7 +1459,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 <div id="lookup-section-content" class="hidden mt-3">
                     <div class="flex gap-2">
                         <input type="text" id="lookup-id-input" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="Introduce el ID del reactivo">
-                        <button id="lookup-btn" class="btn btn-secondary !m-0">Buscar</button>
+                       <button id="lookup-btn" class="btn btn-secondary !m-0">Buscar</button>
+                        <button id="lookup-wb-btn" class="btn btn-secondary !m-0" title="Abrir Pizarra" style="min-width: 50px;">
+                            <i class="fas fa-pen-to-square"></i>
+                        </button>
                     </div>
                     <div id="lookup-result-container" class="mt-2 p-4 bg-gray-800 rounded-lg hidden text-left">
                     </div>
@@ -1851,7 +1854,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 <a href="#" id="privacy-link" class="footer-link">Aviso de Privacidad</a>
             </div>
             <div id="copyright">
-                &copy; CEPREDIX 2026 - Todos los derechos reservados. Versión CEP-2.1501
+                &copy; CEPREDIX 2026 - Todos los derechos reservados. Versión CEP-2.2401
             </div>
         </div>
     </div>
@@ -2562,36 +2565,36 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             function updateEvaluationButton() {
                 if (!finishBtn) return;
                 
-                // El botón debe ser visible tanto en modo continuo como en modo normal
-                // Solo se oculta si estamos en "Modo Simulacro Mortal"
                 if (isGameMode) {
                     finishBtn.classList.add('hidden');
                     return;
                 }
 
-                // Aseguramos que sea visible
                 finishBtn.classList.remove('hidden');
                 
-                // Contamos cuántas preguntas tienen una respuesta (correcta, incorrecta, omitida o no identificada)
                 const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
-                const minQuestionsRequired = 10;
+                const totalQuestionsInQuiz = userAnswers.length;
+                
+                // REGLA: Mínimo 10 preguntas para evaluar, a menos que el cuestionario tenga menos de 10 en total.
+                let minQuestionsRequired = 10;
+                if (totalQuestionsInQuiz < 10 && totalQuestionsInQuiz > 0) {
+                    minQuestionsRequired = totalQuestionsInQuiz;
+                }
                 
                 if (answeredCount < minQuestionsRequired) {
-                    // Si hay menos de 10, el botón se muestra pero está deshabilitado
                     finishBtn.disabled = true;
                     finishBtn.classList.add('btn-disabled');
                     finishBtn.style.opacity = "0.5"; 
                     finishBtn.style.cursor = "not-allowed";
-                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> EVALUAR AVANCE (${answeredCount}/${minQuestionsRequired})`;
+                    finishBtn.innerHTML = `<i class="fas fa-lock"></i> EVALUAR (${answeredCount}/${minQuestionsRequired})`;
                 } else {
-                    // Si ya respondió 10 o más, el botón se habilita y cambia de color
                     finishBtn.disabled = false;
                     finishBtn.classList.remove('btn-disabled');
                     finishBtn.style.opacity = "1";
                     finishBtn.style.cursor = "pointer";
-                    // Le ponemos un color llamativo (azul/celeste) para indicar que ya puede finalizar
                     finishBtn.style.background = "linear-gradient(45deg, #2196F3, #21CBF3)";
-                    finishBtn.innerHTML = `<i class="fas fa-check-circle"></i> EVALUAR AVANCE (${answeredCount} RESPONDIDAS)`;
+                    // Texto modificado para indicar que pueden continuar
+                    finishBtn.innerHTML = `<i class="fas fa-check-circle"></i> EVALUAR AVANCE (${answeredCount} ✔️)`;
                 }
             }
 
@@ -4312,6 +4315,24 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         return mainOpts;
                     };
 
+                    // --- LÓGICA DE RECUPERACIÓN DE RESPUESTA ERRÓNEA (HÍBRIDO) ---
+                    let prevSel1 = null;
+                    let prevSel2 = null;
+                    // Si la pregunta ya fue respondida, intentamos recuperar qué eligió el estudiante
+                    if (userAnswers[currentQuestionIndex].status !== 'unanswered') {
+                        const selText = userAnswers[currentQuestionIndex].selected; 
+                        // El formato guardado es: "[1]: Valor1 | [2]: Valor2"
+                        if (selText && selText.includes('|')) {
+                            const parts = selText.split('|');
+                            if(parts.length >= 2) {
+                                // Extraemos el texto exacto eliminando "[1]: " y espacios
+                                prevSel1 = parts[0].substring(parts[0].indexOf(':') + 1).trim();
+                                prevSel2 = parts[1].substring(parts[1].indexOf(':') + 1).trim();
+                            }
+                        }
+                    }
+                    // -------------------------------------------------------------
+
                     const renderGroup = (opts, groupNum) => {
                         const colDiv = document.createElement('div');
                         colDiv.className = 'hybrid-group';
@@ -4323,6 +4344,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                             btn.dataset.text = opt.text;
                             btn.dataset.group = groupNum;
                             btn.style.fontSize = '0.9rem'; // Ligeramente más pequeño para caber
+
+                            // APLICAR SELECCIÓN PREVIA: Si el texto coincide con lo que el usuario eligió antes, lo marcamos
+                            if (groupNum === 1 && opt.text === prevSel1) btn.classList.add('selected');
+                            if (groupNum === 2 && opt.text === prevSel2) btn.classList.add('selected');
 
                             const letter = document.createElement('div');
                             letter.className = 'option-letter';
@@ -4510,7 +4535,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 }
             }
 
-            function showFeedback() {
+           function showFeedback() {
                 const { question, selected, status } = userAnswers[currentQuestionIndex];
                 const isHybrid = question.options.some(opt => 'text_op1' in opt);
 
@@ -4529,9 +4554,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                             btn.classList.add('correct');
                         }
                         
-                        // Colorear Incorrectas Seleccionadas
+                        // Colorear Incorrectas Seleccionadas (Híbrido mantiene lógica visual simple)
                         if (isSelected && status !== 'correct') {
-                             // Si seleccionó esta y no era la correcta (ya verificado arriba)
                              if (!((group === "1" && txt === correctOp1) || (group === "2" && txt === correctOp2))) {
                                  btn.classList.add('incorrect');
                              }
@@ -4539,19 +4563,31 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     });
 
                 } else {
-                    // Estándar
+                    // --- LÓGICA ESTÁNDAR CORREGIDA ---
                     const correctOption = question.options.find(opt => opt.correct)?.text || null;
-                    // "selected" aquí es el texto guardado
-                    // Necesitamos recuperar cuál botón fue seleccionado visualmente si el texto no es único
-                    // pero .selected class ya está en el DOM
                     
+                    // Recuperamos el texto exacto que el usuario seleccionó guardado en memoria
+                    const userSelectedText = userAnswers[currentQuestionIndex].selected;
+
                     document.querySelectorAll('.option-btn').forEach(btn => {
                         btn.disabled = true;
+                        
+                        // 1. Marcar siempre la correcta en verde
                         if (btn.dataset.text === correctOption) btn.classList.add('correct');
                         
-                        if (btn.classList.contains('selected')) {
+                        // 2. Verificar si este es el botón que el usuario presionó previamente
+                        // (Comparamos el texto del botón con lo guardado en userAnswers)
+                        if (btn.dataset.text === userSelectedText) {
+                            
+                            // Restauramos la clase visual de "seleccionado"
+                            btn.classList.add('selected'); 
+
+                            // 3. Si el estado general de la respuesta fue incorrecto,
+                            // y este botón NO es la opción correcta, lo pintamos de rojo.
                             if (status === 'incorrect' || status === 'unidentified') {
-                                if (btn.dataset.text !== correctOption) btn.classList.add('incorrect');
+                                if (btn.dataset.text !== correctOption) {
+                                    btn.classList.add('incorrect');
+                                }
                             }
                         }
                     });
@@ -5148,12 +5184,29 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
             let mainImageHtml = '';
             if (question.image) {
-                mainImageHtml = `
-                    <div style="margin: 15px 0; text-align: center;">
-                        <img src="${question.image}" style="max-width: 100%; max-height: 300px; border-radius: 10px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                        ${question.image.includes('imgur.com') ? '<p style="font-size: 10px; color: #aaa; margin-top: 5px;">(Imagen protegida con marca de agua en modo examen)</p>' : ''}
-                    </div>
-                `;
+                if (question.image.includes('imgur.com')) {
+                    // Generar marca de agua dinámica
+                    const wmText = `${currentUser.name || 'Usuario'} ${currentUser.email || ''} ${currentUser.whatsapp || ''}   `.repeat(100);
+                    
+                    mainImageHtml = `
+                        <div style="margin: 15px auto; position: relative; width: 100%; max-width: 600px; height: 300px; overflow: hidden; border-radius: 10px; background-color: rgba(0,0,0,0.2);">
+                            <div style="position: absolute; inset: 0; background-image: url('${question.image}'); background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 1;"></div>
+                            
+                            <div style="position: absolute; inset: -50%; width: 200%; height: 200%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; transform: rotate(-30deg); pointer-events: none; z-index: 2; opacity: 0.2; overflow: hidden;">
+                                <div style="color: white; font-weight: bold; font-size: 14px; line-height: 2; word-spacing: 1rem; text-align: center;">
+                                    ${wmText}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Imagen normal sin marca de agua (no es IMGUR)
+                    mainImageHtml = `
+                        <div style="margin: 15px 0; text-align: center;">
+                            <img src="${question.image}" style="max-width: 100%; max-height: 300px; border-radius: 10px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        </div>
+                    `;
+                }
             }
 
             lookupResultContainer.innerHTML = `
@@ -5310,7 +5363,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
 
             const wbTriggerBtn = document.getElementById('whiteboard-trigger-btn'); // Botón del Quiz
-            const setupWbBtn = document.getElementById('setup-wb-btn'); // Nuevo Botón del Setup
+            const setupWbBtn = document.getElementById('setup-wb-btn'); // Botón del Setup (Volumen)
+            const lookupWbBtn = document.getElementById('lookup-wb-btn'); // Nuevo Botón (Buscar ID)
             const wbOverlay = document.getElementById('overlay-whiteboard');
             const wbCanvas = document.getElementById('wb-canvas');
             const wbCloseBtn = document.getElementById('wb-close-btn');
@@ -5365,9 +5419,14 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     wbTriggerBtn.addEventListener('click', openWhiteboard);
                 }
 
-                // Abrir Pizarra desde Configuración (Setup)
+                // Abrir Pizarra desde Configuración (Setup - Volumen)
                 if (setupWbBtn) {
                     setupWbBtn.addEventListener('click', openWhiteboard);
+                }
+
+                // Abrir Pizarra desde Configuración (Setup - Buscar ID)
+                if (lookupWbBtn) {
+                    lookupWbBtn.addEventListener('click', openWhiteboard);
                 }
 
                 // Cerrar Pizarra
