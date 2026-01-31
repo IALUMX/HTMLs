@@ -1865,8 +1865,8 @@
         <button class="wb-tool-btn w-8 h-8 lg:w-6 lg:h-6 rounded-full border-2 border-white bg-white hover:scale-110 transition-transform shrink-0" data-color="#ffffff" title="Blanco"></button>
         <button class="wb-tool-btn w-8 h-8 lg:w-6 lg:h-6 rounded-full border-2 border-gray-600 bg-[#39ff14] hover:scale-110 transition-transform shadow-[0_0_10px_#39ff14] shrink-0" data-color="#39ff14" title="Verde Neón"></button>
         
-        <div class="relative w-8 h-8 lg:w-6 lg:h-6 rounded-full border-2 border-gray-600 shrink-0 overflow-hidden hover:scale-110 transition-transform shadow-[0_0_10px_#ff073a]" title="Color Personalizable (Default: Rojo)">
-            <input type="color" id="wb-custom-color-picker" value="#ff073a" class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 p-0 m-0 border-0 cursor-pointer opacity-0">
+        <div id="wb-custom-wrapper" class="relative w-8 h-8 lg:w-6 lg:h-6 rounded-full border-2 border-gray-600 shrink-0 overflow-hidden hover:scale-110 transition-transform shadow-[0_0_10px_#ff073a] cursor-pointer" title="1 Clic: Seleccionar Rojo / Doble Clic: Cambiar Color">
+            <input type="color" id="wb-custom-color-picker" value="#ff073a" class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 p-0 m-0 border-0 cursor-pointer opacity-0" style="pointer-events: none;">
             <div id="wb-custom-preview" class="w-full h-full bg-[#ff073a] pointer-events-none"></div>
         </div>
         
@@ -5367,80 +5367,78 @@
                 updateDtVisuals();
             }
 
-            const wbTriggerBtn = document.getElementById('whiteboard-trigger-btn'); // Botón del Quiz
-            const setupWbBtn = document.getElementById('setup-wb-btn'); // Botón del Setup (Volumen)
-            const lookupWbBtn = document.getElementById('lookup-wb-btn'); // Nuevo Botón (Buscar ID)
+            const wbTriggerBtn = document.getElementById('whiteboard-trigger-btn');
+            const setupWbBtn = document.getElementById('setup-wb-btn');
+            const lookupWbBtn = document.getElementById('lookup-wb-btn');
             const wbOverlay = document.getElementById('overlay-whiteboard');
             const wbCanvas = document.getElementById('wb-canvas');
             const wbCloseBtn = document.getElementById('wb-close-btn');
             const wbCtx = wbCanvas ? wbCanvas.getContext('2d') : null;
             
+            // --- SISTEMA DE DIBUJO Y DESHACER INTELIGENTE ---
+            let wbPaths = []; // Lista de objetos actuales en pantalla
+            let wbHistory = [[]]; // Historial completo de estados (snapshots)
+            let wbStep = 0; // Paso actual en el historial
+            
             let wbIsDrawing = false;
-            let wbHistory = [];
-            let wbStep = -1;
-            let wbCurrentColor = '#ffffff';
+            let wbCurrentColor = '#ffffff'; // Blanco por defecto
             let wbCurrentWidth = 2;
+            let wbIsEraser = false; 
 
-            // Ajustar tamaño del canvas al abrir
+            // Función para guardar el estado actual en el historial
+            function saveHistory() {
+                // Si hemos deshecho y dibujamos algo nuevo, borramos el futuro (rehacer)
+                if (wbStep < wbHistory.length - 1) {
+                    wbHistory = wbHistory.slice(0, wbStep + 1);
+                }
+                // Guardamos una COPIA de los objetos actuales
+                wbHistory.push(JSON.parse(JSON.stringify(wbPaths)));
+                wbStep++;
+            }
+
+            // Ajustar tamaño del canvas
             function resizeWbCanvas() {
                 if(!wbCanvas) return;
                 wbCanvas.width = window.innerWidth;
                 wbCanvas.height = window.innerHeight;
-                // Restaurar imagen si existe historial
-                if (wbStep >= 0) {
-                    const img = new Image();
-                    img.src = wbHistory[wbStep];
-                    img.onload = () => wbCtx.drawImage(img, 0, 0);
-                }
-                // Reconfigurar contexto
-                wbCtx.lineCap = 'round';
-                wbCtx.lineJoin = 'round';
-                wbCtx.strokeStyle = wbCurrentColor;
-                wbCtx.lineWidth = wbCurrentWidth;
+                redrawWb(); 
             }
 
-            // Guardar estado para deshacer
-            function wbSaveState() {
-                if (wbStep < wbHistory.length - 1) {
-                    wbHistory = wbHistory.slice(0, wbStep + 1);
-                }
-                wbHistory.push(wbCanvas.toDataURL());
-                wbStep++;
+            // Redibujar todos los objetos en memoria
+            function redrawWb() {
+                if (!wbCtx) return;
+                wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+                wbCtx.lineCap = 'round';
+                wbCtx.lineJoin = 'round';
+
+                wbPaths.forEach(path => {
+                    if (path.points.length < 1) return;
+                    wbCtx.beginPath();
+                    wbCtx.lineWidth = path.width;
+                    wbCtx.strokeStyle = path.color;
+                    wbCtx.moveTo(path.points[0].x, path.points[0].y);
+                    for (let i = 1; i < path.points.length; i++) {
+                        wbCtx.lineTo(path.points[i].x, path.points[i].y);
+                    }
+                    wbCtx.stroke();
+                });
             }
 
             if (wbOverlay) {
-                // Función unificada para abrir pizarra
                 const openWhiteboard = () => {
                     wbOverlay.classList.remove('hidden');
-                    // IMPORTANTE: No bloqueamos el scroll aquí para permitir que los botones funcionen
-                    // El "touch-action: none" del div overlay evitará que se mueva al dibujar con el dedo
                     resizeWbCanvas();
-                    // Si no hay historial inicial, guardar el blanco
-                    if (wbStep === -1) wbSaveState();
                 };
 
-                // Abrir Pizarra desde el Quiz
-                if (wbTriggerBtn) {
-                    wbTriggerBtn.addEventListener('click', openWhiteboard);
-                }
+                if (wbTriggerBtn) wbTriggerBtn.addEventListener('click', openWhiteboard);
+                if (setupWbBtn) setupWbBtn.addEventListener('click', openWhiteboard);
+                if (lookupWbBtn) lookupWbBtn.addEventListener('click', openWhiteboard);
 
-                // Abrir Pizarra desde Configuración (Setup - Volumen)
-                if (setupWbBtn) {
-                    setupWbBtn.addEventListener('click', openWhiteboard);
-                }
-
-                // Abrir Pizarra desde Configuración (Setup - Buscar ID)
-                if (lookupWbBtn) {
-                    lookupWbBtn.addEventListener('click', openWhiteboard);
-                }
-
-                // Cerrar Pizarra
                 wbCloseBtn.addEventListener('click', () => {
                     wbOverlay.classList.add('hidden');
-                    document.body.style.overflow = 'auto'; // Restaurar scroll
+                    document.body.style.overflow = 'auto';
                 });
 
-                // Eventos de Dibujo (Ratón y Táctil)
                 const getWbPos = (e) => {
                     const rect = wbCanvas.getBoundingClientRect();
                     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -5448,28 +5446,73 @@
                     return { x: clientX - rect.left, y: clientY - rect.top };
                 };
 
+                // --- LÓGICA DE DIBUJO ---
+                let currentPathPoints = [];
+
                 const startWbDraw = (e) => {
                     wbIsDrawing = true;
-                    wbCtx.beginPath();
                     const pos = getWbPos(e);
-                    wbCtx.moveTo(pos.x, pos.y);
-                    // Solo prevenir default si es touch para evitar scroll
-                    if(e.type === 'touchstart') e.preventDefault(); 
+
+                    if (wbIsEraser) {
+                        checkEraserCollision(pos.x, pos.y);
+                    } else {
+                        currentPathPoints = [{x: pos.x, y: pos.y}];
+                        wbCtx.beginPath();
+                        wbCtx.lineWidth = wbCurrentWidth;
+                        wbCtx.strokeStyle = wbCurrentColor;
+                        wbCtx.moveTo(pos.x, pos.y);
+                    }
+                    if(e.type === 'touchstart') e.preventDefault();
                 };
 
                 const moveWbDraw = (e) => {
                     if (!wbIsDrawing) return;
                     const pos = getWbPos(e);
-                    wbCtx.lineTo(pos.x, pos.y);
-                    wbCtx.stroke();
+
+                    if (wbIsEraser) {
+                        checkEraserCollision(pos.x, pos.y);
+                    } else {
+                        currentPathPoints.push({x: pos.x, y: pos.y});
+                        wbCtx.lineTo(pos.x, pos.y);
+                        wbCtx.stroke();
+                    }
                     if(e.type === 'touchmove') e.preventDefault();
                 };
 
                 const endWbDraw = (e) => {
-                    if (wbIsDrawing) {
-                        wbCtx.closePath();
-                        wbIsDrawing = false;
-                        wbSaveState();
+                    if (!wbIsDrawing) return;
+                    wbIsDrawing = false;
+
+                    // Si estábamos dibujando (no borrando), guardamos el trazo
+                    if (!wbIsEraser && currentPathPoints.length > 0) {
+                        wbPaths.push({
+                            color: wbCurrentColor,
+                            width: wbCurrentWidth,
+                            points: currentPathPoints
+                        });
+                        saveHistory(); // <--- GUARDAR ESTADO AL TERMINAR DE DIBUJAR
+                    }
+                };
+
+                // --- LÓGICA DE BORRADOR ---
+                const checkEraserCollision = (x, y) => {
+                    const threshold = 20; 
+                    let removed = false;
+                    
+                    for (let i = wbPaths.length - 1; i >= 0; i--) {
+                        const path = wbPaths[i];
+                        for (let pt of path.points) {
+                            const dist = Math.sqrt(Math.pow(pt.x - x, 2) + Math.pow(pt.y - y, 2));
+                            if (dist < threshold) {
+                                wbPaths.splice(i, 1); 
+                                removed = true;
+                                break; 
+                            }
+                        }
+                    }
+                    if (removed) {
+                        redrawWb();
+                        saveHistory(); // <--- GUARDAR ESTADO AL BORRAR UN OBJETO
                     }
                 };
 
@@ -5482,110 +5525,94 @@
                 wbCanvas.addEventListener('touchmove', moveWbDraw, { passive: false });
                 wbCanvas.addEventListener('touchend', endWbDraw);
 
-                // Control del Slider de Grosor
+                // Slider de grosor
                 const wbWidthSlider = document.getElementById('wb-width-slider');
                 if(wbWidthSlider) {
                     wbWidthSlider.addEventListener('input', (e) => {
                         wbCurrentWidth = parseInt(e.target.value);
-                        wbCtx.lineWidth = wbCurrentWidth;
                     });
                 }
 
-                // Herramientas: Colores Fijos
+                // Botones de colores
                 document.querySelectorAll('.wb-tool-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
+                        wbIsEraser = false;
                         wbCurrentColor = e.target.dataset.color;
-                        wbCtx.globalCompositeOperation = 'source-over';
-                        wbCtx.strokeStyle = wbCurrentColor;
-                        wbCtx.lineWidth = wbCurrentWidth;
                     });
                 });
 
-                // Herramienta: Color Personalizable (Rojo por defecto)
+                // Lógica Botón Rojo (Clic vs Doble Clic)
+                const customWrapper = document.getElementById('wb-custom-wrapper');
                 const customPicker = document.getElementById('wb-custom-color-picker');
                 const customPreview = document.getElementById('wb-custom-preview');
                 
-                if (customPicker && customPreview) {
-                    // Al cambiar el input de color
-                    customPicker.addEventListener('input', (e) => {
-                        wbCurrentColor = e.target.value;
-                        wbCtx.globalCompositeOperation = 'source-over';
-                        wbCtx.strokeStyle = wbCurrentColor;
-                        wbCtx.lineWidth = wbCurrentWidth;
-                        customPreview.style.backgroundColor = wbCurrentColor;
-                        // Actualizar la sombra para efecto neón si se desea
-                        customPreview.parentElement.style.boxShadow = `0 0 10px ${wbCurrentColor}`;
+                if (customWrapper && customPicker) {
+                    let clickTimeout;
+                    
+                    customWrapper.addEventListener('click', (e) => {
+                        if (clickTimeout) return;
+                        clickTimeout = setTimeout(() => {
+                            clickTimeout = null;
+                            wbIsEraser = false;
+                            wbCurrentColor = customPicker.value;
+                            customWrapper.style.transform = "scale(0.95)";
+                            setTimeout(() => customWrapper.style.transform = "", 100);
+                        }, 250); 
                     });
 
-                    // Al hacer clic en el contenedor (para reactivar el pincel si se usó borrador antes)
-                    customPicker.addEventListener('click', () => {
-                         wbCurrentColor = customPicker.value;
-                         wbCtx.globalCompositeOperation = 'source-over';
-                         wbCtx.strokeStyle = wbCurrentColor;
+                    customWrapper.addEventListener('dblclick', (e) => {
+                        clearTimeout(clickTimeout);
+                        clickTimeout = null;
+                        customPicker.style.pointerEvents = 'auto';
+                        customPicker.click();
+                        customPicker.style.pointerEvents = 'none';
+                    });
+
+                    customPicker.addEventListener('input', (e) => {
+                        wbIsEraser = false;
+                        wbCurrentColor = e.target.value;
+                        customPreview.style.backgroundColor = wbCurrentColor;
+                        customWrapper.style.boxShadow = `0 0 10px ${wbCurrentColor}`;
                     });
                 }
 
-                // Lógica de los Botones de Scroll
+                // Scroll
                 const btnScrollUp = document.getElementById('wb-scroll-up');
                 const btnScrollDown = document.getElementById('wb-scroll-down');
-                const scrollAmount = 300; // Cantidad de píxeles a mover
+                if (btnScrollUp) btnScrollUp.addEventListener('click', (e) => { e.stopPropagation(); window.scrollBy({ top: -300, behavior: 'smooth' }); });
+                if (btnScrollDown) btnScrollDown.addEventListener('click', (e) => { e.stopPropagation(); window.scrollBy({ top: 300, behavior: 'smooth' }); });
 
-                if (btnScrollUp) {
-                    btnScrollUp.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Evitar pintar al hacer clic
-                        window.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
-                    });
-                }
-
-                if (btnScrollDown) {
-                    btnScrollDown.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Evitar pintar al hacer clic
-                        window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
-                    });
-                }
-
-                // Herramienta: Borrador (Corregido)
+                // Activar Borrador
                 document.getElementById('wb-eraser-btn').addEventListener('click', () => {
-                    wbCurrentWidth = 10; // Tamaño fijo y pequeño para el borrador
-                    wbCtx.lineWidth = wbCurrentWidth;
-                    wbCtx.globalCompositeOperation = 'destination-out'; // Activar modo borrar
-                    
-                    // Actualizamos visualmente el slider para que coincida
-                    const slider = document.getElementById('wb-width-slider');
-                    if(slider) slider.value = 10;
+                    wbIsEraser = true;
                 });
 
+                // Limpiar todo
                 document.getElementById('wb-clear-btn').addEventListener('click', () => {
-                    wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
-                    wbSaveState();
-                });
-
-                document.getElementById('wb-undo-btn').addEventListener('click', () => {
-                    if (wbStep > 0) {
-                        wbStep--;
-                        const img = new Image();
-                        img.src = wbHistory[wbStep];
-                        img.onload = () => {
-                            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
-                            wbCtx.globalCompositeOperation = 'source-over'; // Importante para redibujar imagen
-                            wbCtx.drawImage(img, 0, 0);
-                            // Restaurar estado del pincel actual
-                            wbCtx.globalCompositeOperation = wbCurrentWidth === 20 ? 'destination-out' : 'source-over';
-                        };
+                    if(confirm("¿Borrar toda la pizarra?")) {
+                        wbPaths = [];
+                        saveHistory(); // Guardar el estado vacío
+                        redrawWb();
                     }
                 });
 
+                // --- DESHACER (UNDO) CORREGIDO ---
+                document.getElementById('wb-undo-btn').addEventListener('click', () => {
+                    if (wbStep > 0) {
+                        wbStep--;
+                        // Recuperar el estado anterior completo
+                        wbPaths = JSON.parse(JSON.stringify(wbHistory[wbStep]));
+                        redrawWb();
+                    }
+                });
+
+                // --- REHACER (REDO) ---
                 document.getElementById('wb-redo-btn').addEventListener('click', () => {
                     if (wbStep < wbHistory.length - 1) {
                         wbStep++;
-                        const img = new Image();
-                        img.src = wbHistory[wbStep];
-                        img.onload = () => {
-                            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
-                            wbCtx.globalCompositeOperation = 'source-over';
-                            wbCtx.drawImage(img, 0, 0);
-                            wbCtx.globalCompositeOperation = wbCurrentWidth === 20 ? 'destination-out' : 'source-over';
-                        };
+                        // Recuperar el estado siguiente completo
+                        wbPaths = JSON.parse(JSON.stringify(wbHistory[wbStep]));
+                        redrawWb();
                     }
                 });
                 
