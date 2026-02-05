@@ -4247,6 +4247,7 @@
                 questionIdDisplay.textContent = question.id || 'N/A';
                 uniTagsDisplay.innerHTML = (question.uni_tags || []).map(t => `<span class="uni-tag-display">${t}</span>`).join(' ');
                 levelTagDisplay.innerHTML = (question.level_tag || []).map(t => `<span class="level-tag-display">${t}</span>`).join(' ');
+                questionText.style.whiteSpace = 'pre-line'; // Esta línea hace que el navegador respete los saltos de línea \n
                 let questionHTML = question.question;
                 questionText.innerHTML = questionHTML;
                 questionStartTime = Date.now();
