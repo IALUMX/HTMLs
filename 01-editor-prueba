@@ -8,8 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que
-
+1) Requiero que analices la lógica del código en la función "Filtro por Rango de IDs (Opcional)", actualemnte la función si actualiza el contador de preguntas, pero NO está filtrando para delimitar que solo esas preguntas estén disponibles. Necesito que actualice y permita ver solo las etiquetas disponibles en cierto rango escrito. 
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -3997,8 +3996,35 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             
             answeredIdsInput.addEventListener('input', updateQuestionStats);
             // Nuevos eventos para filtros y recarga
-            if(startIdInput) startIdInput.addEventListener('input', updateQuestionStats);
-            if(endIdInput) endIdInput.addEventListener('input', updateQuestionStats);
+           // Lógica para actualizar etiquetas dinámicamente al escribir rango de IDs
+            const handleIdFilterUpdate = () => {
+                const start = startIdInput.value.trim().toUpperCase();
+                const end = endIdInput.value.trim().toUpperCase();
+                
+                let filteredData = allQuestions;
+
+                if (start || end) {
+                    filteredData = allQuestions.filter(q => {
+                        let inRange = true;
+                        if (start && end) {
+                            inRange = (q.id >= start && q.id <= end);
+                        } else if (start) {
+                            inRange = (q.id >= start);
+                        } else if (end) {
+                            inRange = (q.id <= end);
+                        }
+                        return inRange;
+                    });
+                }
+                
+                // Regenerar etiquetas con los datos filtrados (mantiene "allQuestions" si los inputs están vacíos)
+                populateTagFilters(filteredData);
+                // Actualizar estadísticas finales
+                updateQuestionStats();
+            };
+
+            if(startIdInput) startIdInput.addEventListener('input', handleIdFilterUpdate);
+            if(endIdInput) endIdInput.addEventListener('input', handleIdFilterUpdate);
             
             if(reloadDataBtn) {
                 reloadDataBtn.addEventListener('click', async () => {
@@ -4009,10 +4035,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 });
             }
             
-            function populateTagFilters() {
-                const uniTags = [...new Set(allQuestions.flatMap(q => q.uni_tags || []))];
-                const levelTags = [...new Set(allQuestions.flatMap(q => q.level_tag || []))];
-                const typeTags = [...new Set(allQuestions.flatMap(q => q.type_tag || []))]; // Nuevo
+            function populateTagFilters(dataSource = allQuestions) {
+                const uniTags = [...new Set(dataSource.flatMap(q => q.uni_tags || []))];
+                const levelTags = [...new Set(dataSource.flatMap(q => q.level_tag || []))];
+                const typeTags = [...new Set(dataSource.flatMap(q => q.type_tag || []))];
 
                 uniTagsContainer.innerHTML = '';
                 levelTagsContainer.innerHTML = '';
@@ -4151,11 +4177,29 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     }
 
                     // Filtrado Maestro
+                    // Captura valores actuales de los inputs de ID
+                    const startIdVal = startIdInput ? startIdInput.value.trim().toUpperCase() : '';
+                    const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
+
                     let availableQuestions = allQuestions.filter(q => {
                         const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
                         const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
                         const hasTypeTag = q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag));
-                        return hasUniTag && hasLevelTag && hasTypeTag;
+                        
+                        // Lógica de filtro por Rango de IDs
+                        let inIdRange = true;
+                        if (startIdVal && endIdVal) {
+                            // Si hay inicio y fin, debe estar en medio
+                            inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
+                        } else if (startIdVal) {
+                            // Solo inicio
+                            inIdRange = (q.id >= startIdVal);
+                        } else if (endIdVal) {
+                            // Solo fin
+                            inIdRange = (q.id <= endIdVal);
+                        }
+
+                        return hasUniTag && hasLevelTag && hasTypeTag && inIdRange;
                     });
 
                     let newQuestions = availableQuestions.filter(q => !pastedAnsweredIds.has(q.id));
