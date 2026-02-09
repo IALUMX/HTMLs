@@ -8,7 +8,9 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que analices la lógica del código en la función "Filtro por Rango de IDs (Opcional)", actualemnte la función si actualiza el contador de preguntas, pero NO está filtrando para delimitar que solo esas preguntas estén disponibles. Necesito que actualice y permita ver solo las etiquetas disponibles en cierto rango escrito. 
+1) Requiero que el botón de actualizar banco de preguntas tenga la real posibilidad de buscar en el formato json si hubo actualización de preguntas sin necesidad de recargar la página completa. 
+
+
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
@@ -3915,7 +3917,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             
             const loadData = async () => {
                 try {
-                    const response = await fetch(QUIZ_JSON_URL);
+                    const response = await fetch(QUIZ_JSON_URL + '?v=' + new Date().getTime());
                     if (!response.ok) {
                         throw new Error('No se pudo cargar el archivo JSON');
                     }
@@ -4030,8 +4032,15 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 reloadDataBtn.addEventListener('click', async () => {
                     const icon = reloadDataBtn.querySelector('i');
                     icon.classList.add('fa-spin'); // Añadir animación de giro
-                    await loadData(); // Recargar datos
-                    setTimeout(() => icon.classList.remove('fa-spin'), 1000); // Quitar animación
+                    
+                    // Recargar datos forzando la limpieza de caché
+                    await loadData(); 
+                    
+                    setTimeout(() => {
+                        icon.classList.remove('fa-spin'); // Quitar animación
+                        // Mostrar mensaje de éxito visual
+                        showTemporaryMessage("Banco de preguntas actualizado correctamente desde el servidor ✅", "bg-green-600");
+                    }, 1000); 
                 });
             }
             
