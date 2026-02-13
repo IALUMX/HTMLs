@@ -48,6 +48,14 @@
             padding: 15px;
             position: relative;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.4; /* Ajuste global de interlineado */
+        }
+        #question-text {
+            line-height: 1.25 !important; /* Interlineado más compacto en la pregunta */
+            margin-bottom: 15px !important;
+        }
+        #question-text p {
+            margin-bottom: 8px !important; /* Menos espacio entre párrafos */
         }
         body::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -351,13 +359,18 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.3); object-fit: contain;
         }
         #image-container {
-            position: relative; width: 100%; max-width: 100%; 
-            height: 45vh; /* Usa el 45% de la altura de la pantalla del dispositivo */
-            max-height: 500px; /* Límite para que no sea gigante en PC */
-            min-height: 250px; /* Límite para que no sea muy chica en móviles */
-            background-size: contain; background-position: center; background-repeat: no-repeat;
-            overflow: hidden; margin: 15px auto; border-radius: 10px;
-            background-color: rgba(0,0,0,0.2); /* Fondo sutil para distinguir el área */
+            position: relative; 
+            width: 100%; 
+            max-width: 100%; 
+            aspect-ratio: 1 / 1; /* Fuerza al contenedor a ser siempre cuadrado */
+            max-height: 60vh; /* Límite de altura para que no se salga de pantalla en PC */
+            background-size: contain; 
+            background-position: center; 
+            background-repeat: no-repeat;
+            overflow: hidden; 
+            margin: 15px auto; 
+            border-radius: 10px;
+            background-color: rgba(0,0,0,0.2);
         }
         #watermark-overlay {
             position: absolute; inset: -50%; width: 200%; height: 200%;
@@ -1166,6 +1179,23 @@
             .justification h4 { font-size: 1rem !important; }
             .calculator-container { width: 95%; max-width: 300px; height: auto; padding-bottom: 20px; }
         }
+        /* Ajuste para que los controles de la pizarra se vean pequeños en PC */
+        @media (min-width: 1024px) {
+            #overlay-whiteboard .absolute.bottom-6 {
+                transform: translateX(-50%) scale(0.75); /* Reduce la barra al 75% de su tamaño */
+                transform-origin: bottom center;
+                bottom: 1.5rem;
+                padding: 0.5rem !important;
+                max-width: 80% !important;
+            }
+            /* Forzar tamaño pequeño de los botones internos */
+            #overlay-whiteboard .wb-tool-btn, 
+            #overlay-whiteboard #wb-custom-wrapper,
+            #overlay-whiteboard #wb-eraser-btn {
+                width: 1.5rem !important; 
+                height: 1.5rem !important;
+            }
+        }
     </style>
 </head>
 <body class="p-2 sm:p-4">
@@ -1399,6 +1429,20 @@
                 </div>
             </div>
             <div class="space-y-4">
+                <div class="space-y-2 border-b border-gray-700 pb-4">
+                    <p class="font-medium text-blue-400">Filtro por Rango de IDs (Opcional)</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-400">Desde ID:</label>
+                            <input type="text" id="start-id-input" class="w-full p-2 bg-gray-700 rounded-lg border border-gray-600 text-white uppercase" placeholder="Ej: CEP00AD">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400">Hasta ID:</label>
+                            <input type="text" id="end-id-input" class="w-full p-2 bg-gray-700 rounded-lg border border-gray-600 text-white uppercase" placeholder="Ej: CEP00BJ">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="space-y-2">
                     <p class="font-medium">Proceso de Admisión</p>
                     <p class="text-xs text-gray-400">Selecciona tu proceso de admisión, recuerda que "GENERAL" significa que el ejercicio aplica para todos los procesos de admisión.</p>
@@ -1419,9 +1463,14 @@
                 <label for="answered-ids-input" class="font-medium">Pegar IDs de ejercicios ya respondidos (opcional)</label>
                 <textarea id="answered-ids-input" rows="3" class="w-full p-3 mt-1 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="CEPCOL8Ht, CEPCOL4aA, ..."></textarea>
                 <div class="text-sm text-gray-300 space-y-2 mt-2 bg-gray-800 p-3 rounded-lg">
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-center">
                         <span>📚 Total Banco:</span> 
-                        <strong id="stats-total">0</strong>
+                        <div class="flex items-center gap-2">
+                            <strong id="stats-total">0</strong>
+                            <button id="reload-data-btn" class="mini-nav-btn" title="Actualizar banco de preguntas" style="width: 24px; height: 24px; font-size: 0.7rem;">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="flex justify-between">
                         <span>🔍 Con Filtros (Nivel/Proceso):</span> 
@@ -1938,6 +1987,9 @@
             const levelTagsContainer = document.getElementById('level-tags-container');
             const typeTagsContainer = document.getElementById('type-tags-container');
             const answeredIdsInput = document.getElementById('answered-ids-input');
+            const startIdInput = document.getElementById('start-id-input'); // Nuevo filtro ID inicio
+            const endIdInput = document.getElementById('end-id-input');     // Nuevo filtro ID fin
+            const reloadDataBtn = document.getElementById('reload-data-btn'); // Nuevo botón recargar
             const statsTotal = document.getElementById('stats-total');
             const statsTotalFiltered = document.getElementById('stats-total-filtered');
             const statsRemainingFiltered = document.getElementById('stats-remaining-filtered');
@@ -3877,7 +3929,7 @@
             
             const loadData = async () => {
                 try {
-                    const response = await fetch(QUIZ_JSON_URL);
+                    const response = await fetch(QUIZ_JSON_URL + '?v=' + new Date().getTime());
                     if (!response.ok) {
                         throw new Error('No se pudo cargar el archivo JSON');
                     }
@@ -3918,16 +3970,32 @@
                 
                 let filteredQuestions = allQuestions;
 
-                // Lógica de filtrado con los 3 tags
+               // Lógica de filtrado con tags + Rango de IDs
+                const startIdVal = startIdInput ? startIdInput.value.trim().toUpperCase() : '';
+                const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
+
                 filteredQuestions = allQuestions.filter(q => {
                     // Verificar Uni
                     const hasUniTag = selectedUniTags.length === 0 || (q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag)));
                     // Verificar Nivel
                     const hasLevelTag = selectedLevelTags.length === 0 || (q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag)));
-                    // Verificar Tipo (NUEVO)
+                    // Verificar Tipo
                     const hasTypeTag = selectedTypeTags.length === 0 || (q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag)));
+                    
+                    // Verificar Rango de IDs
+                    let inIdRange = true;
+                    if (startIdVal && endIdVal) {
+                        // Si hay ambos, debe estar entre los dos (alfabéticamente)
+                        inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
+                    } else if (startIdVal) {
+                        // Solo inicio: mayor o igual
+                        inIdRange = (q.id >= startIdVal);
+                    } else if (endIdVal) {
+                        // Solo final: menor o igual
+                        inIdRange = (q.id <= endIdVal);
+                    }
 
-                    return hasUniTag && hasLevelTag && hasTypeTag;
+                    return hasUniTag && hasLevelTag && hasTypeTag && inIdRange;
                 });
                 
                 // 2. Preguntas con Filtros
@@ -3941,11 +4009,57 @@
             }
             
             answeredIdsInput.addEventListener('input', updateQuestionStats);
+            // Nuevos eventos para filtros y recarga
+           // Lógica para actualizar etiquetas dinámicamente al escribir rango de IDs
+            const handleIdFilterUpdate = () => {
+                const start = startIdInput.value.trim().toUpperCase();
+                const end = endIdInput.value.trim().toUpperCase();
+                
+                let filteredData = allQuestions;
+
+                if (start || end) {
+                    filteredData = allQuestions.filter(q => {
+                        let inRange = true;
+                        if (start && end) {
+                            inRange = (q.id >= start && q.id <= end);
+                        } else if (start) {
+                            inRange = (q.id >= start);
+                        } else if (end) {
+                            inRange = (q.id <= end);
+                        }
+                        return inRange;
+                    });
+                }
+                
+                // Regenerar etiquetas con los datos filtrados (mantiene "allQuestions" si los inputs están vacíos)
+                populateTagFilters(filteredData);
+                // Actualizar estadísticas finales
+                updateQuestionStats();
+            };
+
+            if(startIdInput) startIdInput.addEventListener('input', handleIdFilterUpdate);
+            if(endIdInput) endIdInput.addEventListener('input', handleIdFilterUpdate);
             
-            function populateTagFilters() {
-                const uniTags = [...new Set(allQuestions.flatMap(q => q.uni_tags || []))];
-                const levelTags = [...new Set(allQuestions.flatMap(q => q.level_tag || []))];
-                const typeTags = [...new Set(allQuestions.flatMap(q => q.type_tag || []))]; // Nuevo
+            if(reloadDataBtn) {
+                reloadDataBtn.addEventListener('click', async () => {
+                    const icon = reloadDataBtn.querySelector('i');
+                    icon.classList.add('fa-spin'); // Añadir animación de giro
+                    
+                    // Recargar datos forzando la limpieza de caché
+                    await loadData(); 
+                    
+                    setTimeout(() => {
+                        icon.classList.remove('fa-spin'); // Quitar animación
+                        // Mostrar mensaje de éxito visual
+                        showTemporaryMessage("Banco de preguntas actualizado correctamente desde el servidor ✅", "bg-green-600");
+                    }, 1000); 
+                });
+            }
+            
+            function populateTagFilters(dataSource = allQuestions) {
+                const uniTags = [...new Set(dataSource.flatMap(q => q.uni_tags || []))];
+                const levelTags = [...new Set(dataSource.flatMap(q => q.level_tag || []))];
+                const typeTags = [...new Set(dataSource.flatMap(q => q.type_tag || []))];
 
                 uniTagsContainer.innerHTML = '';
                 levelTagsContainer.innerHTML = '';
@@ -4084,11 +4198,29 @@
                     }
 
                     // Filtrado Maestro
+                    // Captura valores actuales de los inputs de ID
+                    const startIdVal = startIdInput ? startIdInput.value.trim().toUpperCase() : '';
+                    const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
+
                     let availableQuestions = allQuestions.filter(q => {
                         const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
                         const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
                         const hasTypeTag = q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag));
-                        return hasUniTag && hasLevelTag && hasTypeTag;
+                        
+                        // Lógica de filtro por Rango de IDs
+                        let inIdRange = true;
+                        if (startIdVal && endIdVal) {
+                            // Si hay inicio y fin, debe estar en medio
+                            inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
+                        } else if (startIdVal) {
+                            // Solo inicio
+                            inIdRange = (q.id >= startIdVal);
+                        } else if (endIdVal) {
+                            // Solo fin
+                            inIdRange = (q.id <= endIdVal);
+                        }
+
+                        return hasUniTag && hasLevelTag && hasTypeTag && inIdRange;
                     });
 
                     let newQuestions = availableQuestions.filter(q => !pastedAnsweredIds.has(q.id));
@@ -5588,13 +5720,11 @@
                     wbIsEraser = true;
                 });
 
-                // Limpiar todo
+                // Limpiar todo (MODIFICADO: Sin confirmación)
                 document.getElementById('wb-clear-btn').addEventListener('click', () => {
-                    if(confirm("¿Borrar toda la pizarra?")) {
-                        wbPaths = [];
-                        saveHistory(); // Guardar el estado vacío
-                        redrawWb();
-                    }
+                    wbPaths = [];
+                    saveHistory(); // Guardar el estado vacío
+                    redrawWb();
                 });
 
                 // --- DESHACER (UNDO) CORREGIDO ---
