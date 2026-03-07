@@ -5294,87 +5294,129 @@
                 }
             });
             
-            function showQuestionLookup(question) {
-            const correctOption = question.options.find(o => o.correct);
-            let optionsHtml = '';
+           function showQuestionLookup(question) {
+                const isHybrid = question.options.some(opt => 'text_op1' in opt);
+                let optionsHtml = '';
+                let hasImageOptions = false;
 
-            question.options.forEach((option, index) => {
-                const isCorrect = option.correct;
-                const optionClass = isCorrect ? 'lookup-option' : 'lookup-option incorrect';
+                if (isHybrid) {
+                    let group1Html = '<div class="hybrid-group"><div class="hybrid-group-title">Columna 1</div>';
+                    let group2Html = '<div class="hybrid-group"><div class="hybrid-group-title">Columna 2</div>';
 
-                const isImgOpt = isImageOption(option.text);
-                let contentHtml = '';
+                    question.options.filter(o => 'text_op1' in o).forEach((option, index) => {
+                        const isCorrect = option.correct;
+                        const optionClass = isCorrect ? 'lookup-option' : 'lookup-option incorrect';
+                        const text = option.text_op1;
+                        const isImgOpt = isImageOption(text);
+                        if (isImgOpt) hasImageOptions = true;
+                        const contentHtml = isImgOpt ? `<img src="${text}" style="max-height: 100px; border-radius: 5px; margin-top: 5px;">` : text;
 
-                if (isImgOpt) {
-                    contentHtml = `<img src="${option.text}" style="max-height: 100px; border-radius: 5px; margin-top: 5px;">`;
+                        group1Html += `
+                            <div class="${optionClass}">
+                                <div class="lookup-option-label">${String.fromCharCode(65 + index)}</div>
+                                ${contentHtml}
+                                ${isCorrect ? '<span class="lookup-correct-badge">Correcta</span>' : ''}
+                            </div>
+                        `;
+                    });
+                    group1Html += '</div>';
+
+                    question.options.filter(o => 'text_op2' in o).forEach((option, index) => {
+                        const isCorrect = option.correct;
+                        const optionClass = isCorrect ? 'lookup-option' : 'lookup-option incorrect';
+                        const text = option.text_op2;
+                        const isImgOpt = isImageOption(text);
+                        if (isImgOpt) hasImageOptions = true;
+                        const contentHtml = isImgOpt ? `<img src="${text}" style="max-height: 100px; border-radius: 5px; margin-top: 5px;">` : text;
+
+                        group2Html += `
+                            <div class="${optionClass}">
+                                <div class="lookup-option-label">${String.fromCharCode(70 + index)}</div>
+                                ${contentHtml}
+                                ${isCorrect ? '<span class="lookup-correct-badge">Correcta</span>' : ''}
+                            </div>
+                        `;
+                    });
+                    group2Html += '</div>';
+
+                    optionsHtml = `<div class="hybrid-container">${group1Html}${group2Html}</div>`;
                 } else {
-                    contentHtml = option.text;
+                    question.options.forEach((option, index) => {
+                        const isCorrect = option.correct;
+                        const optionClass = isCorrect ? 'lookup-option' : 'lookup-option incorrect';
+
+                        const isImgOpt = isImageOption(option.text);
+                        if (isImgOpt) hasImageOptions = true;
+                        let contentHtml = '';
+
+                        if (isImgOpt) {
+                            contentHtml = `<img src="${option.text}" style="max-height: 100px; border-radius: 5px; margin-top: 5px;">`;
+                        } else {
+                            contentHtml = option.text;
+                        }
+
+                        optionsHtml += `
+                            <div class="${optionClass}">
+                                <div class="lookup-option-label">${String.fromCharCode(65 + index)}</div>
+                                ${contentHtml}
+                                ${isCorrect ? '<span class="lookup-correct-badge">Correcta</span>' : ''}
+                            </div>
+                        `;
+                    });
                 }
 
-                optionsHtml += `
-                    <div class="${optionClass}">
-                        <div class="lookup-option-label">${String.fromCharCode(65 + index)}</div>
-                        ${contentHtml}
-                        ${isCorrect ? '<span class="lookup-correct-badge">Correcta</span>' : ''}
-                    </div>
-                `;
-            });
-
-            let mainImageHtml = '';
-            if (question.image) {
-                if (question.image.includes('imgur.com')) {
-                    // Generar marca de agua dinámica
-                    const wmText = `${currentUser.name || 'Usuario'} ${currentUser.email || ''} ${currentUser.whatsapp || ''}   `.repeat(100);
-                    
-                    mainImageHtml = `
-                        <div style="margin: 15px auto; position: relative; width: 100%; max-width: 600px; height: 300px; overflow: hidden; border-radius: 10px; background-color: rgba(0,0,0,0.2);">
-                            <div style="position: absolute; inset: 0; background-image: url('${question.image}'); background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 1;"></div>
-                            
-                            <div style="position: absolute; inset: -50%; width: 200%; height: 200%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; transform: rotate(-30deg); pointer-events: none; z-index: 2; opacity: 0.2; overflow: hidden;">
-                                <div style="color: white; font-weight: bold; font-size: 14px; line-height: 2; word-spacing: 1rem; text-align: center;">
-                                    ${wmText}
+                let mainImageHtml = '';
+                if (question.image) {
+                    if (question.image.includes('imgur.com')) {
+                        const wmText = `${currentUser.name || 'Usuario'} ${currentUser.email || ''} ${currentUser.whatsapp || ''}   `.repeat(100);
+                        mainImageHtml = `
+                            <div style="margin: 15px auto; position: relative; width: 100%; max-width: 600px; height: 300px; overflow: hidden; border-radius: 10px; background-color: rgba(0,0,0,0.2);">
+                                <div style="position: absolute; inset: 0; background-image: url('${question.image}'); background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 1;"></div>
+                                <div style="position: absolute; inset: -50%; width: 200%; height: 200%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; transform: rotate(-30deg); pointer-events: none; z-index: 2; opacity: 0.2; overflow: hidden;">
+                                    <div style="color: white; font-weight: bold; font-size: 14px; line-height: 2; word-spacing: 1rem; text-align: center;">
+                                        ${wmText}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                } else {
-                    // Imagen normal sin marca de agua (no es IMGUR)
-                    mainImageHtml = `
-                        <div style="margin: 15px 0; text-align: center;">
-                            <img src="${question.image}" style="max-width: 100%; max-height: 300px; border-radius: 10px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        mainImageHtml = `
+                            <div style="margin: 15px 0; text-align: center;">
+                                <img src="${question.image}" style="max-width: 100%; max-height: 300px; border-radius: 10px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            </div>
+                        `;
+                    }
                 }
-            }
 
-            lookupResultContainer.innerHTML = `
-                <div class="lookup-question-container">
-                    <h3 class="text-xl font-bold mb-4">${question.id}</h3>
-                    <div class="mb-4 text-lg">${question.question}</div>
+                lookupResultContainer.innerHTML = `
+                    <div class="lookup-question-container">
+                        <h3 class="text-xl font-bold mb-4">${question.id}</h3>
+                        <div class="mb-4 text-lg">${question.question}</div>
 
-                    ${mainImageHtml} <div class="lookup-section">
-                        <h4 class="lookup-section-title">Opciones</h4>
-                        <div style="${question.options.some(o => isImageOption(o.text)) ? 'display:grid; grid-template-columns:1fr 1fr; gap:10px;' : ''}">
-                            ${optionsHtml}
+                        ${mainImageHtml} 
+                        <div class="lookup-section">
+                            <h4 class="lookup-section-title">Opciones</h4>
+                            <div style="${hasImageOptions && !isHybrid ? 'display:grid; grid-template-columns:1fr 1fr; gap:10px;' : ''}">
+                                ${optionsHtml}
+                            </div>
                         </div>
+                        ${question.explanation ? `
+                        <div class="lookup-section">
+                            <h4 class="lookup-section-title">Explicación</h4>
+                            <div>${question.explanation}</div>
+                        </div>
+                        ` : ''}
+                        ${question.hint ? `
+                        <div class="lookup-section">
+                            <h4 class="lookup-section-title">Pista</h4>
+                            <div>${question.hint}</div>
+                        </div>
+                        ` : ''}
                     </div>
-                    ${question.explanation ? `
-                    <div class="lookup-section">
-                        <h4 class="lookup-section-title">Explicación</h4>
-                        <div>${question.explanation}</div>
-                    </div>
-                    ` : ''}
-                    ${question.hint ? `
-                    <div class="lookup-section">
-                        <h4 class="lookup-section-title">Pista</h4>
-                        <div>${question.hint}</div>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-            lookupResultContainer.classList.remove('hidden');
-            MathJax.typesetPromise([lookupResultContainer]);
-        }
+                `;
+                lookupResultContainer.classList.remove('hidden');
+                MathJax.typesetPromise([lookupResultContainer]);
+            }
             
             loadData();
             initializeVolumes();
