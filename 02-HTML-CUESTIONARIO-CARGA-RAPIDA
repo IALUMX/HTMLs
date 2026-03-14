@@ -1196,6 +1196,45 @@
                 height: 1.5rem !important;
             }
         }
+    /* NUEVOS ESTILOS: Opción gris y contador de votos */
+        .option-dark-gray {
+            background-color: #4a4a4a !important;
+            color: #888888 !important;
+            filter: grayscale(100%);
+        }
+        .vote-counter-container {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            z-index: 20;
+        }
+        .vote-btn {
+            background: transparent;
+            border: none;
+            color: #4fc3f7;
+            cursor: pointer;
+            padding: 0 4px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+        .vote-btn:hover {
+            color: #fff;
+            transform: scale(1.2);
+        }
+        .vote-count {
+            min-width: 15px;
+            text-align: center;
+            color: #fff;
+        }
     </style>
 </head>
 <body class="p-2 sm:p-4">
@@ -1415,7 +1454,7 @@
             <div class="space-y-4">
                 <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
                     <label class="font-medium flex items-center">
-                        <input type="checkbox" id="continuous-mode-toggle" class="mr-2 h-5 w-5">
+                        <input type="checkbox" id="continuous-mode-toggle" class="mr-2 h-5 w-5" checked>
                         MODO AVANCE CONTINUO 🚀 (Sin límite de preguntas)
                     </label>
                     <p class="text-xs text-gray-400">Responde preguntas del banco de forma aleatoria sin fin. Termina la ronda cuando quieras con "Evaluar avance".</p>
@@ -1444,8 +1483,8 @@
                 </div>
 
                 <div class="space-y-2">
-                    <p class="font-medium">Proceso de Admisión</p>
-                    <p class="text-xs text-gray-400">Selecciona tu proceso de admisión, recuerda que "GENERAL" significa que el ejercicio aplica para todos los procesos de admisión.</p>
+                    <p class="font-medium">Proceso de Admisión o Materia</p>
+                    <p class="text-xs text-gray-400">Selecciona tu proceso de admisión o materia(s), recuerda que "GENERAL" significa que el ejercicio aplica para todos los procesos de admisión.</p>
                     <div id="uni-tags-container" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div class="space-y-2">
@@ -2129,7 +2168,7 @@
             let totalQuestionTime = 0;
             let isGuest = false;
             let isGameMode = false;
-            let isContinuousMode = false;
+            let isContinuousMode = true;
             let gameModeLives = 3;
             let consecutiveCorrect = 0;
             let gameModeTimer;
@@ -3916,7 +3955,7 @@
                         gameModeToggle.parentElement.style.pointerEvents = 'auto';
                         continuousModeToggle.disabled = false;
                     } else {
-                        loginErrorMessage.textContent = 'Los datos no coinciden. Por favor, verifica tu información.';
+                        loginErrorMessage.textContent = 'Los datos no coinciden. Por favor, verifica tu información. Si no eres alumno CEPREDIX manda mensaje al 7774516364';
                     }
                 } catch (error) {
                     loginErrorMessage.textContent = 'Error al conectar con la base de datos. Intenta de nuevo.';
@@ -3963,40 +4002,61 @@
                 // 1. Total Banco
                 if(statsTotal) statsTotal.textContent = allQuestions.length;
 
-                // Calcular Filtros
-                const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                
-                let filteredQuestions = allQuestions;
-
-               // Lógica de filtrado con tags + Rango de IDs
+                // Valores de rango de IDs
                 const startIdVal = startIdInput ? startIdInput.value.trim().toUpperCase() : '';
                 const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
 
-                filteredQuestions = allQuestions.filter(q => {
-                    // Verificar Uni
-                    const hasUniTag = selectedUniTags.length === 0 || (q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag)));
-                    // Verificar Nivel
-                    const hasLevelTag = selectedLevelTags.length === 0 || (q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag)));
-                    // Verificar Tipo
-                    const hasTypeTag = selectedTypeTags.length === 0 || (q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag)));
-                    
-                    // Verificar Rango de IDs
+                // Filtro base por IDs
+                const basePool = allQuestions.filter(q => {
                     let inIdRange = true;
-                    if (startIdVal && endIdVal) {
-                        // Si hay ambos, debe estar entre los dos (alfabéticamente)
-                        inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
-                    } else if (startIdVal) {
-                        // Solo inicio: mayor o igual
-                        inIdRange = (q.id >= startIdVal);
-                    } else if (endIdVal) {
-                        // Solo final: menor o igual
-                        inIdRange = (q.id <= endIdVal);
-                    }
-
-                    return hasUniTag && hasLevelTag && hasTypeTag && inIdRange;
+                    if (startIdVal && endIdVal) inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
+                    else if (startIdVal) inIdRange = (q.id >= startIdVal);
+                    else if (endIdVal) inIdRange = (q.id <= endIdVal);
+                    return inIdRange;
                 });
+
+                // --- LÓGICA DE CASCADA PARA ETIQUETAS ---
+                
+                // Nivel 1: Universidades disponibles en el basePool
+                const availableUniTags = new Set(basePool.flatMap(q => q.uni_tags || []));
+                uniTagsContainer.querySelectorAll('.tag').forEach(tagEl => {
+                    if (availableUniTags.has(tagEl.textContent)) {
+                        tagEl.style.display = '';
+                    } else {
+                        tagEl.style.display = 'none';
+                        tagEl.classList.remove('selected');
+                    }
+                });
+                const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+
+                // Nivel 2: Niveles disponibles después de aplicar filtro de Universidad
+                const poolAfterUni = basePool.filter(q => selectedUniTags.length === 0 || (q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag))));
+                const availableLevelTags = new Set(poolAfterUni.flatMap(q => q.level_tag || []));
+                levelTagsContainer.querySelectorAll('.tag').forEach(tagEl => {
+                    if (availableLevelTags.has(tagEl.textContent)) {
+                        tagEl.style.display = '';
+                    } else {
+                        tagEl.style.display = 'none';
+                        tagEl.classList.remove('selected');
+                    }
+                });
+                const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+
+                // Nivel 3: Tipos disponibles después de aplicar filtro de Nivel
+                const poolAfterLevel = poolAfterUni.filter(q => selectedLevelTags.length === 0 || (q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag))));
+                const availableTypeTags = new Set(poolAfterLevel.flatMap(q => q.type_tag || []));
+                typeTagsContainer.querySelectorAll('.tag').forEach(tagEl => {
+                    if (availableTypeTags.has(tagEl.textContent)) {
+                        tagEl.style.display = '';
+                    } else {
+                        tagEl.style.display = 'none';
+                        tagEl.classList.remove('selected');
+                    }
+                });
+                const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+
+                // 4. Filtro Final de preguntas
+                let filteredQuestions = poolAfterLevel.filter(q => selectedTypeTags.length === 0 || (q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag))));
                 
                 // 2. Preguntas con Filtros
                 if(statsTotalFiltered) statsTotalFiltered.textContent = filteredQuestions.length;
@@ -4185,7 +4245,7 @@
                     
                     // Validaciones de filtros vacíos
                     if (selectedUniTags.length === 0) {
-                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión".';
+                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión o Materias".';
                         return;
                     }
                     if (selectedLevelTags.length === 0) {
@@ -4316,6 +4376,73 @@
                 startEvaluateEmojiAnimation();
                 document.getElementById('action-buttons').classList.remove('hidden');
                 allQuestionsCompletedMessage.classList.add('hidden');
+            }
+
+            function addOptionFeatures(button, isCepredixUser, questionId, optionText) {
+                // 1) Función de mantener presionado (2 segundos) para poner gris
+                let pressTimer;
+                const startPress = () => {
+                    pressTimer = setTimeout(() => {
+                        button.classList.toggle('option-dark-gray');
+                    }, 2000);
+                };
+                const cancelPress = () => {
+                    if (pressTimer) clearTimeout(pressTimer);
+                };
+
+                // Detectar clics en PC y Toques en Móviles/Tablets
+                button.addEventListener('mousedown', startPress);
+                button.addEventListener('touchstart', startPress, {passive: true});
+                button.addEventListener('mouseup', cancelPress);
+                button.addEventListener('mouseleave', cancelPress);
+                button.addEventListener('touchend', cancelPress);
+                button.addEventListener('touchmove', cancelPress);
+
+                // 2) Función de contador de votos discreto (solo para @cepredix.com)
+                if (isCepredixUser) {
+                    const voteContainer = document.createElement('div');
+                    voteContainer.className = 'vote-counter-container';
+                    
+                    // Evita que al hacer clic en los votos se seleccione la opción
+                    voteContainer.onclick = (e) => e.stopPropagation();
+                    voteContainer.onmousedown = (e) => e.stopPropagation();
+                    voteContainer.ontouchstart = (e) => e.stopPropagation();
+
+                    const btnMinus = document.createElement('button');
+                    btnMinus.className = 'vote-btn';
+                    btnMinus.textContent = '-';
+                    
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'vote-count';
+                    
+                    // Usamos localStorage para guardar los votos temporalmente en el navegador
+                    const voteKey = `vote_${questionId}_${optionText.substring(0, 20)}`;
+                    let currentVotes = parseInt(localStorage.getItem(voteKey)) || 0;
+                    countSpan.textContent = currentVotes;
+
+                    const btnPlus = document.createElement('button');
+                    btnPlus.className = 'vote-btn';
+                    btnPlus.textContent = '+';
+
+                    btnMinus.onclick = (e) => { 
+                        e.preventDefault();
+                        currentVotes--; 
+                        countSpan.textContent = currentVotes; 
+                        localStorage.setItem(voteKey, currentVotes); 
+                    };
+                    btnPlus.onclick = (e) => { 
+                        e.preventDefault();
+                        currentVotes++; 
+                        countSpan.textContent = currentVotes; 
+                        localStorage.setItem(voteKey, currentVotes); 
+                    };
+
+                    voteContainer.appendChild(btnMinus);
+                    voteContainer.appendChild(countSpan);
+                    voteContainer.appendChild(btnPlus);
+                    
+                    button.appendChild(voteContainer);
+                }
             }
 
             function displayQuestion() {
@@ -4505,6 +4632,10 @@
                             span.innerHTML = opt.text;
                             btn.appendChild(span);
 
+                            // Agregamos las nuevas funciones (presión de 2 seg y contador)
+                            const isCepredix = currentUser.email && currentUser.email.toLowerCase().includes('@cepredix.com');
+                            addOptionFeatures(btn, isCepredix, question.id, opt.text);
+
                             // Evento Click Híbrido
                             btn.addEventListener('click', () => {
                                 if (userAnswers[currentQuestionIndex].status !== 'unanswered') return;
@@ -4585,6 +4716,11 @@
 
                         button.dataset.text = option.text;
                         
+                        // Agregamos las nuevas funciones (presión de 2 seg y contador)
+                        // Excluimos la opción de "No puedo identificar" del contador
+                        const isCepredix = currentUser.email && currentUser.email.toLowerCase().includes('@cepredix.com') && !isNoId;
+                        addOptionFeatures(button, isCepredix, question.id, option.text);
+
                         // Triple clic logic standard
                         let clickCount = 0;
                         let clickTimer = null;
