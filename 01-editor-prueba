@@ -3934,7 +3934,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         gameModeToggle.parentElement.style.pointerEvents = 'auto';
                         continuousModeToggle.disabled = false;
                     } else {
-                        loginErrorMessage.textContent = 'Los datos no coinciden. Por favor, verifica tu información.';
+                        loginErrorMessage.textContent = 'Los datos no coinciden. Por favor, verifica tu información. Si no eres alumno CEPREDIX manda mensaje al 7774516364';
                     }
                 } catch (error) {
                     loginErrorMessage.textContent = 'Error al conectar con la base de datos. Intenta de nuevo.';
