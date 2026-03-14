@@ -1462,8 +1462,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 </div>
 
                 <div class="space-y-2">
-                    <p class="font-medium">Proceso de Admisión</p>
-                    <p class="text-xs text-gray-400">Selecciona tu proceso de admisión, recuerda que "GENERAL" significa que el ejercicio aplica para todos los procesos de admisión.</p>
+                    <p class="font-medium">Proceso de Admisión o Materia</p>
+                    <p class="text-xs text-gray-400">Selecciona tu proceso de admisión o materia(s), recuerda que "GENERAL" significa que el ejercicio aplica para todos los procesos de admisión.</p>
                     <div id="uni-tags-container" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div class="space-y-2">
@@ -4203,7 +4203,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     
                     // Validaciones de filtros vacíos
                     if (selectedUniTags.length === 0) {
-                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión".';
+                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión o Materias".';
                         return;
                     }
                     if (selectedLevelTags.length === 0) {
