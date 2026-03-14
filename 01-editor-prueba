@@ -8,7 +8,8 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que por defecto este seleccionado "MODO AVANCE CONTINUO", además, que a medida que se vayan seleccionando los filtros de uni_tags, level_tag y type_tag en ese orden, solo se visualicen las opciones que estén disponibles, por ejemplo, si el banco de preguntas en uni_tags tiene UNAM y en level_tag solo BÁSICO e INTERMEDIO, que sean las únicas etiquetas que se visualicen una vez que se seleccionó la etiqueta de uni_tags. 
+1) Requiero que 
+
 
 
 
@@ -1213,6 +1214,45 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 width: 1.5rem !important; 
                 height: 1.5rem !important;
             }
+        }
+    /* NUEVOS ESTILOS: Opción gris y contador de votos */
+        .option-dark-gray {
+            background-color: #4a4a4a !important;
+            color: #888888 !important;
+            filter: grayscale(100%);
+        }
+        .vote-counter-container {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            z-index: 20;
+        }
+        .vote-btn {
+            background: transparent;
+            border: none;
+            color: #4fc3f7;
+            cursor: pointer;
+            padding: 0 4px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+        .vote-btn:hover {
+            color: #fff;
+            transform: scale(1.2);
+        }
+        .vote-count {
+            min-width: 15px;
+            text-align: center;
+            color: #fff;
         }
     </style>
 </head>
@@ -4357,6 +4397,73 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 allQuestionsCompletedMessage.classList.add('hidden');
             }
 
+            function addOptionFeatures(button, isCepredixUser, questionId, optionText) {
+                // 1) Función de mantener presionado (2 segundos) para poner gris
+                let pressTimer;
+                const startPress = () => {
+                    pressTimer = setTimeout(() => {
+                        button.classList.toggle('option-dark-gray');
+                    }, 2000);
+                };
+                const cancelPress = () => {
+                    if (pressTimer) clearTimeout(pressTimer);
+                };
+
+                // Detectar clics en PC y Toques en Móviles/Tablets
+                button.addEventListener('mousedown', startPress);
+                button.addEventListener('touchstart', startPress, {passive: true});
+                button.addEventListener('mouseup', cancelPress);
+                button.addEventListener('mouseleave', cancelPress);
+                button.addEventListener('touchend', cancelPress);
+                button.addEventListener('touchmove', cancelPress);
+
+                // 2) Función de contador de votos discreto (solo para @cepredix.com)
+                if (isCepredixUser) {
+                    const voteContainer = document.createElement('div');
+                    voteContainer.className = 'vote-counter-container';
+                    
+                    // Evita que al hacer clic en los votos se seleccione la opción
+                    voteContainer.onclick = (e) => e.stopPropagation();
+                    voteContainer.onmousedown = (e) => e.stopPropagation();
+                    voteContainer.ontouchstart = (e) => e.stopPropagation();
+
+                    const btnMinus = document.createElement('button');
+                    btnMinus.className = 'vote-btn';
+                    btnMinus.textContent = '-';
+                    
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'vote-count';
+                    
+                    // Usamos localStorage para guardar los votos temporalmente en el navegador
+                    const voteKey = `vote_${questionId}_${optionText.substring(0, 20)}`;
+                    let currentVotes = parseInt(localStorage.getItem(voteKey)) || 0;
+                    countSpan.textContent = currentVotes;
+
+                    const btnPlus = document.createElement('button');
+                    btnPlus.className = 'vote-btn';
+                    btnPlus.textContent = '+';
+
+                    btnMinus.onclick = (e) => { 
+                        e.preventDefault();
+                        currentVotes--; 
+                        countSpan.textContent = currentVotes; 
+                        localStorage.setItem(voteKey, currentVotes); 
+                    };
+                    btnPlus.onclick = (e) => { 
+                        e.preventDefault();
+                        currentVotes++; 
+                        countSpan.textContent = currentVotes; 
+                        localStorage.setItem(voteKey, currentVotes); 
+                    };
+
+                    voteContainer.appendChild(btnMinus);
+                    voteContainer.appendChild(countSpan);
+                    voteContainer.appendChild(btnPlus);
+                    
+                    button.appendChild(voteContainer);
+                }
+            }
+
             function displayQuestion() {
                 if (typeof dtInterval !== 'undefined' && dtInterval) clearInterval(dtInterval);
                 dtIsRunning = false; 
@@ -4544,6 +4651,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                             span.innerHTML = opt.text;
                             btn.appendChild(span);
 
+                            // Agregamos las nuevas funciones (presión de 2 seg y contador)
+                            const isCepredix = currentUser.email && currentUser.email.toLowerCase().includes('@cepredix.com');
+                            addOptionFeatures(btn, isCepredix, question.id, opt.text);
+
                             // Evento Click Híbrido
                             btn.addEventListener('click', () => {
                                 if (userAnswers[currentQuestionIndex].status !== 'unanswered') return;
@@ -4624,6 +4735,11 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
                         button.dataset.text = option.text;
                         
+                        // Agregamos las nuevas funciones (presión de 2 seg y contador)
+                        // Excluimos la opción de "No puedo identificar" del contador
+                        const isCepredix = currentUser.email && currentUser.email.toLowerCase().includes('@cepredix.com') && !isNoId;
+                        addOptionFeatures(button, isCepredix, question.id, option.text);
+
                         // Triple clic logic standard
                         let clickCount = 0;
                         let clickTimer = null;
