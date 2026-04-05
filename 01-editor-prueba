@@ -5007,7 +5007,11 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 simulacroSuccess2.pause();
             });
             
-            finishBtn.addEventListener('click', () => endQuiz());
+            finishBtn.addEventListener('click', () => {
+                if (confirm("¿Estás seguro de que deseas evaluar tu avance ahora?")) {
+                    endQuiz();
+                }
+            });
             
             hintBtn.addEventListener('click', () => {
                 const question = userAnswers[currentQuestionIndex].question;
