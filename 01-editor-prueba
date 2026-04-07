@@ -4354,6 +4354,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             });
             
             function startQuiz() {
+                screens.setup.classList.add('hidden');
+                screens.quiz.classList.remove('hidden');
                 currentQuestionIndex = 0;
                 seconds = 0;
                 totalQuestionTime = 0;
