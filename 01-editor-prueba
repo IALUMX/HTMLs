@@ -8,10 +8,8 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que generes un nuevo modo, este se llamará "MODO AVANCE REAL 😱" Este modo tendrá las siguinetes características:
-I) El estudiante no podrá ver el conteo de preguntas buenas ni malas, tampoco los audios asociados a estas respeustas, tampoco al regresar podrá ver que se haya coloreado de verde o rojo, solo se quedarán como cuando se selecciona una opción en color oscurecido con recuadro naranja. 
-II) Se desplegará activará automáticamente el temporizador con tiempos de acuerdo al grado de dificultad, Si es BÁSICO con 90 segundos (1:30) si es INTERMEDIO con 120 segundos (2:00) y si es avanzado con 180 segundos (3:00) que comenzará a corre en automático al cambiar el ejercicio, si se acaba el tiempo no afectará la respuesta, solo es una medida de presión para que el estudinate aprenda a gestionar mejor su tiempo. Cualquier otro grado de dificultad que haya adicionalmente se configurará por defecto en 90 segundos (01:30)
-III) Estarán inhabilitados los botones de "PISTA" y el chatbot en este modo.
+1) Requiero que 
+
 
 
 
@@ -1472,29 +1470,29 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 <h1 class="text-2xl sm:text-3xl font-bold">Hola, <span id="welcome-name" class="text-blue-400"></span></h1>
                 <p class="text-gray-300 mt-2">Configura tu prueba para comenzar a practicar. Recuerda que si estás como INVITADO tendrás funciones limitadas</p>
             </div>
-            <div class="space-y-4">
-                <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
-                    <label class="font-medium flex items-center">
-                        <input type="checkbox" id="continuous-mode-toggle" class="mr-2 h-5 w-5" checked>
-                        MODO AVANCE CONTINUO 🚀 (Sin límite de preguntas)
-                    </label>
-                    <p class="text-xs text-gray-400">Responde preguntas del banco de forma aleatoria sin fin. Termina la ronda cuando quieras con "Evaluar avance".</p>
-                </div>
-               <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
-                    <label class="font-medium flex items-center">
-                        <input type="checkbox" id="game-mode-toggle" class="mr-2 h-5 w-5">
-                        MODO SIMULACRO MORTAL ☠ (Desafío)
+           <div class="space-y-4 text-left">
+                <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
+                    <label class="font-medium flex items-center justify-start text-left">
+                        <input type="checkbox" id="continuous-mode-toggle" class="mr-2 h-5 w-5 flex-shrink-0" checked>
+                        <span>MODO AVANCE CONTINUO 🚀 (Sin límite de preguntas)</span>
                     </label>
-                    <p class="text-xs text-gray-400">Temporizador fijo de 30 minutos, 20 ejercicios aleatorios y 3 vidas</p>
+                    <p class="text-xs text-gray-400 text-left pl-7">Responde preguntas del banco de forma aleatoria sin fin. Termina la ronda cuando quieras con "Evaluar avance".</p>
                 </div>
                 <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
-                    <label class="font-medium flex items-center">
-                        <input type="checkbox" id="real-mode-toggle" class="mr-2 h-5 w-5">
-                        MODO AVANCE REAL 😱
+                    <label class="font-medium flex items-center justify-start text-left">
+                        <input type="checkbox" id="game-mode-toggle" class="mr-2 h-5 w-5 flex-shrink-0">
+                        <span>MODO SIMULACRO MORTAL ☠ (Desafío)</span>
                     </label>
-                    <p class="text-xs text-gray-400">Oculta contador de aciertos/errores, sin confirmación de color ni audio al responder y temporizador dinámico.</p>
+                    <p class="text-xs text-gray-400 text-left pl-7">Temporizador fijo de 30 minutos, 20 ejercicios aleatorios y 3 vidas</p>
                 </div>
-            </div>
+                <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
+                    <label class="font-medium flex items-center justify-start text-left">
+                        <input type="checkbox" id="real-mode-toggle" class="mr-2 h-5 w-5 flex-shrink-0">
+                        <span>MODO AVANCE REAL 😱</span>
+                    </label>
+                    <p class="text-xs text-gray-400 text-left pl-7">Oculta contador de aciertos/errores, sin confirmación de color ni audio al responder y temporizador dinámico.</p>
+                </div>
+            </div>
             <div class="space-y-4">
                 <div class="space-y-2 border-b border-gray-700 pb-4">
                     <p class="font-medium text-blue-400">Filtro por Rango de IDs (Opcional)</p>
