@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRUEBA (Global)</title>
+    <title>👩‍🎓 ADMISIÓN PREPA 2026 😎</title>
     <link rel="icon" href="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/00-WEBLogo-circular-cepredix.png" type="image/png">
     
     <meta property="og:image" content="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/Thumbnail-CEP-HTML.png">
@@ -12,7 +12,7 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
-    <meta property="og:title" content="PRUEBA (Global) - CEPREDIX">
+    <meta property="og:title" content="👩‍🎓 ADMISIÓN PREPA 2026 😎 - CEPREDIX">
     <meta property="og:description" content="Plataforma de evaluación educativa.">
     <meta property="og:type" content="website">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1385,7 +1385,7 @@
             <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" title="Ir a Web CEPREDIX">
                 <div class="logo"></div>
             </a>
-            <h1 class="text-2xl sm:text-3xl font-bold">PRUEBA (Global)</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold">👩‍🎓 ADMISIÓN PREPA 2026 😎</h1>
             <h2 class="text-xl sm:text-2xl">Diseñado con pasión 💜 por el CEPREDIX</h2>
             <p class="text-sm sm:text-base">Prueba tus conocimientos con este cuestionario interactivo de opción múltiple 🧠</p>
         </header>
@@ -2010,7 +2010,7 @@
 </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/00-json-prueba-v2-170126.json';
+            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-acumulativo-prepa.json';
             const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS5sU2hYNByYHNDESXxZPoe3dikV115hY_TII15wZtF8E0NWBFmnLSW2ad7ZqDdwk-jTPQfX-92n6zQ/pub?gid=0&single=true&output=csv';
             const CORS_PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(GOOGLE_SHEET_URL);
             const RESULTS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYESY3dBy0h5QrY5EyJ_jfHwlEwnhByFcPTywwK4jJhGa3rvrnIzR9OXleZUZ7zVqUqw/exec';
@@ -5139,7 +5139,7 @@
             async function submitResults(stats, score, totalTime, idsString, numQuestions) {
                 const formData = new FormData();
                 
-                formData.append('EvaluationName', "PRUEBA (Global)"); 
+                formData.append('EvaluationName', "👩‍🎓 ADMISIÓN PREPA 2026 😎"); 
                 
                 formData.append('Name', currentUser.name || 'Invitado');
                 formData.append('Email', currentUser.email || 'sin_email');
@@ -5441,7 +5441,7 @@
             }
             
             function populateSummaryBox(score, idsString, allAnsweredIds) {
-                summaryEvalName.textContent = "PRUEBA (Global)";
+                summaryEvalName.textContent = "👩‍🎓 ADMISIÓN PREPA 2026 😎";
                 summaryDate.textContent = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 summaryScore.textContent = `${score.toFixed(2)} / 10.00`;
                 summaryIds.textContent = idsString;
