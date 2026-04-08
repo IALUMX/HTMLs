@@ -8,7 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que
+1) Requiero que 
 
 
 
@@ -68,6 +68,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             position: relative;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             line-height: 1.4; /* Ajuste global de interlineado */
+            overscroll-behavior-y: none; /* EVITA EL PULL-TO-REFRESH EN IPHONE */
         }
         #question-text {
             line-height: 1.25 !important; /* Interlineado más compacto en la pregunta */
@@ -2050,6 +2051,14 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 quiz: document.getElementById('quiz-screen'),
                 results: document.getElementById('results-screen'),
             };
+
+            // ALERTA DE PROTECCIÓN CONTRA CIERRE ACCIDENTAL
+            window.addEventListener('beforeunload', function (e) {
+                if (!screens.quiz.classList.contains('hidden')) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
             const loginForm = document.getElementById('login-form');
             const nameInput = document.getElementById('name-input');
             const emailInput = document.getElementById('email-input');
@@ -5864,6 +5873,12 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 // Guardamos una COPIA de los objetos actuales
                 wbHistory.push(JSON.parse(JSON.stringify(wbPaths)));
                 wbStep++;
+                
+                // LÍMITE DE MEMORIA PARA EVITAR CRASHEOS EN SAFARI/IPHONE
+                if (wbHistory.length > 20) {
+                    wbHistory.shift();
+                    wbStep--;
+                }
             }
 
             // Ajustar tamaño del canvas
