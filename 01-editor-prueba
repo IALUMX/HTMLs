@@ -8,7 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que 
+1) Requiero que
 
 
 
@@ -1470,29 +1470,29 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 <h1 class="text-2xl sm:text-3xl font-bold">Hola, <span id="welcome-name" class="text-blue-400"></span></h1>
                 <p class="text-gray-300 mt-2">Configura tu prueba para comenzar a practicar. Recuerda que si estás como INVITADO tendrás funciones limitadas</p>
             </div>
-           <div class="space-y-4 text-left">
-                <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
-                    <label class="font-medium flex items-center justify-start text-left">
-                        <input type="checkbox" id="continuous-mode-toggle" class="mr-2 h-5 w-5 flex-shrink-0" checked>
-                        <span>MODO AVANCE CONTINUO 🚀 (Sin límite de preguntas)</span>
-                    </label>
-                    <p class="text-xs text-gray-400 text-left pl-7">Responde preguntas del banco de forma aleatoria sin fin. Termina la ronda cuando quieras con "Evaluar avance".</p>
-                </div>
-                <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
-                    <label class="font-medium flex items-center justify-start text-left">
-                        <input type="checkbox" id="game-mode-toggle" class="mr-2 h-5 w-5 flex-shrink-0">
-                        <span>MODO SIMULACRO MORTAL ☠ (Desafío)</span>
-                    </label>
-                    <p class="text-xs text-gray-400 text-left pl-7">Temporizador fijo de 30 minutos, 20 ejercicios aleatorios y 3 vidas</p>
-                </div>
-                <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
-                    <label class="font-medium flex items-center justify-start text-left">
-                        <input type="checkbox" id="real-mode-toggle" class="mr-2 h-5 w-5 flex-shrink-0">
-                        <span>MODO AVANCE REAL 😱</span>
-                    </label>
-                    <p class="text-xs text-gray-400 text-left pl-7">Oculta contador de aciertos/errores, sin confirmación de color ni audio al responder y temporizador dinámico.</p>
-                </div>
-            </div>
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left mt-4 pt-4 border-t border-gray-700">
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-600 flex flex-col justify-between">
+                    <label class="font-medium flex items-start text-left cursor-pointer">
+                        <input type="checkbox" id="continuous-mode-toggle" class="mr-2 mt-1 h-5 w-5 flex-shrink-0" checked>
+                        <span class="text-sm">MODO AVANCE CONTINUO 🚀<br><span class="text-xs font-normal text-gray-300">(Sin límite)</span></span>
+                    </label>
+                    <p class="text-xs text-gray-400 text-left mt-2">Responde aleatorio sin fin. Termina con "Evaluar avance".</p>
+                </div>
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-600 flex flex-col justify-between">
+                    <label class="font-medium flex items-start text-left cursor-pointer">
+                        <input type="checkbox" id="game-mode-toggle" class="mr-2 mt-1 h-5 w-5 flex-shrink-0">
+                        <span class="text-sm">MODO SIMULACRO MORTAL ☠<br><span class="text-xs font-normal text-gray-300">(Desafío)</span></span>
+                    </label>
+                    <p class="text-xs text-gray-400 text-left mt-2">30 minutos, 20 ejercicios al azar y 3 vidas.</p>
+                </div>
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-600 flex flex-col justify-between">
+                    <label class="font-medium flex items-start text-left cursor-pointer">
+                        <input type="checkbox" id="real-mode-toggle" class="mr-2 mt-1 h-5 w-5 flex-shrink-0">
+                        <span class="text-sm">MODO AVANCE REAL 😱<br><span class="text-xs font-normal text-gray-300">(Sin ayudas)</span></span>
+                    </label>
+                    <p class="text-xs text-gray-400 text-left mt-2">Oculta aciertos, sin confirmación de color/audio.</p>
+                </div>
+            </div>
             <div class="space-y-4">
                 <div class="space-y-2 border-b border-gray-700 pb-4">
                     <p class="font-medium text-blue-400">Filtro por Rango de IDs (Opcional)</p>
@@ -1911,11 +1911,26 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     </div>
                 </div>
             </div>
-            <div class="mt-8 space-y-2">
-                <label for="answered-ids-output" class="font-medium">Estos son los id´s solo de los ejercicios correctamente respondidos en esta evaluación, cópialos si deseas que no aparezcan estos ejercicios en la siguiente evaluación que realices:</label>
-                <div class="flex gap-2">
-                    <textarea id="answered-ids-output" rows="4" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 text-white" readonly></textarea>
-                    <button id="copy-ids-btn" class="btn btn-secondary">Copiar</button>
+            <div id="ids-output-section" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div class="space-y-2 bg-green-900 bg-opacity-20 p-4 rounded-lg border border-green-700">
+                    <label for="answered-ids-output" class="font-bold text-green-400 text-lg flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i> IDs Correctos
+                    </label>
+                    <p class="text-xs text-gray-300 mb-2">Ejercicios respondidos <b>correctamente</b>. Cópialos si deseas omitirlos en tu próxima sesión.</p>
+                    <div class="flex gap-2">
+                        <textarea id="answered-ids-output" rows="3" class="w-full p-3 bg-gray-800 rounded-lg border border-green-600 text-green-300" readonly></textarea>
+                        <button id="copy-ids-btn" class="btn btn-correct flex-shrink-0" style="margin:0;"><i class="fas fa-copy"></i> Copiar</button>
+                    </div>
+                </div>
+                <div class="space-y-2 bg-red-900 bg-opacity-20 p-4 rounded-lg border border-red-700">
+                    <label for="incorrect-ids-output" class="font-bold text-red-400 text-lg flex items-center gap-2">
+                        <i class="fas fa-times-circle"></i> IDs Incorrectos / Omitidos
+                    </label>
+                    <p class="text-xs text-gray-300 mb-2">Ejercicios <b>incorrectos, omitidos o no identificados</b>. Cópialos para repasarlos después.</p>
+                    <div class="flex gap-2">
+                        <textarea id="incorrect-ids-output" rows="3" class="w-full p-3 bg-gray-800 rounded-lg border border-red-600 text-red-300" readonly></textarea>
+                        <button id="copy-incorrect-ids-btn" class="btn btn-incorrect flex-shrink-0" style="margin:0;"><i class="fas fa-copy"></i> Copiar</button>
+                    </div>
                 </div>
             </div>
             <button id="restart-quiz-btn" class="btn btn-primary w-full sm:w-auto mt-8">Hacer otro cuestionario</button>
@@ -2094,6 +2109,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             const resultsTableBody = document.querySelector('#results-table tbody');
             const answeredIdsOutput = document.getElementById('answered-ids-output');
             const copyIdsBtn = document.getElementById('copy-ids-btn');
+            const incorrectIdsOutput = document.getElementById('incorrect-ids-output');
+            const copyIncorrectIdsBtn = document.getElementById('copy-incorrect-ids-btn');
             const restartQuizBtn = document.getElementById('restart-quiz-btn');
             const resultsChartCanvas = document.getElementById('results-chart');
             const summaryEvalName = document.getElementById('summary-eval-name');
@@ -3696,7 +3713,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     '.graphing-btn',
                     '.privacy-modal-close',
                     '.close-modal-btn',
-                    '#logout-btn'
+                    '#logout-btn',
+                    'input[type="checkbox"]'
                 ];
 
                 const target = e.target.closest(soundClasses.join(','));
@@ -4447,27 +4465,36 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
 
             function addOptionFeatures(button, isCepredixUser, questionId, optionText) {
-                // 1) Función de mantener presionado (2 segundos) para poner gris
-                let pressTimer;
-                const startPress = () => {
-                    pressTimer = setTimeout(() => {
+                // 1) Función de descartar opción (poner gris) al presionar la letra del inciso
+                const letterElement = button.querySelector('.option-letter');
+                if (letterElement) {
+                    // Evitar que el clic en la letra seleccione la opción principal
+                    letterElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         button.classList.toggle('option-dark-gray');
-                    }, 2000);
-                };
-                const cancelPress = () => {
-                    if (pressTimer) clearTimeout(pressTimer);
-                };
-
-                // Detectar clics en PC y Toques en Móviles/Tablets
-                button.addEventListener('mousedown', startPress);
-                button.addEventListener('touchstart', startPress, {passive: true});
-                button.addEventListener('mouseup', cancelPress);
-                button.addEventListener('mouseleave', cancelPress);
-                button.addEventListener('touchend', cancelPress);
-                button.addEventListener('touchmove', cancelPress);
+                    });
+                    
+                    // Asegurar que funcione igual en móviles (touch)
+                    letterElement.addEventListener('touchstart', (e) => {
+                        e.stopPropagation();
+                    }, {passive: true});
+                    
+                    letterElement.addEventListener('touchend', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault(); // Evita doble disparo en algunos dispositivos
+                        button.classList.toggle('option-dark-gray');
+                    });
+                    
+                    // Efecto visual sutil para que el usuario sepa que es interactiva
+                    letterElement.style.cursor = 'pointer';
+                    letterElement.title = 'Toca aquí para descartar esta opción';
+                }
 
                 // 2) Función de contador de votos discreto (solo para @cepredix.com)
                 if (isCepredixUser) {
+                    // Agregar padding dinámico para evitar solapamiento del texto con el contador
+                    button.style.paddingRight = '85px';
+
                     const voteContainer = document.createElement('div');
                     voteContainer.className = 'vote-counter-container';
                     
@@ -5216,12 +5243,13 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 populateSummaryBox(finalScoreValue, idsString, allAnsweredIds);
                 
                 if (isGuest) {
-                    const idsOutputSection = document.querySelector('.mt-8.space-y-2');
-                    if (idsOutputSection) {
-                        idsOutputSection.style.display = 'none';
-                    }
-                    copyIdsBtn.disabled = true;
-                    copyIdsBtn.classList.add('btn-disabled');
+                    const idsOutputSection = document.getElementById('ids-output-section');
+                if (idsOutputSection) {
+                    idsOutputSection.style.display = 'none';
+                }
+                copyIdsBtn.disabled = true;
+                copyIdsBtn.classList.add('btn-disabled');
+                if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = true; copyIncorrectIdsBtn.classList.add('btn-disabled'); }
                 } else {
                     const idsOutputSection = document.querySelector('.mt-8.space-y-2');
                     if (idsOutputSection) {
@@ -5438,22 +5466,42 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
             
             function generateAnsweredIdsList() {
+                // Generar lista de correctas
                 const correctIds = userAnswers
                     .filter(a => a.status === 'correct' && a.question.id)
                     .map(a => a.question.id);
                 const combinedIds = new Set([...pastedAnsweredIds, ...correctIds]);
                 const sortedIds = [...combinedIds].sort();
                 const idsString = sortedIds.join(', ');
-                answeredIdsOutput.value = idsString;
+                if (answeredIdsOutput) answeredIdsOutput.value = idsString;
+
+                // Generar lista de incorrectas/omitidas
+                const incorrectIds = userAnswers
+                    .filter(a => (a.status === 'incorrect' || a.status === 'omitted' || a.status === 'unidentified') && a.question.id)
+                    .map(a => a.question.id);
+                const sortedIncorrectIds = [...new Set(incorrectIds)].sort();
+                if (incorrectIdsOutput) {
+                    incorrectIdsOutput.value = sortedIncorrectIds.join(', ');
+                }
+
                 return idsString;
             }
             
             copyIdsBtn.addEventListener('click', () => {
                 answeredIdsOutput.select();
                 document.execCommand('copy');
-                copyIdsBtn.textContent = '¡Copiado!';
-                setTimeout(() => { copyIdsBtn.textContent = 'Copiar'; }, 2000);
+                copyIdsBtn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                setTimeout(() => { copyIdsBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar'; }, 2000);
             });
+
+            if (copyIncorrectIdsBtn) {
+                copyIncorrectIdsBtn.addEventListener('click', () => {
+                    incorrectIdsOutput.select();
+                    document.execCommand('copy');
+                    copyIncorrectIdsBtn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                    setTimeout(() => { copyIncorrectIdsBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar'; }, 2000);
+                });
+            }
             
             function drawResultsChart(stats) {
                 if (resultsChart) resultsChart.destroy();
@@ -5507,14 +5555,17 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
             lookupBtn.addEventListener('click', () => {
                 if (isGuest) {
-                    showTemporaryMessage("Esta función no está disponible para invitados", "bg-yellow-600");
-                    return;
-                }
-                const lookupId = lookupIdInput.value.trim().toUpperCase();
-                if (!lookupId) {
-                    lookupResultContainer.classList.add('hidden');
-                    showTemporaryMessage("Por favor, ingresa un ID para buscar", "bg-yellow-600");
-                    return;
+                    const idsOutputSection = document.getElementById('ids-output-section');
+                    if (idsOutputSection) idsOutputSection.style.display = 'none';
+                    copyIdsBtn.disabled = true;
+                    copyIdsBtn.classList.add('btn-disabled');
+                    if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = true; copyIncorrectIdsBtn.classList.add('btn-disabled'); }
+                } else {
+                    const idsOutputSection = document.getElementById('ids-output-section');
+                    if (idsOutputSection) idsOutputSection.style.display = 'grid';
+                    copyIdsBtn.disabled = false;
+                    copyIdsBtn.classList.remove('btn-disabled');
+                    if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = false; copyIncorrectIdsBtn.classList.remove('btn-disabled'); }
                 }
                 const question = allQuestions.find(q => q.id === lookupId);
                 if (question) {
