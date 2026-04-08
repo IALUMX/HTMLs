@@ -1451,20 +1451,27 @@
                 <h1 class="text-2xl sm:text-3xl font-bold">Hola, <span id="welcome-name" class="text-blue-400"></span></h1>
                 <p class="text-gray-300 mt-2">Configura tu prueba para comenzar a practicar. Recuerda que si estás como INVITADO tendrás funciones limitadas</p>
             </div>
-            <div class="space-y-4">
-                <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
-                    <label class="font-medium flex items-center">
-                        <input type="checkbox" id="continuous-mode-toggle" class="mr-2 h-5 w-5" checked>
-                        MODO AVANCE CONTINUO 🚀 (Sin límite de preguntas)
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left mt-4 pt-4 border-t border-gray-700">
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-600 flex flex-col justify-between">
+                    <label class="font-medium flex items-start text-left cursor-pointer">
+                        <input type="checkbox" id="continuous-mode-toggle" class="mr-2 mt-1 h-5 w-5 flex-shrink-0" checked>
+                        <span class="text-sm">MODO AVANCE CONTINUO 🚀<br><span class="text-xs font-normal text-gray-300">(Sin límite)</span></span>
                     </label>
-                    <p class="text-xs text-gray-400">Responde preguntas del banco de forma aleatoria sin fin. Termina la ronda cuando quieras con "Evaluar avance".</p>
+                    <p class="text-xs text-gray-400 text-left mt-2">Responde aleatorio sin fin. Termina con "Evaluar avance".</p>
                 </div>
-                <div class="space-y-2 mt-4 pt-4 border-t border-gray-700">
-                    <label class="font-medium flex items-center">
-                        <input type="checkbox" id="game-mode-toggle" class="mr-2 h-5 w-5">
-                        MODO SIMULACRO MORTAL ☠ (Desafío)
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-600 flex flex-col justify-between">
+                    <label class="font-medium flex items-start text-left cursor-pointer">
+                        <input type="checkbox" id="game-mode-toggle" class="mr-2 mt-1 h-5 w-5 flex-shrink-0">
+                        <span class="text-sm">MODO SIMULACRO MORTAL ☠<br><span class="text-xs font-normal text-gray-300">(Desafío)</span></span>
                     </label>
-                    <p class="text-xs text-gray-400">Temporizador fijo de 30 minutos, 20 ejercicios aleatorios y 3 vidas</p>
+                    <p class="text-xs text-gray-400 text-left mt-2">30 minutos, 20 ejercicios al azar y 3 vidas.</p>
+                </div>
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-600 flex flex-col justify-between">
+                    <label class="font-medium flex items-start text-left cursor-pointer">
+                        <input type="checkbox" id="real-mode-toggle" class="mr-2 mt-1 h-5 w-5 flex-shrink-0">
+                        <span class="text-sm">MODO AVANCE REAL 😱<br><span class="text-xs font-normal text-gray-300">(Sin ayudas)</span></span>
+                    </label>
+                    <p class="text-xs text-gray-400 text-left mt-2">Oculta aciertos, sin confirmación de color/audio.</p>
                 </div>
             </div>
             <div class="space-y-4">
@@ -1885,11 +1892,26 @@
                     </div>
                 </div>
             </div>
-            <div class="mt-8 space-y-2">
-                <label for="answered-ids-output" class="font-medium">Estos son los id´s solo de los ejercicios correctamente respondidos en esta evaluación, cópialos si deseas que no aparezcan estos ejercicios en la siguiente evaluación que realices:</label>
-                <div class="flex gap-2">
-                    <textarea id="answered-ids-output" rows="4" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 text-white" readonly></textarea>
-                    <button id="copy-ids-btn" class="btn btn-secondary">Copiar</button>
+            <div id="ids-output-section" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div class="space-y-2 bg-green-900 bg-opacity-20 p-4 rounded-lg border border-green-700">
+                    <label for="answered-ids-output" class="font-bold text-green-400 text-lg flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i> IDs Correctos
+                    </label>
+                    <p class="text-xs text-gray-300 mb-2">Ejercicios respondidos <b>correctamente</b>. Cópialos si deseas omitirlos en tu próxima sesión.</p>
+                    <div class="flex gap-2">
+                        <textarea id="answered-ids-output" rows="3" class="w-full p-3 bg-gray-800 rounded-lg border border-green-600 text-green-300" readonly></textarea>
+                        <button id="copy-ids-btn" class="btn btn-correct flex-shrink-0" style="margin:0;"><i class="fas fa-copy"></i> Copiar</button>
+                    </div>
+                </div>
+                <div class="space-y-2 bg-red-900 bg-opacity-20 p-4 rounded-lg border border-red-700">
+                    <label for="incorrect-ids-output" class="font-bold text-red-400 text-lg flex items-center gap-2">
+                        <i class="fas fa-times-circle"></i> IDs Incorrectos / Omitidos
+                    </label>
+                    <p class="text-xs text-gray-300 mb-2">Ejercicios <b>incorrectos, omitidos o no identificados</b>. Cópialos para repasarlos después.</p>
+                    <div class="flex gap-2">
+                        <textarea id="incorrect-ids-output" rows="3" class="w-full p-3 bg-gray-800 rounded-lg border border-red-600 text-red-300" readonly></textarea>
+                        <button id="copy-incorrect-ids-btn" class="btn btn-incorrect flex-shrink-0" style="margin:0;"><i class="fas fa-copy"></i> Copiar</button>
+                    </div>
                 </div>
             </div>
             <button id="restart-quiz-btn" class="btn btn-primary w-full sm:w-auto mt-8">Hacer otro cuestionario</button>
@@ -2020,9 +2042,10 @@
             const guestLoginBtn = document.getElementById('guest-login-btn');
             const noAccessBtn = document.querySelector('a[href="https://wa.link/i5rp89"]');
             const welcomeName = document.getElementById('welcome-name');
-            const gameModeToggle = document.getElementById('game-mode-toggle');
-            const continuousModeToggle = document.getElementById('continuous-mode-toggle');
-           const uniTagsContainer = document.getElementById('uni-tags-container');
+            const gameModeToggle = document.getElementById('game-mode-toggle');
+            const continuousModeToggle = document.getElementById('continuous-mode-toggle');
+            const realModeToggle = document.getElementById('real-mode-toggle');
+            const uniTagsContainer = document.getElementById('uni-tags-container');
             const levelTagsContainer = document.getElementById('level-tags-container');
             const typeTagsContainer = document.getElementById('type-tags-container');
             const answeredIdsInput = document.getElementById('answered-ids-input');
@@ -2067,6 +2090,8 @@
             const resultsTableBody = document.querySelector('#results-table tbody');
             const answeredIdsOutput = document.getElementById('answered-ids-output');
             const copyIdsBtn = document.getElementById('copy-ids-btn');
+            const incorrectIdsOutput = document.getElementById('incorrect-ids-output');
+            const copyIncorrectIdsBtn = document.getElementById('copy-incorrect-ids-btn');
             const restartQuizBtn = document.getElementById('restart-quiz-btn');
             const resultsChartCanvas = document.getElementById('results-chart');
             const summaryEvalName = document.getElementById('summary-eval-name');
@@ -2168,7 +2193,8 @@
             let totalQuestionTime = 0;
             let isGuest = false;
             let isGameMode = false;
-            let isContinuousMode = true;
+            let isContinuousMode = true;
+            let isRealMode = false;
             let gameModeLives = 3;
             let consecutiveCorrect = 0;
             let gameModeTimer;
@@ -2783,42 +2809,42 @@
 
                 // --- BLOQUE DE SONIDOS Y VIDAS (Igual que antes) ---
                 if (statusResult === 'unidentified') {
-                    if (effectsVolume > 0) {
-                        incorrectSound.currentTime = 0;
-                        incorrectSound.volume = effectsVolume;
-                        incorrectSound.play().catch(e => console.error(e));
-                    }
-                    if (isGameMode) handleGameModeLifeLoss();
+                    if (effectsVolume > 0 && !isRealMode) {
+                        incorrectSound.currentTime = 0;
+                        incorrectSound.volume = effectsVolume;
+                        incorrectSound.play().catch(e => console.error(e));
+                    }
+                    if (isGameMode) handleGameModeLifeLoss();
 
-                } else if (statusResult === 'correct') {
-                    if (effectsVolume > 0) {
-                        correctSound.currentTime = 0;
-                        correctSound.volume = effectsVolume;
-                        correctSound.play().catch(e => console.error(e));
-                    }
-                    if (isGameMode) {
-                        consecutiveCorrect++;
-                        // Si es híbrido cuenta doble en la mente del usuario, pero en sistema es 1 acierto lógico. 
-                        // Sin embargo, podemos dar doble bonificación de racha si lo deseas, 
-                        // pero para mantener simpleza, mantendremos +1 a la racha normal.
-                        if (consecutiveCorrect >= 3) {
-                            if (gameModeLives < 3) {
-                                gameModeLives++;
-                                showTemporaryMessage("¡3 aciertos seguidos! +1 Vida ❤️", "bg-green-600");
-                            }
-                            consecutiveCorrect = 0;
-                            updateGameModeLivesDisplay();
-                        }
-                    }
-                } else {
-                    // Incorrecto
-                    if (effectsVolume > 0) {
-                        incorrectSound.currentTime = 0;
-                        incorrectSound.volume = effectsVolume;
-                        incorrectSound.play().catch(e => console.error(e));
-                    }
-                    if (isGameMode) handleGameModeLifeLoss();
-                }
+                } else if (statusResult === 'correct') {
+                    if (effectsVolume > 0 && !isRealMode) {
+                        correctSound.currentTime = 0;
+                        correctSound.volume = effectsVolume;
+                        correctSound.play().catch(e => console.error(e));
+                    }
+                    if (isGameMode) {
+                        consecutiveCorrect++;
+                        // Si es híbrido cuenta doble en la mente del usuario, pero en sistema es 1 acierto lógico. 
+                        // Sin embargo, podemos dar doble bonificación de racha si lo deseas, 
+                        // pero para mantener simpleza, mantendremos +1 a la racha normal.
+                        if (consecutiveCorrect >= 3) {
+                            if (gameModeLives < 3) {
+                                gameModeLives++;
+                                showTemporaryMessage("¡3 aciertos seguidos! +1 Vida ❤️", "bg-green-600");
+                            }
+                            consecutiveCorrect = 0;
+                            updateGameModeLivesDisplay();
+                        }
+                    }
+                } else {
+                    // Incorrecto
+                    if (effectsVolume > 0 && !isRealMode) {
+                        incorrectSound.currentTime = 0;
+                        incorrectSound.volume = effectsVolume;
+                        incorrectSound.play().catch(e => console.error(e));
+                    }
+                    if (isGameMode) handleGameModeLifeLoss();
+                }
 
                 // ... resto de la lógica (Continuous Mode, Live Score, etc.) se mantiene igual
                 if (isContinuousMode && currentAnswer.status !== 'unanswered') {
@@ -3668,7 +3694,8 @@
                     '.graphing-btn',
                     '.privacy-modal-close',
                     '.close-modal-btn',
-                    '#logout-btn'
+                    '#logout-btn',
+                    'input[type="checkbox"]'
                 ];
 
                 const target = e.target.closest(soundClasses.join(','));
@@ -4178,31 +4205,55 @@
             }
 
             continuousModeToggle.addEventListener('change', () => {
-                isContinuousMode = continuousModeToggle.checked;
-                if (isContinuousMode) {
-                    gameModeToggle.checked = false;
-                    gameModeToggle.disabled = true;
-                    isGameMode = false;
-                } else {
-                    gameModeToggle.disabled = false;
-                }
-            });
+                isContinuousMode = continuousModeToggle.checked;
+                if (isContinuousMode) {
+                    gameModeToggle.checked = false;
+                    realModeToggle.checked = false;
+                    gameModeToggle.disabled = true;
+                    realModeToggle.disabled = true;
+                    isGameMode = false;
+                    isRealMode = false;
+                } else {
+                    gameModeToggle.disabled = false;
+                    realModeToggle.disabled = false;
+                }
+            });
 
-            gameModeToggle.addEventListener('change', () => {
-                isGameMode = gameModeToggle.checked;
-                if (isGameMode) {
-                    continuousModeToggle.checked = false;
-                    continuousModeToggle.disabled = true;
-                    isContinuousMode = false;
-                } else {
-                    continuousModeToggle.disabled = false;
-                }
-            });
+            gameModeToggle.addEventListener('change', () => {
+                isGameMode = gameModeToggle.checked;
+                if (isGameMode) {
+                    continuousModeToggle.checked = false;
+                    realModeToggle.checked = false;
+                    continuousModeToggle.disabled = true;
+                    realModeToggle.disabled = true;
+                    isContinuousMode = false;
+                    isRealMode = false;
+                } else {
+                    continuousModeToggle.disabled = false;
+                    realModeToggle.disabled = false;
+                }
+            });
+
+            realModeToggle.addEventListener('change', () => {
+                isRealMode = realModeToggle.checked;
+                if (isRealMode) {
+                    continuousModeToggle.checked = false;
+                    gameModeToggle.checked = false;
+                    continuousModeToggle.disabled = true;
+                    gameModeToggle.disabled = true;
+                    isContinuousMode = false;
+                    isGameMode = false;
+                } else {
+                    continuousModeToggle.disabled = false;
+                    gameModeToggle.disabled = false;
+                }
+            });
             
            startQuizBtn.addEventListener('click', () => {
                 errorMessage.textContent = '';
                 isGameMode = gameModeToggle.checked;
-                isContinuousMode = continuousModeToggle.checked;
+                isContinuousMode = continuousModeToggle.checked;
+                isRealMode = realModeToggle ? realModeToggle.checked : false;
                 
                 if (isGuest) {
                     questionCountInGuestMode = 0;
@@ -4335,6 +4386,8 @@
             });
             
             function startQuiz() {
+                screens.setup.classList.add('hidden');
+                screens.quiz.classList.remove('hidden');
                 currentQuestionIndex = 0;
                 seconds = 0;
                 totalQuestionTime = 0;
@@ -4354,22 +4407,36 @@
                 screens.quiz.classList.remove('hidden');
                 updateEvaluationButton();
                 timerContainer.style.display = 'flex';
-                if (isGameMode) {
-                    document.getElementById('live-score').style.display = 'none';
-                    gameModeRules.classList.remove('hidden');
-                    gameModeRules.classList.add('game-mode-warning');
-                    gameModeLives = 3;
-                    updateGameModeLivesDisplay();
-                    startGameModeTimer();
-                } else {
-                    document.getElementById('live-score').style.display = 'flex';
-                    gameModeRules.classList.add('hidden');
-                    clearInterval(timer);
-                    timer = setInterval(() => { 
-                        seconds++; 
-                        timerDisplay.textContent = `${seconds}s`;
-                    }, 1000);
-                }
+                if (isRealMode) {
+                    document.getElementById('live-score').style.display = 'none';
+                    gameModeRules.classList.add('hidden');
+                    clearInterval(timer);
+                    timer = setInterval(() => { 
+                        seconds++; 
+                        timerDisplay.textContent = `${seconds}s`;
+                    }, 1000);
+                    hintBtn.style.display = 'none';
+                    chatbotToggle.style.display = 'none';
+                } else if (isGameMode) {
+                    document.getElementById('live-score').style.display = 'none';
+                    gameModeRules.classList.remove('hidden');
+                    gameModeRules.classList.add('game-mode-warning');
+                    gameModeLives = 3;
+                    updateGameModeLivesDisplay();
+                    startGameModeTimer();
+                    hintBtn.style.display = 'block';
+                    chatbotToggle.style.display = 'flex';
+                } else {
+                    document.getElementById('live-score').style.display = 'flex';
+                    gameModeRules.classList.add('hidden');
+                    clearInterval(timer);
+                    timer = setInterval(() => { 
+                        seconds++; 
+                        timerDisplay.textContent = `${seconds}s`;
+                    }, 1000);
+                    hintBtn.style.display = 'block';
+                    chatbotToggle.style.display = 'flex';
+                }
                 questionStartTime = Date.now();
                 displayQuestion();
                 updateLiveScore();
@@ -4379,27 +4446,36 @@
             }
 
             function addOptionFeatures(button, isCepredixUser, questionId, optionText) {
-                // 1) Función de mantener presionado (2 segundos) para poner gris
-                let pressTimer;
-                const startPress = () => {
-                    pressTimer = setTimeout(() => {
+                // 1) Función de descartar opción (poner gris) al presionar la letra del inciso
+                const letterElement = button.querySelector('.option-letter');
+                if (letterElement) {
+                    // Evitar que el clic en la letra seleccione la opción principal
+                    letterElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         button.classList.toggle('option-dark-gray');
-                    }, 2000);
-                };
-                const cancelPress = () => {
-                    if (pressTimer) clearTimeout(pressTimer);
-                };
-
-                // Detectar clics en PC y Toques en Móviles/Tablets
-                button.addEventListener('mousedown', startPress);
-                button.addEventListener('touchstart', startPress, {passive: true});
-                button.addEventListener('mouseup', cancelPress);
-                button.addEventListener('mouseleave', cancelPress);
-                button.addEventListener('touchend', cancelPress);
-                button.addEventListener('touchmove', cancelPress);
+                    });
+                    
+                    // Asegurar que funcione igual en móviles (touch)
+                    letterElement.addEventListener('touchstart', (e) => {
+                        e.stopPropagation();
+                    }, {passive: true});
+                    
+                    letterElement.addEventListener('touchend', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault(); // Evita doble disparo en algunos dispositivos
+                        button.classList.toggle('option-dark-gray');
+                    });
+                    
+                    // Efecto visual sutil para que el usuario sepa que es interactiva
+                    letterElement.style.cursor = 'pointer';
+                    letterElement.title = 'Toca aquí para descartar esta opción';
+                }
 
                 // 2) Función de contador de votos discreto (solo para @cepredix.com)
                 if (isCepredixUser) {
+                    // Agregar padding dinámico para evitar solapamiento del texto con el contador
+                    button.style.paddingRight = '85px';
+
                     const voteContainer = document.createElement('div');
                     voteContainer.className = 'vote-counter-container';
                     
@@ -4473,8 +4549,36 @@
                 }
 
                 const currentAnswer = userAnswers[currentQuestionIndex];
-                const { question } = currentAnswer;
-                justificationBox.classList.add('hidden');
+                const { question } = currentAnswer;
+                justificationBox.classList.add('hidden');
+
+                if (isRealMode) {
+                    let timeToSet = 90; // Default BÁSICO y otros
+                    if (question.level_tag && question.level_tag.includes('INTERMEDIO')) {
+                        timeToSet = 120;
+                    } else if (question.level_tag && question.level_tag.includes('AVANZADO')) {
+                        timeToSet = 180;
+                    }
+                    
+                    dtSeconds = timeToSet;
+                    dtTotalSeconds = timeToSet;
+                    if (typeof updateDtVisuals === 'function') updateDtVisuals();
+                    
+                    // Iniciar automáticamente
+                    const dtIconReset = document.querySelector('#dt-play-btn i');
+                    if (dtIconReset) dtIconReset.classList.replace('fa-play', 'fa-pause');
+                    dtIsRunning = true;
+                    dtInterval = setInterval(() => {
+                        if (dtSeconds > 0) {
+                            dtSeconds--;
+                            updateDtVisuals();
+                        } else {
+                            clearInterval(dtInterval);
+                            dtIsRunning = false;
+                            if (dtIconReset) dtIconReset.classList.replace('fa-pause', 'fa-play');
+                        }
+                    }, 1000);
+                }
                 justificationText.innerHTML = '';
                 
                 if (isContinuousMode) {
@@ -4823,17 +4927,19 @@
                         const group = btn.dataset.group; // "1" o "2"
                         const isSelected = btn.classList.contains('selected');
 
-                        // Colorear Correctas
-                        if ((group === "1" && txt === correctOp1) || (group === "2" && txt === correctOp2)) {
-                            btn.classList.add('correct');
-                        }
-                        
-                        // Colorear Incorrectas Seleccionadas (Híbrido mantiene lógica visual simple)
-                        if (isSelected && status !== 'correct') {
-                             if (!((group === "1" && txt === correctOp1) || (group === "2" && txt === correctOp2))) {
-                                 btn.classList.add('incorrect');
-                             }
-                        }
+                        if (!isRealMode) {
+                            // Colorear Correctas
+                            if ((group === "1" && txt === correctOp1) || (group === "2" && txt === correctOp2)) {
+                                btn.classList.add('correct');
+                            }
+                            
+                            // Colorear Incorrectas Seleccionadas (Híbrido mantiene lógica visual simple)
+                            if (isSelected && status !== 'correct') {
+                                 if (!((group === "1" && txt === correctOp1) || (group === "2" && txt === correctOp2))) {
+                                     btn.classList.add('incorrect');
+                                 }
+                            }
+                        }
                     });
 
                 } else {
@@ -4846,32 +4952,39 @@
                     document.querySelectorAll('.option-btn').forEach(btn => {
                         btn.disabled = true;
                         
-                        // 1. Marcar siempre la correcta en verde
-                        if (btn.dataset.text === correctOption) btn.classList.add('correct');
-                        
-                        // 2. Verificar si este es el botón que el usuario presionó previamente
-                        // (Comparamos el texto del botón con lo guardado en userAnswers)
-                        if (btn.dataset.text === userSelectedText) {
-                            
-                            // Restauramos la clase visual de "seleccionado"
-                            btn.classList.add('selected'); 
+                        if (!isRealMode) {
+                            // 1. Marcar siempre la correcta en verde
+                            if (btn.dataset.text === correctOption) btn.classList.add('correct');
+                            
+                            // 2. Verificar si este es el botón que el usuario presionó previamente
+                            // (Comparamos el texto del botón con lo guardado en userAnswers)
+                            if (btn.dataset.text === userSelectedText) {
+                                
+                                // Restauramos la clase visual de "seleccionado"
+                                btn.classList.add('selected'); 
 
-                            // 3. Si el estado general de la respuesta fue incorrecto,
-                            // y este botón NO es la opción correcta, lo pintamos de rojo.
-                            if (status === 'incorrect' || status === 'unidentified') {
-                                if (btn.dataset.text !== correctOption) {
-                                    btn.classList.add('incorrect');
-                                }
-                            }
-                        }
+                                // 3. Si el estado general de la respuesta fue incorrecto,
+                                // y este botón NO es la opción correcta, lo pintamos de rojo.
+                                if (status === 'incorrect' || status === 'unidentified') {
+                                    if (btn.dataset.text !== correctOption) {
+                                        btn.classList.add('incorrect');
+                                    }
+                                }
+                            }
+                        } else {
+                            // En MODO AVANCE REAL, solo mantenemos la selección en oscuro sin validación
+                            if (btn.dataset.text === userSelectedText) {
+                                btn.classList.add('selected');
+                            }
+                        }
                     });
                 }
 
-                if (question.explanation) {
-                    justificationText.innerHTML = question.explanation;
-                    justificationBox.classList.remove('hidden');
-                    MathJax.typesetPromise([justificationText]);
-                }
+                if (question.explanation && !isRealMode) {
+                    justificationText.innerHTML = question.explanation;
+                    justificationBox.classList.remove('hidden');
+                    MathJax.typesetPromise([justificationText]);
+                }
             }
             
             function playSound(soundId) {
@@ -4988,7 +5101,11 @@
                 simulacroSuccess2.pause();
             });
             
-            finishBtn.addEventListener('click', () => endQuiz());
+            finishBtn.addEventListener('click', () => {
+                if (confirm("¿Estás seguro de que deseas evaluar tu avance ahora?")) {
+                    endQuiz();
+                }
+            });
             
             hintBtn.addEventListener('click', () => {
                 const question = userAnswers[currentQuestionIndex].question;
@@ -5107,12 +5224,13 @@
                 populateSummaryBox(finalScoreValue, idsString, allAnsweredIds);
                 
                 if (isGuest) {
-                    const idsOutputSection = document.querySelector('.mt-8.space-y-2');
-                    if (idsOutputSection) {
-                        idsOutputSection.style.display = 'none';
-                    }
-                    copyIdsBtn.disabled = true;
-                    copyIdsBtn.classList.add('btn-disabled');
+                    const idsOutputSection = document.getElementById('ids-output-section');
+                if (idsOutputSection) {
+                    idsOutputSection.style.display = 'none';
+                }
+                copyIdsBtn.disabled = true;
+                copyIdsBtn.classList.add('btn-disabled');
+                if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = true; copyIncorrectIdsBtn.classList.add('btn-disabled'); }
                 } else {
                     const idsOutputSection = document.querySelector('.mt-8.space-y-2');
                     if (idsOutputSection) {
@@ -5329,22 +5447,42 @@
             }
             
             function generateAnsweredIdsList() {
+                // Generar lista de correctas
                 const correctIds = userAnswers
                     .filter(a => a.status === 'correct' && a.question.id)
                     .map(a => a.question.id);
                 const combinedIds = new Set([...pastedAnsweredIds, ...correctIds]);
                 const sortedIds = [...combinedIds].sort();
                 const idsString = sortedIds.join(', ');
-                answeredIdsOutput.value = idsString;
+                if (answeredIdsOutput) answeredIdsOutput.value = idsString;
+
+                // Generar lista de incorrectas/omitidas
+                const incorrectIds = userAnswers
+                    .filter(a => (a.status === 'incorrect' || a.status === 'omitted' || a.status === 'unidentified') && a.question.id)
+                    .map(a => a.question.id);
+                const sortedIncorrectIds = [...new Set(incorrectIds)].sort();
+                if (incorrectIdsOutput) {
+                    incorrectIdsOutput.value = sortedIncorrectIds.join(', ');
+                }
+
                 return idsString;
             }
             
             copyIdsBtn.addEventListener('click', () => {
                 answeredIdsOutput.select();
                 document.execCommand('copy');
-                copyIdsBtn.textContent = '¡Copiado!';
-                setTimeout(() => { copyIdsBtn.textContent = 'Copiar'; }, 2000);
+                copyIdsBtn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                setTimeout(() => { copyIdsBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar'; }, 2000);
             });
+
+            if (copyIncorrectIdsBtn) {
+                copyIncorrectIdsBtn.addEventListener('click', () => {
+                    incorrectIdsOutput.select();
+                    document.execCommand('copy');
+                    copyIncorrectIdsBtn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                    setTimeout(() => { copyIncorrectIdsBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar'; }, 2000);
+                });
+            }
             
             function drawResultsChart(stats) {
                 if (resultsChart) resultsChart.destroy();
@@ -5398,14 +5536,17 @@
             }
             lookupBtn.addEventListener('click', () => {
                 if (isGuest) {
-                    showTemporaryMessage("Esta función no está disponible para invitados", "bg-yellow-600");
-                    return;
-                }
-                const lookupId = lookupIdInput.value.trim().toUpperCase();
-                if (!lookupId) {
-                    lookupResultContainer.classList.add('hidden');
-                    showTemporaryMessage("Por favor, ingresa un ID para buscar", "bg-yellow-600");
-                    return;
+                    const idsOutputSection = document.getElementById('ids-output-section');
+                    if (idsOutputSection) idsOutputSection.style.display = 'none';
+                    copyIdsBtn.disabled = true;
+                    copyIdsBtn.classList.add('btn-disabled');
+                    if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = true; copyIncorrectIdsBtn.classList.add('btn-disabled'); }
+                } else {
+                    const idsOutputSection = document.getElementById('ids-output-section');
+                    if (idsOutputSection) idsOutputSection.style.display = 'grid';
+                    copyIdsBtn.disabled = false;
+                    copyIdsBtn.classList.remove('btn-disabled');
+                    if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = false; copyIncorrectIdsBtn.classList.remove('btn-disabled'); }
                 }
                 const question = allQuestions.find(q => q.id === lookupId);
                 if (question) {
