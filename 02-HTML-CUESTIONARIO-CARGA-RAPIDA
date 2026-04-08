@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👩‍🎓 ADMISIÓN PREPA 2026 😎</title>
+    <title>👩‍🎓 ADMISIÓN PREPA 2026 🔥 ¡On fire! 🔥</title>
     <link rel="icon" href="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/00-WEBLogo-circular-cepredix.png" type="image/png">
     
     <meta property="og:image" content="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/Thumbnail-CEP-HTML.png">
@@ -12,7 +12,7 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
-    <meta property="og:title" content="👩‍🎓 ADMISIÓN PREPA 2026 😎 - CEPREDIX">
+    <meta property="og:title" content="👩‍🎓 ADMISIÓN PREPA 2026 🔥 ¡On fire! 🔥 - CEPREDIX">
     <meta property="og:description" content="Plataforma de evaluación educativa.">
     <meta property="og:type" content="website">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -49,6 +49,7 @@
             position: relative;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             line-height: 1.4; /* Ajuste global de interlineado */
+            overscroll-behavior-y: none; /* EVITA EL PULL-TO-REFRESH EN IPHONE */
         }
         #question-text {
             line-height: 1.25 !important; /* Interlineado más compacto en la pregunta */
@@ -1385,7 +1386,7 @@
             <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" title="Ir a Web CEPREDIX">
                 <div class="logo"></div>
             </a>
-            <h1 class="text-2xl sm:text-3xl font-bold">👩‍🎓 ADMISIÓN PREPA 2026 😎</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold">👩‍🎓 ADMISIÓN PREPA 2026 🔥 ¡On fire! 🔥</h1>
             <h2 class="text-xl sm:text-2xl">Diseñado con pasión 💜 por el CEPREDIX</h2>
             <p class="text-sm sm:text-base">Prueba tus conocimientos con este cuestionario interactivo de opción múltiple 🧠</p>
         </header>
@@ -2031,6 +2032,14 @@
                 quiz: document.getElementById('quiz-screen'),
                 results: document.getElementById('results-screen'),
             };
+
+            // ALERTA DE PROTECCIÓN CONTRA CIERRE ACCIDENTAL
+            window.addEventListener('beforeunload', function (e) {
+                if (!screens.quiz.classList.contains('hidden')) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
             const loginForm = document.getElementById('login-form');
             const nameInput = document.getElementById('name-input');
             const emailInput = document.getElementById('email-input');
@@ -5139,7 +5148,7 @@
             async function submitResults(stats, score, totalTime, idsString, numQuestions) {
                 const formData = new FormData();
                 
-                formData.append('EvaluationName', "👩‍🎓 ADMISIÓN PREPA 2026 😎"); 
+                formData.append('EvaluationName', "👩‍🎓 ADMISIÓN PREPA 2026 🔥 ¡On fire! 🔥"); 
                 
                 formData.append('Name', currentUser.name || 'Invitado');
                 formData.append('Email', currentUser.email || 'sin_email');
@@ -5441,7 +5450,7 @@
             }
             
             function populateSummaryBox(score, idsString, allAnsweredIds) {
-                summaryEvalName.textContent = "👩‍🎓 ADMISIÓN PREPA 2026 😎";
+                summaryEvalName.textContent = "👩‍🎓 ADMISIÓN PREPA 2026 🔥 ¡On fire! 🔥";
                 summaryDate.textContent = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 summaryScore.textContent = `${score.toFixed(2)} / 10.00`;
                 summaryIds.textContent = idsString;
@@ -5845,6 +5854,12 @@
                 // Guardamos una COPIA de los objetos actuales
                 wbHistory.push(JSON.parse(JSON.stringify(wbPaths)));
                 wbStep++;
+                
+                // LÍMITE DE MEMORIA PARA EVITAR CRASHEOS EN SAFARI/IPHONE
+                if (wbHistory.length > 20) {
+                    wbHistory.shift();
+                    wbStep--;
+                }
             }
 
             // Ajustar tamaño del canvas
