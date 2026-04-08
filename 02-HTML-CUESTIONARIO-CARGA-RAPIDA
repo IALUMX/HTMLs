@@ -1948,7 +1948,7 @@
                 <a href="#" id="privacy-link" class="footer-link">Aviso de Privacidad</a>
             </div>
             <div id="copyright">
-                &copy; CEPREDIX 2026 - Todos los derechos reservados. Versión CEP-2.2401
+                &copy; CEPREDIX 2026 - Todos los derechos reservados. Versión CEP-3.0704
             </div>
         </div>
     </div>
@@ -5232,12 +5232,13 @@
                 copyIdsBtn.classList.add('btn-disabled');
                 if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = true; copyIncorrectIdsBtn.classList.add('btn-disabled'); }
                 } else {
-                    const idsOutputSection = document.querySelector('.mt-8.space-y-2');
+                    const idsOutputSection = document.getElementById('ids-output-section');
                     if (idsOutputSection) {
-                        idsOutputSection.style.display = 'block';
+                        idsOutputSection.style.display = 'grid';
                     }
                     copyIdsBtn.disabled = false;
                     copyIdsBtn.classList.remove('btn-disabled');
+                    if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = false; copyIncorrectIdsBtn.classList.remove('btn-disabled'); }
                 }
                 
                 if (isGameMode) {
@@ -5380,12 +5381,13 @@
                 const allAnsweredIds = generateAnsweredIdsList();
                 populateSummaryBox(finalScoreValue, idsString, allAnsweredIds);
                 
-                const idsOutputSection = document.querySelector('.mt-8.space-y-2');
+                const idsOutputSection = document.getElementById('ids-output-section');
                 if (idsOutputSection) {
                     idsOutputSection.style.display = 'none';
                 }
                 copyIdsBtn.disabled = true;
                 copyIdsBtn.classList.add('btn-disabled');
+                if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = true; copyIncorrectIdsBtn.classList.add('btn-disabled'); }
                 
                 if (isGameMode) {
                     let returnBtn = document.getElementById('return-to-menu-btn');
@@ -5534,19 +5536,16 @@
                     }
                 });
             }
-            lookupBtn.addEventListener('click', () => {
+           lookupBtn.addEventListener('click', () => {
                 if (isGuest) {
-                    const idsOutputSection = document.getElementById('ids-output-section');
-                    if (idsOutputSection) idsOutputSection.style.display = 'none';
-                    copyIdsBtn.disabled = true;
-                    copyIdsBtn.classList.add('btn-disabled');
-                    if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = true; copyIncorrectIdsBtn.classList.add('btn-disabled'); }
-                } else {
-                    const idsOutputSection = document.getElementById('ids-output-section');
-                    if (idsOutputSection) idsOutputSection.style.display = 'grid';
-                    copyIdsBtn.disabled = false;
-                    copyIdsBtn.classList.remove('btn-disabled');
-                    if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = false; copyIncorrectIdsBtn.classList.remove('btn-disabled'); }
+                    showTemporaryMessage("Esta función no está disponible para invitados", "bg-yellow-600");
+                    return;
+                }
+                const lookupId = lookupIdInput.value.trim().toUpperCase();
+                if (!lookupId) {
+                    lookupResultContainer.classList.add('hidden');
+                    showTemporaryMessage("Por favor, ingresa un ID para buscar", "bg-yellow-600");
+                    return;
                 }
                 const question = allQuestions.find(q => q.id === lookupId);
                 if (question) {
