@@ -1239,38 +1239,52 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             color: #888888 !important;
             filter: grayscale(100%);
         }
-        .vote-counter-container {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
+        .option-wrapper {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            z-index: 20;
+            width: 100%;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .option-wrapper .option-btn {
+            margin-bottom: 0 !important;
+            flex-grow: 1;
+            padding-right: 15px !important;
+        }
+        .vote-counter-container {
+            display: flex;
+            flex-direction: column; /* Apila los elementos verticalmente */
+            align-items: center;
+            justify-content: center;
+            gap: 2px; /* Menos espacio entre flechas y número */
+            background: rgba(0, 0, 0, 0.3); /* Fondo más transparente y discreto */
+            padding: 4px 6px;
+            border-radius: 8px;
+            flex-shrink: 0; 
+            min-width: 32px;
         }
         .vote-btn {
             background: transparent;
             border: none;
-            color: #4fc3f7;
+            color: #4fc3f7; /* Azul claro original */
             cursor: pointer;
-            padding: 0 4px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: transform 0.2s;
+            padding: 2px;
+            font-size: 0.9rem; /* Flechas más pequeñas */
+            transition: transform 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .vote-btn:hover {
             color: #fff;
-            transform: scale(1.2);
+            transform: scale(1.3);
         }
         .vote-count {
-            min-width: 15px;
+            font-weight: bold;
+            font-size: 0.85rem; /* Número un poco más pequeño */
             text-align: center;
             color: #fff;
+            line-height: 1;
         }
     </style>
 </head>
@@ -1280,7 +1294,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
     <audio id="button-sound" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/Clic_sound.mp3" preload="auto"></audio>
     <audio id="sad-violin-sound" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/sad_violin.mp3" preload="auto"></audio>
     <audio id="simulacro-fail-1" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/simulacro_fail_1.mp3" preload="auto"></audio>
-    <audio id="simulacro-fail-2" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/sad_violin.mp3" preload="auto"></audio>
+    <audio id="simulacro-fail-2" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/simulacro_fail_2.mp3" preload="auto"></audio>
     <audio id="simulacro-success-1" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/simulacro_logrado_1.mp3" preload="auto"></audio>
     <audio id="simulacro-success-2" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/simulacro_logrado_2.mp3" preload="auto"></audio>
     <div id="adOverlay" style="display: none;">
@@ -4438,15 +4452,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 totalQuestionTime = 0;
                 consecutiveCorrect = 0;
                 answeredIdsInContinuousMode.clear();
-                if (isContinuousMode) {
-                    userAnswers = quizQuestions.map(q => ({
-                        question: q, status: 'unanswered', selected: null, timeSpent: 0
-                    }));
-                } else {
-                    userAnswers = quizQuestions.map(q => ({
-                        question: q, status: 'unanswered', selected: null, timeSpent: 0
-                    }));
-                }
+                userAnswers = quizQuestions.map(q => ({
+                    question: q, status: 'unanswered', selected: null, timeSpent: 0
+                }));
                 screens.setup.classList.add('hidden');
                 screens.results.classList.add('hidden');
                 screens.quiz.classList.remove('hidden');
@@ -4518,9 +4526,6 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
                 // 2) Función de contador de votos discreto (solo para @cepredix.com)
                 if (isCepredixUser) {
-                    // Agregar padding dinámico para evitar solapamiento del texto con el contador
-                    button.style.paddingRight = '85px';
-
                     const voteContainer = document.createElement('div');
                     voteContainer.className = 'vote-counter-container';
                     
@@ -4529,10 +4534,11 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     voteContainer.onmousedown = (e) => e.stopPropagation();
                     voteContainer.ontouchstart = (e) => e.stopPropagation();
 
-                    const btnMinus = document.createElement('button');
-                    btnMinus.className = 'vote-btn';
-                    btnMinus.textContent = '-';
-                    
+                    const btnPlus = document.createElement('button');
+                    btnPlus.className = 'vote-btn';
+                    btnPlus.innerHTML = '<i class="fas fa-chevron-up"></i>'; // Icono de flecha arriba
+                    btnPlus.title = "Votar a favor";
+
                     const countSpan = document.createElement('span');
                     countSpan.className = 'vote-count';
                     
@@ -4541,33 +4547,36 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     let currentVotes = parseInt(localStorage.getItem(voteKey)) || 0;
                     countSpan.textContent = currentVotes;
 
-                    const btnPlus = document.createElement('button');
-                    btnPlus.className = 'vote-btn';
-                    btnPlus.textContent = '+';
+                    const btnMinus = document.createElement('button');
+                    btnMinus.className = 'vote-btn';
+                    btnMinus.innerHTML = '<i class="fas fa-chevron-down"></i>'; // Icono de flecha abajo
+                    btnMinus.title = "Votar en contra";
 
-                    btnMinus.onclick = (e) => { 
-                        e.preventDefault();
-                        currentVotes--; 
-                        countSpan.textContent = currentVotes; 
-                        localStorage.setItem(voteKey, currentVotes); 
-                    };
                     btnPlus.onclick = (e) => { 
                         e.preventDefault();
                         currentVotes++; 
                         countSpan.textContent = currentVotes; 
                         localStorage.setItem(voteKey, currentVotes); 
                     };
+                    btnMinus.onclick = (e) => { 
+                        e.preventDefault();
+                        currentVotes--; 
+                        countSpan.textContent = currentVotes; 
+                        localStorage.setItem(voteKey, currentVotes); 
+                    };
 
-                    voteContainer.appendChild(btnMinus);
-                    voteContainer.appendChild(countSpan);
+                    // Orden vertical: Arriba (+), Medio (Número), Abajo (-)
                     voteContainer.appendChild(btnPlus);
+                    voteContainer.appendChild(countSpan);
+                    voteContainer.appendChild(btnMinus);
                     
-                    button.appendChild(voteContainer);
+                    return voteContainer;
                 }
+                return null;
             }
 
             function displayQuestion() {
-                if (typeof dtInterval !== 'undefined' && dtInterval) clearInterval(dtInterval);
+                if (dtInterval) clearInterval(dtInterval);
                 dtIsRunning = false; 
                 dtSeconds = 90;
                 dtTotalSeconds = 90;
@@ -4783,7 +4792,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
                             // Agregamos las nuevas funciones (presión de 2 seg y contador)
                             const isCepredix = currentUser.email && currentUser.email.toLowerCase().includes('@cepredix.com');
-                            addOptionFeatures(btn, isCepredix, question.id, opt.text);
+                            const voteNode = addOptionFeatures(btn, isCepredix, question.id, opt.text);
 
                             // Evento Click Híbrido
                             btn.addEventListener('click', () => {
@@ -4800,7 +4809,11 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                                 evaluateBtn.disabled = !(g1Selected && g2Selected);
                             });
 
-                            colDiv.appendChild(btn);
+                            const wrapper = document.createElement('div');
+                            wrapper.className = 'option-wrapper';
+                            wrapper.appendChild(btn);
+                            if (voteNode) wrapper.appendChild(voteNode);
+                            colDiv.appendChild(wrapper);
                         });
                         return colDiv;
                     };
@@ -4868,7 +4881,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         // Agregamos las nuevas funciones (presión de 2 seg y contador)
                         // Excluimos la opción de "No puedo identificar" del contador
                         const isCepredix = currentUser.email && currentUser.email.toLowerCase().includes('@cepredix.com') && !isNoId;
-                        addOptionFeatures(button, isCepredix, question.id, option.text);
+                        const voteNode = addOptionFeatures(button, isCepredix, question.id, option.text);
 
                         // Triple clic logic standard
                         let clickCount = 0;
@@ -4890,7 +4903,12 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                                 }
                             }
                         });
-                        optionsContainer.appendChild(button);
+                        
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'option-wrapper';
+                        wrapper.appendChild(button);
+                        if (voteNode) wrapper.appendChild(voteNode);
+                        optionsContainer.appendChild(wrapper);
                     });
                 }
                 setTimeout(() => {
@@ -5123,9 +5141,6 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     }
                 } else if (!isContinuousMode) {
                     endQuiz();
-                } else {
-                    showFeedback();
-                    updateButtonStates();
                 }
             });
             
@@ -5133,7 +5148,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 clearInterval(timer);
                 clearInterval(gameModeTimer);
                 
-                if (typeof dtInterval !== 'undefined' && dtInterval) clearInterval(dtInterval);
+                if (dtInterval) clearInterval(dtInterval);
                 dtIsRunning = false;
 
                 screens.quiz.classList.add('hidden');
@@ -5443,91 +5458,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         guestInfoModal.style.display = 'none';
                         document.body.style.overflow = 'auto';
                         
-                        proceedWithGuestResults();
+                        endQuiz();
                     }
                 };
-            }
-            
-            function proceedWithGuestResults() {
-                screens.quiz.classList.add('hidden');
-                screens.results.classList.remove('hidden');
-                
-                let answersToEvaluate = userAnswers;
-                if (isContinuousMode || userAnswers.filter(a => a.status !== 'unanswered').length < userAnswers.length) {
-                    answersToEvaluate = userAnswers.filter(a => a.status !== 'unanswered');
-                    if (answersToEvaluate.length === 0) {
-                        showTemporaryMessage("No has respondido ninguna pregunta. Volviendo al menú.");
-                        screens.results.classList.add('hidden');
-                        screens.setup.classList.remove('hidden');
-                        return;
-                    }
-                }
-                
-                const stats = {
-                    correct: answersToEvaluate.filter(a => a.status === 'correct').length,
-                    incorrect: answersToEvaluate.filter(a => a.status === 'incorrect').length,
-                    omitted: answersToEvaluate.filter(a => a.status === 'omitted').length,
-                    unidentified: answersToEvaluate.filter(a => a.status === 'unidentified').length
-                };
-                
-                const totalEvaluated = stats.correct + stats.incorrect + stats.unidentified;
-                const finalScoreValue = totalEvaluated > 0 ? (stats.correct / totalEvaluated) * 10 : 0;
-                const totalTimeEvaluated = answersToEvaluate.reduce((acc, curr) => acc + curr.timeSpent, 0);
-                const averageTime = answersToEvaluate.length > 0 ? (totalTimeEvaluated / answersToEvaluate.length).toFixed(2) : 0;
-                const idsString = answersToEvaluate.map(a => a.question.id).filter(id => id).join(', ');
-                
-                finalScore.textContent = `${finalScoreValue.toFixed(2)} / 10.00`;
-                totalTime.textContent = `${totalTimeEvaluated} segundos`;
-                avgTime.textContent = `${averageTime} seg por pregunta`;
-                correctCount.textContent = stats.correct;
-                incorrectCount.textContent = stats.incorrect;
-                omittedCount.textContent = stats.omitted;
-                unansweredCount.textContent = stats.unidentified;
-                
-                if (finalScoreValue === 10) resultImage.src = RESULT_IMAGES.perfect10;
-                else if (finalScoreValue >= 9.5) resultImage.src = RESULT_IMAGES.between9_5_10;
-                else if (finalScoreValue >= 9) resultImage.src = RESULT_IMAGES.between9_9_5;
-                else if (finalScoreValue >= 8) resultImage.src = RESULT_IMAGES.between8_9;
-                else if (finalScoreValue >= 7) resultImage.src = RESULT_IMAGES.between7_8;
-                else resultImage.src = RESULT_IMAGES.less7;
-                
-                submitResults(stats, finalScoreValue, totalTimeEvaluated, idsString, answersToEvaluate.length);
-                
-                populateResultsTable(answersToEvaluate);
-                drawResultsChart(stats);
-                const allAnsweredIds = generateAnsweredIdsList();
-                populateSummaryBox(finalScoreValue, idsString, allAnsweredIds);
-                
-                const idsOutputSection = document.getElementById('ids-output-section');
-                if (idsOutputSection) {
-                    idsOutputSection.style.display = 'none';
-                }
-                copyIdsBtn.disabled = true;
-                copyIdsBtn.classList.add('btn-disabled');
-                if (copyIncorrectIdsBtn) { copyIncorrectIdsBtn.disabled = true; copyIncorrectIdsBtn.classList.add('btn-disabled'); }
-                
-                if (isGameMode) {
-                    let returnBtn = document.getElementById('return-to-menu-btn');
-                    if (!returnBtn) {
-                        returnBtn = document.createElement('button');
-                        returnBtn.id = 'return-to-menu-btn';
-                        returnBtn.className = 'btn btn-primary w-full mt-4';
-                        returnBtn.textContent = 'VOLVER AL MENÚ PRINCIPAL';
-                        returnBtn.addEventListener('click', () => {
-                            screens.results.classList.add('hidden');
-                            screens.setup.classList.remove('hidden');
-                        });
-                        const restartBtnParent = restartQuizBtn.closest('div');
-                        if (restartBtnParent && restartBtnParent.nextElementSibling) {
-                            restartBtnParent.nextElementSibling.before(returnBtn);
-                        } else {
-                             document.getElementById('results-screen').appendChild(returnBtn);
-                        }
-                    }
-                } else {
-                    const returnBtn = document.getElementById('return-to-menu-btn');
-                    if(returnBtn) returnBtn.remove();
-                }
             }
             
             function populateResultsTable(answers) {
@@ -5765,7 +5698,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         mainImageHtml = `
                             <div style="margin: 15px auto; position: relative; width: 100%; max-width: 600px; height: 300px; overflow: hidden; border-radius: 10px; background-color: rgba(0,0,0,0.2);">
                                 <div style="position: absolute; inset: 0; background-image: url('${question.image}'); background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 1;"></div>
-                                <div style="position: absolute; inset: -50%; width: 200%; height: 200%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; transform: rotate(-30deg); pointer-events: none; z-index: 2; opacity: 0.2; overflow: hidden;">
+                                <div style="position: absolute; inset: -50%; width: 200%; height: 200%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; transform: rotate(-30deg); pointer-events: none; z-index: 2; opacity: 0.2; overflow: hidden; animation: watermark-scroll 40s linear infinite;">
                                     <div style="color: white; font-weight: bold; font-size: 14px; line-height: 2; word-spacing: 1rem; text-align: center;">
                                         ${wmText}
                                     </div>
