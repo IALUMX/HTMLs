@@ -8,7 +8,8 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que 
+1) Requiero que confirmes que no se salga el texto de ningún contenedor (en el principal actualmente se sale en algunas preuntas con LaTeX)
+
 
 
 
@@ -73,9 +74,25 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
         #question-text {
             line-height: 1.25 !important; /* Interlineado más compacto en la pregunta */
             margin-bottom: 15px !important;
+            max-width: 100%; /* Asegura que el contenedor no rebase la pantalla */
+            overflow-x: auto; /* Permite scroll horizontal en la pregunta si algo es muy ancho */
+            word-wrap: break-word; /* Obliga al texto normal a saltar de línea */
+            overflow-wrap: break-word;
         }
         #question-text p {
             margin-bottom: 8px !important; /* Menos espacio entre párrafos */
+            max-width: 100%;
+        }
+        /* Controles responsivos específicos para el renderizado de LaTeX (MathJax) */
+        mjx-container[display="true"] {
+            max-width: 100%;
+            overflow-x: auto !important; /* Añade barra de desplazamiento a ecuaciones largas */
+            overflow-y: hidden !important;
+            padding-bottom: 5px; /* Espacio extra inferior para la barra de desplazamiento */
+            padding-top: 5px;
+        }
+        mjx-container {
+            max-width: 100%;
         }
         body::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -4877,6 +4894,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     });
                 }
                 setTimeout(() => {
+                    // Liberar memoria de MathJax antes de renderizar (Crucial para evitar crasheos en iOS)
+                    if (window.MathJax && window.MathJax.typesetClear) {
+                        window.MathJax.typesetClear([questionText, optionsContainer, textContent]);
+                    }
                     MathJax.typesetPromise([questionText, optionsContainer, textContent]).then(() => {
                     }).catch((err) => console.log('Error renderizando formulas:', err));
                 }, 50);
@@ -5154,6 +5175,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 modalElement.querySelector('.close-modal-btn').addEventListener('click', () => {
                     modalElement.remove();
                 });
+                if (window.MathJax && window.MathJax.typesetClear) {
+                    window.MathJax.typesetClear([modalElement.querySelector('.hint-content')]);
+                }
                 MathJax.typesetPromise([modalElement.querySelector('.hint-content')]);
             });
             
@@ -5165,29 +5189,94 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
             
             async function submitResults(stats, score, totalTime, idsString, numQuestions) {
-                const formData = new FormData();
-                
-                formData.append('EvaluationName', "PRUEBA (Global)"); 
-                
-                formData.append('Name', currentUser.name || 'Invitado');
-                formData.append('Email', currentUser.email || 'sin_email');
-                formData.append('WhatsApp', currentUser.whatsapp || '0000000000');
-                formData.append('TotalTime', totalTime);
-                formData.append('AverageTime', numQuestions > 0 ? (totalTime / numQuestions).toFixed(2) : 0);
-                formData.append('Score', score.toFixed(2));
-                formData.append('CorrectAnswers', stats.correct);
-                formData.append('TotalQuestions', numQuestions);
-                formData.append('IDs', idsString);
-                
-                formData.append('UserType', isGuest ? 'Invitado' : 'Registrado');
+                // 1. Empaquetamos los datos en un objeto simple
+                const payload = {
+                    EvaluationName: "PRUEBA (Global)",
+                    Name: currentUser.name || 'Invitado',
+                    Email: currentUser.email || 'sin_email',
+                    WhatsApp: currentUser.whatsapp || '0000000000',
+                    TotalTime: totalTime,
+                    AverageTime: numQuestions > 0 ? (totalTime / numQuestions).toFixed(2) : 0,
+                    Score: score.toFixed(2),
+                    CorrectAnswers: stats.correct,
+                    TotalQuestions: numQuestions,
+                    IDs: idsString,
+                    UserType: isGuest ? 'Invitado' : 'Registrado',
+                    Timestamp: new Date().toLocaleString('es-MX') // Para saber cuándo lo hizo
+                };
 
-                try {
-                    await fetch(SUBMISSION_SCRIPT_URL, { method: 'POST', body: formData });
-                    console.log("Resultados enviados con éxito al script de respaldo.");
-                } catch (error) {
-                    console.error("Error al enviar los resultados:", error);
+                await sendOrQueueResult(payload);
+            }
+
+            async function sendOrQueueResult(payload) {
+                if (navigator.onLine) {
+                    try {
+                        const formData = new FormData();
+                        for (const key in payload) {
+                            formData.append(key, payload[key]);
+                        }
+                        await fetch(SUBMISSION_SCRIPT_URL, { method: 'POST', body: formData });
+                        console.log("Resultados enviados con éxito al servidor.");
+                    } catch (error) {
+                        console.warn("Fallo el envío por red inestable, guardando en cola offline...");
+                        saveToOfflineQueue(payload);
+                    }
+                } else {
+                    console.warn("Sin conexión a internet, guardando en cola offline...");
+                    saveToOfflineQueue(payload);
+                    showTemporaryMessage("Sin conexión. Tus resultados se guardaron y se enviarán cuando regrese el internet.", "bg-yellow-600");
                 }
-            }            
+            }
+
+            function saveToOfflineQueue(payload) {
+                let queue = JSON.parse(localStorage.getItem('cepredix_offline_queue') || '[]');
+                queue.push(payload);
+                localStorage.setItem('cepredix_offline_queue', JSON.stringify(queue));
+            }
+
+            async function processOfflineQueue() {
+                if (!navigator.onLine) return;
+                let queue = JSON.parse(localStorage.getItem('cepredix_offline_queue') || '[]');
+                if (queue.length === 0) return;
+
+                console.log(`Procesando ${queue.length} resultados pendientes...`);
+                let remainingQueue = [];
+
+                for (const payload of queue) {
+                    try {
+                        const formData = new FormData();
+                        for (const key in payload) {
+                            formData.append(key, payload[key]);
+                        }
+                        await fetch(SUBMISSION_SCRIPT_URL, { method: 'POST', body: formData });
+                        console.log("Resultado pendiente enviado con éxito.");
+                    } catch (error) {
+                        console.error("Error enviando resultado de la cola, se intentará luego.", error);
+                        remainingQueue.push(payload); // Lo mantenemos en la cola si vuelve a fallar
+                    }
+                }
+                
+                // Actualizamos la cola solo con los que fallaron (si es que alguno falló)
+                localStorage.setItem('cepredix_offline_queue', JSON.stringify(remainingQueue));
+                
+                if (remainingQueue.length === 0) {
+                    showTemporaryMessage("Se han sincronizado tus resultados pendientes con el servidor ✅", "bg-green-600");
+                }
+            }
+
+            // Listeners nativos del navegador para detectar cuando se va o vuelve el internet
+            window.addEventListener('online', () => {
+                showTemporaryMessage("¡Conexión restaurada! Sincronizando datos...", "bg-blue-600");
+                processOfflineQueue();
+            });
+            
+            window.addEventListener('offline', () => {
+                showTemporaryMessage("Sin conexión a internet. Puedes seguir trabajando, tus datos se guardarán.", "bg-red-600");
+            });
+
+            // Al cargar la página, verificamos si hay algo atorado en la cola de sesiones anteriores
+            setTimeout(processOfflineQueue, 3000);
+
             function endQuiz() {
                 if (isGameMode && gameModeLives > 0) {
                     const successSounds = [simulacroSuccess1, simulacroSuccess2];
@@ -5719,6 +5808,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     </div>
                 `;
                 lookupResultContainer.classList.remove('hidden');
+                if (window.MathJax && window.MathJax.typesetClear) {
+                    window.MathJax.typesetClear([lookupResultContainer]);
+                }
                 MathJax.typesetPromise([lookupResultContainer]);
             }
             
@@ -5875,7 +5967,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 wbStep++;
                 
                 // LÍMITE DE MEMORIA PARA EVITAR CRASHEOS EN SAFARI/IPHONE
-                if (wbHistory.length > 20) {
+                if (wbHistory.length > 8) {
                     wbHistory.shift();
                     wbStep--;
                 }
@@ -6099,24 +6191,17 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     }
                 });
                 
+                let resizeTimeout;
                 window.addEventListener('resize', () => {
-                    // Solo redimensionar si está visible para no perder datos innecesariamente
                     if(!wbOverlay.classList.contains('hidden')) {
-                        // Guardar imagen actual temporalmente
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = wbCanvas.width;
-                        tempCanvas.height = wbCanvas.height;
-                        tempCanvas.getContext('2d').drawImage(wbCanvas, 0, 0);
-                        
-                        wbCanvas.width = window.innerWidth;
-                        wbCanvas.height = window.innerHeight;
-                        
-                        wbCtx.lineCap = 'round';
-                        wbCtx.lineJoin = 'round';
-                        wbCtx.strokeStyle = wbCurrentColor;
-                        wbCtx.lineWidth = wbCurrentWidth;
-                        
-                        wbCtx.drawImage(tempCanvas, 0, 0);
+                        // Debounce: Evita que se ejecute cientos de veces por segundo en iOS
+                        clearTimeout(resizeTimeout);
+                        resizeTimeout = setTimeout(() => {
+                            wbCanvas.width = window.innerWidth;
+                            wbCanvas.height = window.innerHeight;
+                            // Redibujamos desde el array de memoria sin crear Canvas temporales asesinos de RAM
+                            redrawWb();
+                        }, 200);
                     }
                 });
             }
