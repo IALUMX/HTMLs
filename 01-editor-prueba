@@ -1501,7 +1501,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 <h1 class="text-2xl sm:text-3xl font-bold">Hola, <span id="welcome-name" class="text-blue-400"></span></h1>
                 <p class="text-gray-300 mt-2">Configura tu prueba para comenzar a practicar. Recuerda que si estás como INVITADO tendrás funciones limitadas</p>
             </div>
-           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left mt-4 pt-4 border-t border-gray-700">
+           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-left mt-4 pt-4 border-t border-gray-700">
                 <div class="bg-gray-800 p-3 rounded-lg border border-gray-600 flex flex-col justify-between">
                     <label class="font-medium flex items-start text-left cursor-pointer">
                         <input type="checkbox" id="continuous-mode-toggle" class="mr-2 mt-1 h-5 w-5 flex-shrink-0" checked>
@@ -1522,6 +1522,13 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         <span class="text-sm">MODO AVANCE REAL 😱<br><span class="text-xs font-normal text-gray-300">(Sin ayudas)</span></span>
                     </label>
                     <p class="text-xs text-gray-400 text-left mt-2">Oculta aciertos, sin confirmación de color/audio.</p>
+                </div>
+                <div class="bg-gray-800 p-3 rounded-lg border border-gray-600 flex flex-col justify-between">
+                    <label class="font-medium flex items-start text-left cursor-pointer">
+                        <input type="checkbox" id="memory-mode-toggle" class="mr-2 mt-1 h-5 w-5 flex-shrink-0">
+                        <span class="text-sm">MODO MEMORIA 🧠<br><span class="text-xs font-normal text-gray-300">(Flashcards)</span></span>
+                    </label>
+                    <p class="text-xs text-gray-400 text-left mt-2">Autoevaluación sin opciones. Exclusivo para registrados.</p>
                 </div>
             </div>
             <div class="space-y-4">
@@ -1620,6 +1627,13 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     <span class="font-bold text-green-400">✓ <span id="live-correct">0</span></span>
                     <span class="font-bold text-red-400">✗ <span id="live-incorrect">0</span></span>
                 </div>
+                <div id="memory-stats" class="flex gap-3 text-xs sm:text-sm font-bold order-2 hidden items-center bg-gray-800 px-3 py-1 rounded-full border border-gray-600 shadow-md">
+                     <span class="text-green-400">✅ <span id="mem-score-correct">0</span></span>
+                     <span class="text-gray-500">|</span>
+                     <span class="text-red-400">❌ <span id="mem-score-incorrect">0</span></span>
+                     <span class="text-gray-500">|</span>
+                     <span id="mem-avg-time" class="text-gray-300"><i class="fas fa-clock"></i> 0s</span>
+                </div>
                 <div class="flex items-center space-x-1 text-xs sm:text-lg font-bold order-3" id="timer-container">
                     <svg class="h-4 w-4 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span id="timer" class="timer-green">30:00</span>
@@ -1713,6 +1727,33 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     </button>
                 </div>
                 <div id="options-container" class="w-full space-y-3"></div>
+                
+                <div id="memory-mode-ui" class="w-full space-y-4 hidden flex-col items-center mt-4">
+                    <button id="memory-show-answer-btn" class="btn btn-primary w-full py-4 text-lg sm:text-xl shadow-lg border-2 border-blue-400 transition-all transform hover:scale-105">
+                        <i class="fas fa-eye"></i> MOSTRAR RESPUESTA
+                    </button>
+                    
+                    <div id="memory-answer-box" class="w-full bg-gray-800 p-4 sm:p-6 rounded-lg border-2 border-yellow-500 hidden flex-col items-center shadow-xl text-center">
+                        <h3 class="text-yellow-400 font-bold mb-3 text-sm sm:text-lg uppercase tracking-wider"><i class="fas fa-check-circle"></i> Respuesta Correcta</h3>
+                        <div id="memory-correct-text" class="text-lg sm:text-xl text-white font-semibold w-full overflow-x-auto break-words"></div>
+                        <div id="memory-correct-image" class="mt-4 flex justify-center w-full"></div>
+                    </div>
+                    
+                    <div id="memory-eval-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 w-full hidden mt-4">
+                        <button class="mem-eval-btn btn w-full flex flex-col items-center p-2 sm:p-3 bg-gray-800 border-2 border-green-500 hover:bg-green-600 text-white transition-colors" data-action="correct">
+                            <span class="text-2xl sm:text-3xl mb-1">✅</span> <span class="text-xs sm:text-sm">BIEN</span>
+                        </button>
+                        <button class="mem-eval-btn btn w-full flex flex-col items-center p-2 sm:p-3 bg-gray-800 border-2 border-red-500 hover:bg-red-600 text-white transition-colors" data-action="incorrect">
+                            <span class="text-2xl sm:text-3xl mb-1">❌</span> <span class="text-xs sm:text-sm">MAL</span>
+                        </button>
+                        <button class="mem-eval-btn btn w-full flex flex-col items-center p-2 sm:p-3 bg-gray-800 border-2 border-yellow-500 hover:bg-yellow-600 text-white transition-colors" data-action="repeat">
+                            <span class="text-2xl sm:text-3xl mb-1">🔁</span> <span class="text-xs sm:text-sm">REPETIR (+5)</span>
+                        </button>
+                        <button class="mem-eval-btn btn w-full flex flex-col items-center p-2 sm:p-3 bg-gray-800 border-2 border-gray-400 hover:bg-gray-500 text-white transition-colors" data-action="skip">
+                            <span class="text-2xl sm:text-3xl mb-1">⏭️</span> <span class="text-xs sm:text-sm">OMITIR</span>
+                        </button>
+                    </div>
+                </div>
                 <div id="justification-box" class="justification w-full hidden">
                     <h4>Justificación:</h4>
                     <p id="justification-text"></p>
@@ -2115,6 +2156,15 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             const statsRemainingFiltered = document.getElementById('stats-remaining-filtered');
             const startQuizBtn = document.getElementById('start-quiz-btn');
             const errorMessage = document.getElementById('error-message');
+            const memoryModeToggle = document.getElementById('memory-mode-toggle');
+            const memoryModeUI = document.getElementById('memory-mode-ui');
+            const memoryShowAnswerBtn = document.getElementById('memory-show-answer-btn');
+            const memoryAnswerBox = document.getElementById('memory-answer-box');
+            const memoryCorrectText = document.getElementById('memory-correct-text');
+            const memoryCorrectImage = document.getElementById('memory-correct-image');
+            const memoryEvalButtons = document.getElementById('memory-eval-buttons');
+            const memoryStats = document.getElementById('memory-stats');
+
             const currentQuestionNum = document.getElementById('current-question-num');
             const totalQuestionsNum = document.getElementById('total-questions-num');
             const liveCorrect = document.getElementById('live-correct');
@@ -2251,8 +2301,13 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             let totalQuestionTime = 0;
             let isGuest = false;
             let isGameMode = false;
-            let isContinuousMode = true;
-            let isRealMode = false;
+            let isContinuousMode = true;
+            let isRealMode = false;
+            let isMemoryMode = false;
+            let memoryCorrectCount = 0;
+            let memoryIncorrectCount = 0;
+            let memoryTotalTime = 0;
+            let memoryAnsweredQuestions = 0;
             let gameModeLives = 3;
             let consecutiveCorrect = 0;
             let gameModeTimer;
@@ -4264,67 +4319,64 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
 
             continuousModeToggle.addEventListener('click', (e) => {
-                if (isGuest) {
-                    e.preventDefault();
-                    continuousModeToggle.checked = false;
-                    showProAlert();
-                    return;
-                }
+                if (isGuest) { e.preventDefault(); continuousModeToggle.checked = false; showProAlert(); return; }
             });
             continuousModeToggle.addEventListener('change', () => {
                 if(isGuest) return;
                 isContinuousMode = continuousModeToggle.checked;
                 if (isContinuousMode) {
-                    gameModeToggle.checked = false;
-                    realModeToggle.checked = false;
-                    isGameMode = false;
-                    isRealMode = false;
+                    gameModeToggle.checked = false; realModeToggle.checked = false;
+                    if(memoryModeToggle) memoryModeToggle.checked = false;
+                    isGameMode = false; isRealMode = false; isMemoryMode = false;
                 }
             });
 
             gameModeToggle.addEventListener('click', (e) => {
-                if (isGuest) {
-                    e.preventDefault();
-                    gameModeToggle.checked = false;
-                    showProAlert();
-                    return;
-                }
+                if (isGuest) { e.preventDefault(); gameModeToggle.checked = false; showProAlert(); return; }
             });
             gameModeToggle.addEventListener('change', () => {
                 if(isGuest) return;
                 isGameMode = gameModeToggle.checked;
                 if (isGameMode) {
-                    continuousModeToggle.checked = false;
-                    realModeToggle.checked = false;
-                    isContinuousMode = false;
-                    isRealMode = false;
+                    continuousModeToggle.checked = false; realModeToggle.checked = false;
+                    if(memoryModeToggle) memoryModeToggle.checked = false;
+                    isContinuousMode = false; isRealMode = false; isMemoryMode = false;
                 }
             });
 
             realModeToggle.addEventListener('click', (e) => {
-                if (isGuest) {
-                    e.preventDefault();
-                    realModeToggle.checked = true; // No lo dejamos quitar
-                    showProAlert();
-                    return;
-                }
+                if (isGuest) { e.preventDefault(); realModeToggle.checked = true; showProAlert(); return; }
             });
             realModeToggle.addEventListener('change', () => {
                 if(isGuest) return;
                 isRealMode = realModeToggle.checked;
                 if (isRealMode) {
-                    continuousModeToggle.checked = false;
-                    gameModeToggle.checked = false;
-                    isContinuousMode = false;
-                    isGameMode = false;
+                    continuousModeToggle.checked = false; gameModeToggle.checked = false;
+                    if(memoryModeToggle) memoryModeToggle.checked = false;
+                    isContinuousMode = false; isGameMode = false; isMemoryMode = false;
                 }
             });
+
+            if (memoryModeToggle) {
+                memoryModeToggle.addEventListener('click', (e) => {
+                    if (isGuest) { e.preventDefault(); memoryModeToggle.checked = false; showProAlert(); return; }
+                });
+                memoryModeToggle.addEventListener('change', () => {
+                    if(isGuest) return;
+                    isMemoryMode = memoryModeToggle.checked;
+                    if (isMemoryMode) {
+                        continuousModeToggle.checked = false; gameModeToggle.checked = false; realModeToggle.checked = false;
+                        isContinuousMode = false; isGameMode = false; isRealMode = false;
+                    }
+                });
+            }
             
            startQuizBtn.addEventListener('click', () => {
                 errorMessage.textContent = '';
                 isGameMode = gameModeToggle.checked;
-                isContinuousMode = continuousModeToggle.checked;
-                isRealMode = realModeToggle ? realModeToggle.checked : false;
+                isContinuousMode = continuousModeToggle.checked;
+                isRealMode = realModeToggle ? realModeToggle.checked : false;
+                isMemoryMode = memoryModeToggle ? memoryModeToggle.checked : false;
                 
                 if (isGuest) {
                     questionCountInGuestMode = 0;
@@ -4434,12 +4486,39 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 userAnswers = quizQuestions.map(q => ({
                     question: q, status: 'unanswered', selected: null, timeSpent: 0
                 }));
+                // Reiniciar variables Modo Memoria
+                memoryCorrectCount = 0;
+                memoryIncorrectCount = 0;
+                memoryTotalTime = 0;
+                memoryAnsweredQuestions = 0;
+                if(document.getElementById('mem-score-correct')) document.getElementById('mem-score-correct').textContent = '0';
+                if(document.getElementById('mem-score-incorrect')) document.getElementById('mem-score-incorrect').textContent = '0';
+                if(document.getElementById('mem-avg-time')) {
+                    document.getElementById('mem-avg-time').innerHTML = `<i class="fas fa-clock"></i> 0s`;
+                    document.getElementById('mem-avg-time').className = "text-gray-300 ml-1";
+                }
+
                 screens.setup.classList.add('hidden');
                 screens.results.classList.add('hidden');
                 screens.quiz.classList.remove('hidden');
                 updateEvaluationButton();
+                
+                // Mostrar u Ocultar UI dependiendo del modo
+                document.getElementById('action-buttons').style.display = isMemoryMode ? 'none' : 'block';
+                memoryModeUI.style.display = isMemoryMode ? 'flex' : 'none';
+                memoryStats.style.display = isMemoryMode ? 'flex' : 'none';
+                document.getElementById('live-score').style.display = isMemoryMode ? 'none' : 'flex';
                 timerContainer.style.display = 'flex';
-                if (isRealMode) {
+
+                if (isMemoryMode) {
+                    gameModeRules.classList.add('hidden');
+                    clearInterval(timer);
+                    timer = setInterval(() => { 
+                        seconds++; 
+                        timerDisplay.textContent = `${seconds}s`;
+                    }, 1000);
+                    hintBtn.style.display = 'none';
+                } else if (isRealMode) {
                     document.getElementById('live-score').style.display = 'none';
                     gameModeRules.classList.add('hidden');
                     clearInterval(timer);
@@ -4704,7 +4783,42 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 }
                 optionsContainer.innerHTML = '';
                 
-                // DETECCIÓN DE FORMATO HÍBRIDO
+                // --- LÓGICA MODO MEMORIA ---
+                if (isMemoryMode) {
+                    optionsContainer.style.display = 'none';
+                    memoryShowAnswerBtn.style.display = 'block';
+                    memoryAnswerBox.style.display = 'none';
+                    memoryEvalButtons.style.display = 'none';
+                    memoryCorrectText.innerHTML = '';
+                    memoryCorrectImage.innerHTML = '';
+
+                    const isHybridMem = question.options.some(opt => 'text_op1' in opt);
+                    if (isHybridMem) {
+                        const correctOp1 = question.options.find(o => 'text_op1' in o && o.correct)?.text_op1 || '';
+                        const correctOp2 = question.options.find(o => 'text_op2' in o && o.correct)?.text_op2 || '';
+                        
+                        let html1 = isImageOption(correctOp1) ? `<img src="${correctOp1}" style="max-height:150px; border-radius:5px; margin:auto;">` : correctOp1;
+                        let html2 = isImageOption(correctOp2) ? `<img src="${correctOp2}" style="max-height:150px; border-radius:5px; margin:auto;">` : correctOp2;
+                        
+                        memoryCorrectText.innerHTML = `<div class="grid grid-cols-2 gap-4 w-full"><div class="bg-gray-700 p-3 rounded">${html1}</div><div class="bg-gray-700 p-3 rounded">${html2}</div></div>`;
+                    } else {
+                        const correctOption = question.options.find(opt => opt.correct);
+                        if (correctOption) {
+                            if (isImageOption(correctOption.text)) {
+                                memoryCorrectImage.innerHTML = `<img src="${correctOption.text}" style="max-height:200px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.3);">`;
+                            } else {
+                                memoryCorrectText.innerHTML = correctOption.text;
+                            }
+                        }
+                    }
+
+                    setTimeout(() => { if (window.MathJax) MathJax.typesetPromise([memoryCorrectText]); }, 50);
+                    return; // Terminamos aquí la renderización de la pregunta
+                } else {
+                    optionsContainer.style.display = ''; 
+                }
+
+                // DETECCIÓN DE FORMATO HÍBRIDO NORMAL
                 const isHybrid = question.options.some(opt => 'text_op1' in opt);
 
                 if (isHybrid) {
@@ -6127,6 +6241,59 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     }
                 });
             }
+
+            // --- EVENTOS Y LÓGICA MODO MEMORIA ---
+            if (memoryShowAnswerBtn) {
+                memoryShowAnswerBtn.addEventListener('click', () => {
+                    memoryShowAnswerBtn.style.display = 'none';
+                    memoryAnswerBox.style.display = 'flex';
+                    memoryEvalButtons.style.display = 'grid';
+                });
+            }
+
+            document.querySelectorAll('.mem-eval-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const action = e.currentTarget.dataset.action;
+                    const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
+                    memoryTotalTime += timeSpent;
+                    memoryAnsweredQuestions++;
+
+                    if (action === 'correct') {
+                        memoryCorrectCount++;
+                    } else if (action === 'incorrect') {
+                        memoryIncorrectCount++;
+                    } else if (action === 'repeat') {
+                        // Inserta la misma pregunta 5 lugares después o al final
+                        let insertIndex = currentQuestionIndex + 6; 
+                        if (insertIndex > userAnswers.length) insertIndex = userAnswers.length;
+                        userAnswers.splice(insertIndex, 0, {
+                            question: userAnswers[currentQuestionIndex].question,
+                            status: 'unanswered', selected: null, timeSpent: 0
+                        });
+                    }
+
+                    // Calculadora de promedios con colores
+                    let avg = Math.round(memoryTotalTime / memoryAnsweredQuestions);
+                    const memAvgEl = document.getElementById('mem-avg-time');
+                    memAvgEl.innerHTML = `<i class="fas fa-clock"></i> ${avg}s`;
+                    memAvgEl.className = "ml-1 font-bold " + (avg <= 45 ? "text-green-400" : (avg <= 90 ? "text-yellow-400" : "text-red-400"));
+
+                    document.getElementById('mem-score-correct').textContent = memoryCorrectCount;
+                    document.getElementById('mem-score-incorrect').textContent = memoryIncorrectCount;
+
+                    // Avanzar a la siguiente
+                    if (currentQuestionIndex < userAnswers.length - 1) {
+                        currentQuestionIndex++;
+                        questionStartTime = Date.now();
+                        displayQuestion();
+                    } else {
+                        // Fin automático 
+                        alert("¡Has terminado todas las Flashcards en este banco! Volviendo al menú principal.");
+                        document.getElementById('cancel-btn').click();
+                    }
+                });
+            });
+
         });
     </script>
 </body>
