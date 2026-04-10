@@ -8,8 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que confirmes que no se salga el texto de ningún contenedor (en el principal actualmente se sale en algunas preuntas con LaTeX)
-
+1) Requiero que confirmes que 
 
 
 
@@ -2401,7 +2400,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             });
 
             function showAd() {
-                if (!isGuest || !(isContinuousMode || isGameMode)) return;
+                if (!isGuest) return;
                 
                 if (!guestAds || guestAds.length === 0) return; 
 
@@ -2543,6 +2542,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
             chatbotToggle.addEventListener('click', () => {
                 if (isGuest) {
+                    showProAlert();
                     return; 
                 }
                 const isHidden = chatbotContent.classList.toggle('hidden');
@@ -2916,7 +2916,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 updateButtonStates();
 
                 // Publicidad
-                if (isGuest && (isContinuousMode || isGameMode)) {
+                if (isGuest) {
                     questionCountInGuestMode++;
                     if (questionCountInGuestMode % 5 === 0) {
                         setTimeout(showAd, 500);
@@ -3840,7 +3840,28 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 }
                 showSimulacroEndScreen();
             }
-            
+
+            function showProAlert() {
+                const modalElement = document.createElement('div');
+                modalElement.className = "fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[9999]";
+                modalElement.innerHTML = `
+                    <div class="bg-gray-800 border-2 border-yellow-500 rounded-xl p-6 w-full max-w-md text-center relative shadow-2xl">
+                        <button class="absolute top-2 right-4 text-3xl font-bold text-gray-500 hover:text-white close-modal-btn">&times;</button>
+                        <div class="text-5xl mb-4">🌟</div>
+                        <h3 class="text-xl font-bold text-yellow-400 mb-4">¡Función PRO Descubierta!</h3>
+                        <p class="text-white text-md mb-6">
+                            Felicidades, acabas de descubrir una función PRO. Desbloquéala enviando mensaje por WhatsApp a CEPREDIX al <strong>777 451 6364</strong> o da clic aquí abajo 👇
+                        </p>
+                        <a href="https://wa.link/97gwu6" target="_blank" class="btn w-full text-lg" style="background: linear-gradient(45deg, #25D366, #128C7E); color: white; display: block; text-decoration: none;">
+                            <i class="fab fa-whatsapp"></i> Desbloquear PRO
+                        </a>
+                    </div>
+                `;
+                document.body.appendChild(modalElement);
+                modalElement.querySelector('.close-modal-btn').addEventListener('click', () => {
+                    modalElement.remove();
+                });
+            }
             function showTemporaryMessage(message, bgColor = "bg-blue-600") {
                 const tempMessage = document.createElement('div');
                 tempMessage.className = `fixed top-1/4 left-1/2 transform -translate-x-1/2 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50`;
@@ -3963,44 +3984,16 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 screens.setup.classList.remove('hidden');
                 if(logoutBtn) logoutBtn.style.display = 'flex';
                 welcomeName.textContent = 'Invitado';
-                answeredIdsInput.disabled = true;
-                setupLookupForGuest();
-                loadData().then(() => {
-                    uniTagsContainer.querySelectorAll('.tag').forEach(tagEl => {
-                        if (tagEl.textContent === 'GENERAL') {
-                            tagEl.classList.add('selected');
-                        }
-                        tagEl.style.pointerEvents = 'none';
-                        tagEl.style.opacity = '0.5';
-                    });
-                    levelTagsContainer.querySelectorAll('.tag').forEach(tagEl => {
-                        if (tagEl.textContent === 'BÁSICO') {
-                            tagEl.classList.add('selected');
-                        }
-                        tagEl.style.pointerEvents = 'none';
-                        tagEl.style.opacity = '0.5';
-                    });
-                    updateQuestionStats();
-                   // Bloquear tags de Tipo para invitado
-                    typeTagsContainer.querySelectorAll('.tag').forEach((tagEl, index) => {
-                        if (index === 0) { // O lógica de selección por defecto
-                            tagEl.classList.add('selected');
-                        }
-                        tagEl.style.pointerEvents = 'none';
-                        tagEl.style.opacity = '0.5';
-                    });
-                });
-                gameModeToggle.disabled = false;
-                gameModeToggle.checked = false;
-                gameModeToggle.parentElement.style.opacity = '1';
-                gameModeToggle.parentElement.style.pointerEvents = 'auto';
-                continuousModeToggle.disabled = false;
                 
-                if(chatbotToggle) {
-                    chatbotToggle.style.opacity = '0.5';
-                    chatbotToggle.style.cursor = 'not-allowed';
-                    chatbotToggle.title = "No disponible para invitados";
-                }
+                // Activar Modo Avance Real por defecto
+                realModeToggle.checked = true;
+                isRealMode = true;
+                continuousModeToggle.checked = false;
+                isContinuousMode = false;
+                gameModeToggle.checked = false;
+                isGameMode = false;
+
+                loadData();
             });
             
             noAccessBtn.addEventListener('click', (e) => {
@@ -4143,7 +4136,17 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
                 // 4. Filtro Final de preguntas
                 let filteredQuestions = poolAfterLevel.filter(q => selectedTypeTags.length === 0 || (q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag))));
-                
+                // REGLAS PARA INVITADOS: Sin Imgur y que terminen en A, B, C o D
+                if (isGuest) {
+                    filteredQuestions = filteredQuestions.filter(q => {
+                        const hasImgurMain = q.image && q.image.includes('imgur.com');
+                        const hasImgurOption = q.options && q.options.some(opt => opt.text && opt.text.includes('imgur.com'));
+                        const lastChar = q.id ? q.id.slice(-1).toUpperCase() : '';
+                        const hasValidEndChar = ['A', 'B', 'C', 'D'].includes(lastChar);
+                        return !hasImgurMain && !hasImgurOption && hasValidEndChar;
+                    });
+                }
+
                 // 2. Preguntas con Filtros
                 if(statsTotalFiltered) statsTotalFiltered.textContent = filteredQuestions.length;
 
@@ -4220,7 +4223,6 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         tagEl.classList.add('selected');
                     }
                     tagEl.addEventListener('click', () => {
-                        if (isGuest) return;
                         tagEl.classList.toggle('selected');
                         updateQuestionStats();
                     });
@@ -4236,7 +4238,6 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         tagEl.classList.add('selected');
                     }
                     tagEl.addEventListener('click', () => {
-                        if (isGuest) return;
                         tagEl.classList.toggle('selected');
                         updateQuestionStats();
                     });
@@ -4253,7 +4254,6 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         tagEl.classList.add('selected');
                     }
                     tagEl.addEventListener('click', () => {
-                        if (isGuest) return;
                         tagEl.classList.toggle('selected');
                         updateQuestionStats();
                     });
@@ -4263,50 +4263,62 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 updateQuestionStats();
             }
 
+            continuousModeToggle.addEventListener('click', (e) => {
+                if (isGuest) {
+                    e.preventDefault();
+                    continuousModeToggle.checked = false;
+                    showProAlert();
+                    return;
+                }
+            });
             continuousModeToggle.addEventListener('change', () => {
-                isContinuousMode = continuousModeToggle.checked;
-                if (isContinuousMode) {
-                    gameModeToggle.checked = false;
-                    realModeToggle.checked = false;
-                    gameModeToggle.disabled = true;
-                    realModeToggle.disabled = true;
-                    isGameMode = false;
-                    isRealMode = false;
-                } else {
-                    gameModeToggle.disabled = false;
-                    realModeToggle.disabled = false;
-                }
-            });
+                if(isGuest) return;
+                isContinuousMode = continuousModeToggle.checked;
+                if (isContinuousMode) {
+                    gameModeToggle.checked = false;
+                    realModeToggle.checked = false;
+                    isGameMode = false;
+                    isRealMode = false;
+                }
+            });
 
-            gameModeToggle.addEventListener('change', () => {
-                isGameMode = gameModeToggle.checked;
-                if (isGameMode) {
-                    continuousModeToggle.checked = false;
-                    realModeToggle.checked = false;
-                    continuousModeToggle.disabled = true;
-                    realModeToggle.disabled = true;
-                    isContinuousMode = false;
-                    isRealMode = false;
-                } else {
-                    continuousModeToggle.disabled = false;
-                    realModeToggle.disabled = false;
-                }
-            });
+            gameModeToggle.addEventListener('click', (e) => {
+                if (isGuest) {
+                    e.preventDefault();
+                    gameModeToggle.checked = false;
+                    showProAlert();
+                    return;
+                }
+            });
+            gameModeToggle.addEventListener('change', () => {
+                if(isGuest) return;
+                isGameMode = gameModeToggle.checked;
+                if (isGameMode) {
+                    continuousModeToggle.checked = false;
+                    realModeToggle.checked = false;
+                    isContinuousMode = false;
+                    isRealMode = false;
+                }
+            });
 
-            realModeToggle.addEventListener('change', () => {
-                isRealMode = realModeToggle.checked;
-                if (isRealMode) {
-                    continuousModeToggle.checked = false;
-                    gameModeToggle.checked = false;
-                    continuousModeToggle.disabled = true;
-                    gameModeToggle.disabled = true;
-                    isContinuousMode = false;
-                    isGameMode = false;
-                } else {
-                    continuousModeToggle.disabled = false;
-                    gameModeToggle.disabled = false;
-                }
-            });
+            realModeToggle.addEventListener('click', (e) => {
+                if (isGuest) {
+                    e.preventDefault();
+                    realModeToggle.checked = true; // No lo dejamos quitar
+                    showProAlert();
+                    return;
+                }
+            });
+            realModeToggle.addEventListener('change', () => {
+                if(isGuest) return;
+                isRealMode = realModeToggle.checked;
+                if (isRealMode) {
+                    continuousModeToggle.checked = false;
+                    gameModeToggle.checked = false;
+                    isContinuousMode = false;
+                    isGameMode = false;
+                }
+            });
             
            startQuizBtn.addEventListener('click', () => {
                 errorMessage.textContent = '';
@@ -4318,99 +4330,66 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     questionCountInGuestMode = 0;
                 }
 
-                let finalQuestionPool = [];
+                const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                
+                if (selectedUniTags.length === 0) {
+                    errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión o Materias".';
+                    return;
+                }
+                if (selectedLevelTags.length === 0) {
+                    errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Nivel de Dificultad".';
+                    return;
+                }
+                if (selectedTypeTags.length === 0) {
+                    errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Tipo de Reactivo".';
+                    return;
+                }
 
-                if (isGuest) {
-                    // 1. Filtrar preguntas seguras (sin Imgur)
-                    let safeQuestions = allQuestions.filter(q => {
+                const startIdVal = startIdInput ? startIdInput.value.trim().toUpperCase() : '';
+                const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
+
+                let availableQuestions = allQuestions.filter(q => {
+                    const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
+                    const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
+                    const hasTypeTag = q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag));
+                    
+                    let inIdRange = true;
+                    if (startIdVal && endIdVal) {
+                        inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
+                    } else if (startIdVal) {
+                        inIdRange = (q.id >= startIdVal);
+                    } else if (endIdVal) {
+                        inIdRange = (q.id <= endIdVal);
+                    }
+
+                    // Regla de invitado integrada aquí
+                    let isAllowedForGuest = true;
+                    if (isGuest) {
                         const hasImgurMain = q.image && q.image.includes('imgur.com');
                         const hasImgurOption = q.options && q.options.some(opt => opt.text && opt.text.includes('imgur.com'));
-                        return !hasImgurMain && !hasImgurOption;
-                    });
+                        const lastChar = q.id ? q.id.slice(-1).toUpperCase() : '';
+                        isAllowedForGuest = !hasImgurMain && !hasImgurOption && ['A', 'B', 'C', 'D'].includes(lastChar);
+                    }
 
-                    // 2. RESTRICCIÓN DE INVITADO: Solo acceso a las primeras 30 preguntas del banco seguro
-                    let guestPool = safeQuestions.slice(0, 30);
+                    return hasUniTag && hasLevelTag && hasTypeTag && inIdRange && isAllowedForGuest;
+                });
 
-                    if (guestPool.length === 0) {
-                        errorMessage.textContent = 'No hay preguntas disponibles para el modo invitado.';
+                let finalQuestionPool = availableQuestions.filter(q => !pastedAnsweredIds.has(q.id));
+
+                if (isGameMode) {
+                    if (availableQuestions.length < 20) {
+                        errorMessage.textContent = `No hay suficientes ejercicios con estos filtros (${availableQuestions.length}) para el Modo Simulacro. Se necesitan 20.`;
                         return;
                     }
-
-                    // 3. Asignación según modo
-                    if (isGameMode) {
-                        // Simulacro: Intenta tomar 20 al azar de las 30
-                        let count = Math.min(guestPool.length, 20);
-                        finalQuestionPool = shuffleArray([...guestPool]).slice(0, count);
-                    } else {
-                        // MODO NORMAL / CONTINUO: Usa TODAS las disponibles en el pool de invitado (hasta 30)
-                        // Eliminamos el slice(0,10) para que puedan responder todas las que tengan permitidas
-                        finalQuestionPool = shuffleArray([...guestPool]);
-                    }
-
+                    finalQuestionPool = shuffleArray(availableQuestions).slice(0, 20);
                 } else {
-                    // --- MODO USUARIO REGISTRADO ---
-                    const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                    const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                    const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                    
-                    // Validaciones de filtros vacíos
-                    if (selectedUniTags.length === 0) {
-                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión o Materias".';
+                    if (finalQuestionPool.length < 5) {
+                        errorMessage.textContent = `Solo se encontraron ${finalQuestionPool.length} ejercicios disponibles. Se necesita un mínimo de 5.`;
                         return;
                     }
-                    if (selectedLevelTags.length === 0) {
-                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Nivel de Dificultad".';
-                        return;
-                    }
-                    if (selectedTypeTags.length === 0) {
-                        errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Tipo de Reactivo".';
-                        return;
-                    }
-
-                    // Filtrado Maestro
-                    // Captura valores actuales de los inputs de ID
-                    const startIdVal = startIdInput ? startIdInput.value.trim().toUpperCase() : '';
-                    const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
-
-                    let availableQuestions = allQuestions.filter(q => {
-                        const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
-                        const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
-                        const hasTypeTag = q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag));
-                        
-                        // Lógica de filtro por Rango de IDs
-                        let inIdRange = true;
-                        if (startIdVal && endIdVal) {
-                            // Si hay inicio y fin, debe estar en medio
-                            inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
-                        } else if (startIdVal) {
-                            // Solo inicio
-                            inIdRange = (q.id >= startIdVal);
-                        } else if (endIdVal) {
-                            // Solo fin
-                            inIdRange = (q.id <= endIdVal);
-                        }
-
-                        return hasUniTag && hasLevelTag && hasTypeTag && inIdRange;
-                    });
-
-                    let newQuestions = availableQuestions.filter(q => !pastedAnsweredIds.has(q.id));
-
-                    if (isGameMode) {
-                        if (availableQuestions.length < 20) {
-                            errorMessage.textContent = `No hay suficientes ejercicios con estos filtros (${availableQuestions.length}) para el Modo Simulacro. Se necesitan 20.`;
-                            return;
-                        }
-                        finalQuestionPool = shuffleArray(availableQuestions).slice(0, 20);
-                    } else {
-                        // MODO NORMAL / CONTINUO: 
-                        // Verificamos mínimo 5 (o 10 según prefieras, dejé 5 para no bloquear si quedan pocas)
-                        if (newQuestions.length < 5) {
-                            errorMessage.textContent = `Solo se encontraron ${newQuestions.length} ejercicios disponibles. Se necesita un mínimo de 5.`;
-                            return;
-                        }
-                        // CAMBIO CLAVE: Ya no cortamos a 10. Pasamos TODAS las preguntas filtradas.
-                        finalQuestionPool = shuffleArray(newQuestions);
-                    }
+                    finalQuestionPool = shuffleArray(finalQuestionPool);
                 }
                 
                 const availableCount = finalQuestionPool.length;
@@ -4669,9 +4648,19 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 questionText.innerHTML = questionHTML;
                 questionStartTime = Date.now();
                 if (question.explanative_video) {
-                    const videoId = getYouTubeID(question.explanative_video);
+                    const url = question.explanative_video;
+                    const videoId = getYouTubeID(url);
+                    
                     if (videoId) {
-                        videoIframe.src = `https://www.youtube.com/embed/${videoId}`;
+                        let embedUrl = `https://www.youtube.com/embed/${videoId}?rel=0`;
+                        
+                        const startMatch = url.match(/[?&](start|t)=([0-9]+)/);
+                        if (startMatch) embedUrl += `&start=${startMatch[2]}`;
+                        
+                        const endMatch = url.match(/[?&]end=([0-9]+)/);
+                        if (endMatch) embedUrl += `&end=${endMatch[2]}`;
+
+                        videoIframe.src = embedUrl;
                         videoContainer.style.display = 'block';
                         videoContent.classList.add('hidden');
                         videoToggle.querySelector('.fa-chevron-down, .fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
@@ -5111,7 +5100,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 updateLiveScore();
                 updateEvaluationButton();
                 
-                if (isGuest && (isContinuousMode || isGameMode)) {
+                if (isGuest) {
                     questionCountInGuestMode++;
                     if (questionCountInGuestMode % 5 === 0) {
                         setTimeout(showAd, 500);
@@ -5306,7 +5295,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 clearInterval(timer);
                 clearInterval(gameModeTimer);
                 
-                if (isGuest) {
+                if (isGuest && currentUser.email === 'invitado@example.com') {
                     showGuestInfoModal();
                     return;
                 }
@@ -5588,7 +5577,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
            lookupBtn.addEventListener('click', () => {
                 if (isGuest) {
-                    showTemporaryMessage("Esta función no está disponible para invitados", "bg-yellow-600");
+                    showProAlert();
                     return;
                 }
                 const lookupId = lookupIdInput.value.trim().toUpperCase();
