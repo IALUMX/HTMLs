@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRUEBA GRATUITA - CEPREDIX</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/00-WEBLogo-circular-cepredix.png" type="image/png">
+    
+    <meta property="og:image" content="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/Thumbnail-CEP-HTML.png">
+    <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/Thumbnail-CEP-HTML.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <meta property="og:title" content="PRUEBA GRATUITA - CEPREDIX">
+    <meta property="og:description" content="Plataforma de evaluación educativa.">
+    <meta property="og:type" content="website">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                packages: ['base', 'ams', 'physics']
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            loader: {load: ['[tex]/physics']}
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-image: url('https://i.imgur.com/7ndIyWP.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #fff;
+            padding: 15px;
+            position: relative;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.4; 
+            overscroll-behavior-y: none; 
+        }
+        #question-text {
+            line-height: 1.25 !important; 
+            margin-bottom: 15px !important;
+            max-width: 100%; 
+            overflow-x: auto; 
+            word-wrap: break-word; 
+            overflow-wrap: break-word;
+        }
+        #question-text p {
+            margin-bottom: 8px !important; 
+            max-width: 100%;
+        }
+        mjx-container[display="true"] {
+            max-width: 100%;
+            overflow-x: auto !important; 
+            overflow-y: hidden !important;
+            padding-bottom: 5px; 
+            padding-top: 5px;
+        }
+        mjx-container { max-width: 100%; }
+        body::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6); z-index: -1;
+        }
+        .container {
+            width: 100%; max-width: 1200px; margin: 0 auto;
+            display: flex; flex-direction: column;            
+        }
+        .header {
+            text-align: center; padding: 15px; border-radius: 15px; margin-bottom: 20px;
+            background: linear-gradient(45deg, #0d47a1, #00695c, #ff6f00, #b71c1c, #4a148c);
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; overflow: hidden;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .logo {
+            width: 100px; height: 100px; margin: 0 auto 10px;
+            background: url('https://i.imgur.com/I1unSiu.png') center/contain no-repeat;
+        }
+        .card {
+            background: rgba(25, 25, 35, 0.85); backdrop-filter: blur(10px);
+            border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            width: 100%; margin-bottom: 20px; position: relative;
+        }
+        .btn {
+            padding: 10px 20px; font-size: 1.1rem; border: none; border-radius: 50px;
+            cursor: pointer; transition: all 0.3s ease; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); margin: 8px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(45deg, #2196F3, #21CBF3); color: white; }
+        .btn-secondary { background: linear-gradient(45deg, #f44336, #ff9800); color: white; }
+        .btn-correct { background: linear-gradient(45deg, #4CAF50, #8BC34A); color: white; }
+        .btn-incorrect { background: linear-gradient(45deg, #f44336, #ff5722); color: white; }
+        .btn-disabled, .btn:disabled {
+            background: #9e9e9e; cursor: not-allowed; transform: none !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+        }
+        .btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.4); }
+        .btn:active:not(:disabled) { transform: translateY(1px); }
+        .question-container {
+            margin: 15px 0 20px; padding: 20px; background: rgba(30, 30, 40, 0.8);
+            border-radius: 15px; border-left: 5px solid #4fc3f7; position: relative;
+        }
+        .option-btn {
+            padding: 15px 15px 15px 50px; background: rgba(50, 50, 70, 0.8);
+            border-radius: 10px; cursor: pointer; transition: all 0.3s ease;
+            font-size: 1.1rem; border: 2px solid transparent; text-align: left;
+            position: relative; width: 100%; margin-bottom: 12px; display: flex; align-items: center;
+        }
+        .option-btn:hover:not([disabled]) { background: rgba(70, 70, 90, 0.9); transform: translateY(-2px); }
+        .option-btn.selected { filter: brightness(0.7); border-color: #ff9800; box-shadow: 0 0 0 2px #ff9800; }
+        
+        .option-letter {
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            width: 25px; height: 25px; background: rgba(79, 195, 247, 0.3);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; margin-right: 10px;
+        }
+        #discrete-timer-wrapper {
+            margin-top: -0.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 30;
+        }
+        #dt-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(20, 20, 30, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+        #calculator-section { width: 100%; margin: 20px 0; }
+        #calculator-toggle {
+            background: rgba(255, 152, 0, 0.2); border: 1px solid #ff9800; color: white;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer; display: flex;
+            align-items: center; justify-content: space-between; transition: all 0.3s ease;
+        }
+        #calculator-toggle:hover { background: rgba(255, 152, 0, 0.4); }
+        #calculator-content {
+            margin-top: 10px; background: rgba(0, 0, 0, 0.5); border-radius: 8px;
+        }
+        .calculator-container {
+            background: #202020; border-radius: 12px; padding: 15px;
+            margin: 0 auto; width: 100%; max-width: 320px; display: flex; flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .calculator-display {
+            width: 100%; padding: 15px; font-size: 2rem; background: #000;
+            border: 1px solid #333; border-radius: 8px; margin-bottom: 15px;
+            text-align: right; color: #fff; height: 70px; overflow: hidden; font-family: monospace;
+        }
+        .calculator-buttons { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+        }
+        .calculator-btn {
+            padding: 15px; font-size: 1.2rem; border: none; border-radius: 8px;
+            background: #333; color: white; cursor: pointer; transition: all 0.2s;
+            font-weight: bold;
+        }
+        .calculator-btn:hover { background: #444; }
+        .calculator-btn.operator { background: #ff9800; color: #000; }
+        .calculator-btn.operator:hover { background: #f57c00; }
+        .calculator-btn.special { background: #9c27b0; }
+        .calculator-btn.special:hover { background: #7b1fa2; }
+        .calculator-btn.equals { background: #4caf50; grid-column: span 2; }
+        .calculator-btn.equals:hover { background: #388e3c; }
+        .calculator-btn.clear { background: #f44336; }
+        .calculator-btn.clear:hover { background: #d32f2f; }
+        .results-container { background: rgba(30, 30, 40, 0.8); border-radius: 15px; padding: 20px; margin: 15px 0; }
+        .result-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px 0; }
+        .stat-box { background: rgba(50, 50, 70, 0.8); border-radius: 10px; padding: 15px; min-width: 160px; flex: 1; }
+        .stat-box h3 { font-size: 1.1rem; margin-bottom: 8px; color: #4fc3f7; }
+        .stat-box p { font-size: 1.5rem; font-weight: 700; }
+        #result-image-container {
+            width: 100%; max-width: 600px; margin: 1.5rem auto; display: flex;
+            justify-content: center; align-items: center;
+        }
+        #result-image {
+            max-width: 100%; height: auto; border-radius: 0.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); object-fit: contain;
+        }
+        #image-container {
+            position: relative; 
+            width: 100%; 
+            max-width: 100%; 
+            aspect-ratio: 1 / 1; 
+            max-height: 60vh; 
+            background-size: contain; 
+            background-position: center; 
+            background-repeat: no-repeat;
+            overflow: hidden; 
+            margin: 15px auto; 
+            border-radius: 10px;
+            background-color: rgba(0,0,0,0.2);
+        }
+        .mini-nav-btn {
+            width: 32px; height: 32px; border-radius: 50%; 
+            background: rgba(30, 30, 40, 0.8); border: 1px solid #4fc3f7; 
+            color: #4fc3f7; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease; font-size: 0.9rem;
+        }
+        .mini-nav-btn:hover:not(:disabled) {
+            background: rgba(79, 195, 247, 0.3); transform: scale(1.1);
+        }
+        .mini-nav-btn:disabled {
+            opacity: 0.3; cursor: not-allowed; border-color: #555; color: #777;
+        }
+        .options-grid-mode {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .hybrid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        .hybrid-group {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+        }
+        .hybrid-group-title {
+            text-align: center;
+            color: #4fc3f7;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        @media (min-width: 768px) {
+            .hybrid-container { flex-direction: row; }
+            .hybrid-group { flex: 1; }
+        }
+        .option-btn.is-image {
+            padding: 5px !important;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .option-btn.is-image .option-letter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .option-image-content {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 5px;
+        }
+        .option-btn.full-width {
+            grid-column: span 2;
+            height: auto !important;
+            padding: 15px 15px 15px 50px !important;
+        }
+        @media (max-width: 480px) {
+            .option-btn.is-image { height: 150px; }
+        }
+        .video-container { width: 100%; margin: 15px 0; }
+        .video-toggle {
+            background: rgba(79, 195, 247, 0.2); border: 1px solid #4fc3f7; color: white;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer; display: flex;
+            align-items: center; justify-content: space-between; transition: all 0.3s ease;
+        }
+        .video-toggle:hover { background: rgba(79, 195, 247, 0.4); }
+        .video-content {
+            margin-top: 10px; background: rgba(0, 0, 0, 0.5); border-radius: 8px;
+            padding: 15px; overflow: hidden;
+        }
+        .video-wrapper {
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+        }
+        .video-wrapper iframe {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: none; border-radius: 5px;
+        }
+        #banner-container {
+            width: 100%; max-width: 720px; height: auto; min-height: 50px;
+            margin: 10px auto; background: rgba(0, 0, 0, 0.3); border-radius: 8px;
+            overflow: hidden; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        #banner-img { width: 100%; height: auto; object-fit: contain; display: block; }
+        #adOverlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        #adBox {
+            background: #1a1a2e; max-width: 480px; width: 90%; max-height: 90vh;
+            overflow-y: auto; padding: 20px; border-radius: 8px; text-align: center;
+            border: 2px solid #4fc3f7; box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+        }
+        #adBox img {
+            max-width: 100%; height: auto; max-height: 40vh; object-fit: contain;
+            border-radius: 6px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;
+        }
+        #adButtons { margin-top: 15px; }
+        #adButtons button, #adButtons a {
+            margin: 5px; padding: 10px 15px; background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white; border: none; border-radius: 5px; text-decoration: none; cursor: pointer; font-weight: bold;
+        }
+        #adButtons button:disabled { background: #999; cursor: not-allowed; }
+        #footer {
+            position: relative; width: 100%; margin-top: 50px; background: rgba(25, 25, 35, 0.95);
+            backdrop-filter: blur(10px); color: white; padding: 20px 0; text-align: center;
+            font-size: 12px; z-index: 100; border-top: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        #footer-content { max-width: 1200px; margin: 0 auto; padding: 0 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        #footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 3px; }
+        .footer-link, .social-link { color: #4fc3f7; text-decoration: none; transition: color 0.3s ease; cursor: pointer; }
+        .footer-link:hover, .social-link:hover { color: #21CBF3; text-decoration: underline; }
+        .social-link { display: inline-flex; align-items: center; gap: 5px; }
+        #copyright { color: #aaaaaa; font-size: 11px; }
+        #guest-info-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 9999; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .guest-info-content {
+            background: rgba(25, 25, 35, 0.95); border-radius: 15px; max-width: 500px;
+            width: 90%; padding: 30px; border: 2px solid #4fc3f7; box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+        }
+        .guest-info-title { color: #4fc3f7; font-size: 24px; margin-bottom: 20px; text-align: center; }
+        .guest-info-text { color: #fff; margin-bottom: 25px; text-align: center; line-height: 1.5; }
+        .guest-info-form { display: flex; flex-direction: column; gap: 20px; }
+        .guest-info-form input {
+            padding: 15px; background: rgba(50, 50, 70, 0.8); border: 1px solid rgba(79, 195, 247, 0.3);
+            border-radius: 8px; color: white; font-size: 16px;
+        }
+        .guest-info-form input:focus { outline: none; border-color: #4fc3f7; box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.2); }
+        .guest-error-message { color: #f44336; font-size: 14px; margin-top: 5px; display: none; }
+        .guest-info-buttons { display: flex; gap: 15px; margin-top: 20px; }
+        .guest-info-buttons button { flex: 1; padding: 12px; font-weight: 600; }
+        
+        .option-dark-gray { background-color: #4a4a4a !important; color: #888888 !important; filter: grayscale(100%); }
+        .option-wrapper { display: flex; align-items: center; width: 100%; gap: 10px; margin-bottom: 12px; }
+        .option-wrapper .option-btn { margin-bottom: 0 !important; flex-grow: 1; padding-right: 15px !important; }
+
+        @media (max-width: 768px) {
+            .btn { font-size: 1rem; padding: 8px 16px; width: 100%; max-width: 300px; }
+            .option-btn { font-size: 0.9rem !important; padding: 12px 12px 12px 40px !important; }
+            .header { padding: 12px; }
+            .header h1 { font-size: 1.5rem; }
+            .header h2 { font-size: 1.2rem; }
+            .card { padding: 15px; }
+            .question-container { padding: 15px; margin: 10px 0; }
+            #question-text { font-size: 1.2rem !important; }
+            .option-letter { width: 22px; height: 22px; font-size: 0.9rem; }
+            #action-buttons { gap: 10px; }
+            #action-buttons .btn { margin: 4px; }
+            .calculator-container { width: 280px; height: 350px; }
+            #footer-links { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 12px; row-gap: 5px; }
+            #footer-links span.text-gray-500 { display: none; }
+            .footer-link, .social-link { font-size: 0.75rem; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; }
+            .guest-info-content { padding: 20px; }
+            .guest-info-buttons { flex-direction: column; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 8px !important; }
+            .option-btn { font-size: 0.85rem !important; padding: 10px 10px 10px 35px !important; }
+            .option-letter { width: 20px !important; height: 20px !important; font-size: 0.8rem !important; left: 10px !important; }
+            .btn { font-size: 0.9rem; padding: 7px 14px; }
+            .header h1 { font-size: 1.5rem !important; }
+            .header h2 { font-size: 1.2rem !important; }
+            #question-text { font-size: 1.1rem !important; }
+            .calculator-container { width: 95%; max-width: 300px; height: auto; padding-bottom: 20px; }
+        }
+    </style>
+</head>
+<body class="p-2 sm:p-4">
+    <audio id="correct-sound" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/Clic_sound.mp3" preload="auto"></audio>
+    <audio id="incorrect-sound" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/Clic_sound.mp3" preload="auto"></audio>
+    <audio id="button-sound" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/Clic_sound.mp3" preload="auto"></audio>
+
+    <div id="adOverlay" style="display: none;">
+        <div id="adBox">
+            <img id="adImage" src="" alt="Publicidad">
+            <audio id="adAudio"></audio>
+            <div id="adButtons">
+                <button id="skipBtn" disabled>Saltar info</button>
+                <a id="infoBtn" href="#" target="_blank" style="pointer-events:none;">Me interesa</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="guest-info-modal" style="display: none;">
+        <div class="guest-info-content">
+            <h2 class="guest-info-title">📧 Completa tus datos para ver los resultados</h2>
+            <p class="guest-info-text">
+                Necesitamos tu correo y WhatsApp para mostrarte tus resultados 
+                y enviarte un resumen de tu desempeño.
+            </p>
+            <form id="guest-info-form" class="guest-info-form">
+                <div>
+                    <input type="email" id="guest-email-input" placeholder="Correo electrónico (ejemplo@dominio.com)" required>
+                    <div id="guest-email-error" class="guest-error-message">❌ Debe ser un correo válido con @</div>
+                </div>
+                <div>
+                    <input type="tel" id="guest-whatsapp-input" placeholder="WhatsApp (10 dígitos sin espacios)" maxlength="10" inputmode="numeric" required>
+                    <div id="guest-whatsapp-error" class="guest-error-message">❌ Debe tener 10 dígitos</div>
+                </div>
+                <div class="guest-info-buttons">
+                    <button type="submit" id="guest-submit-btn" class="btn btn-primary">Ver mis resultados</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="w-full max-w-2xl mx-auto">
+        <header class="header">
+            <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" title="Ir a Web CEPREDIX">
+                <div class="logo"></div>
+            </a>
+            <h1 class="text-2xl sm:text-3xl font-bold">PRUEBA GRATUITA</h1>
+            <h2 class="text-xl sm:text-2xl">Diseñado con pasión 💜 por el CEPREDIX</h2>
+        </header>
+
+        <div id="banner-container" style="display: none;">
+            <a id="banner-link" href="#" target="_blank">
+                <img id="banner-img" src="" alt="Aviso">
+            </a>
+            <audio id="banner-audio-player"></audio>
+        </div>
+
+        <div id="setup-screen" class="card p-6 sm:p-8 space-y-6">
+            <div class="video-container w-full mb-6">
+                <div class="video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+                </div>
+            </div>
+            <div class="text-center">
+                <h1 class="text-2xl sm:text-3xl font-bold text-blue-400">¡Bienvenido!</h1>
+                <p class="text-gray-300 mt-2">Resuelve el siguiente cuestionario. Tienes un límite de tiempo global asignado para terminar.</p>
+                <div class="text-sm text-gray-300 space-y-2 mt-4 bg-gray-800 p-3 rounded-lg flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-6">
+                    <span>📚 Preguntas del cuestionario: <strong id="stats-total">0</strong></span>
+                    <span>⏱️ Tiempo límite: <strong id="stats-time">0:00</strong> min</span>
+                </div>
+            </div>
+            <button id="start-quiz-btn" class="btn btn-primary w-full text-lg">INICIAR EVALUACIÓN</button>
+            <p id="error-message" class="text-red-400 text-center text-sm h-4"></p>
+        </div>
+
+        <div id="quiz-screen" class="card p-4 sm:p-8 hidden flex flex-col">
+            <div class="flex flex-row flex-wrap justify-between items-center mb-2 gap-y-1 gap-x-2 w-full">
+                <div class="text-xs sm:text-lg font-bold text-gray-200 order-1">
+                    Pregunta <span id="current-question-num"></span>/<span id="total-questions-num"></span>
+                </div>
+            </div>
+            <div class="w-full bg-gray-700 rounded-full h-2.5 mb-6">
+                <div id="progress-bar" class="bg-blue-400 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+            
+            <div id="discrete-timer-wrapper">
+                <div id="dt-bar">
+                    <span class="mr-2">TIEMPO RESTANTE:</span>
+                    <span id="dt-display">00:00</span>
+                </div>
+            </div>
+
+            <div id="question-container" class="space-y-4 flex flex-col items-center">
+                <h2 id="question-text" class="text-xl sm:text-2xl font-semibold text-center w-full"></h2>
+                
+                <div id="video-container" class="video-container w-full">
+                    <div class="video-toggle" id="video-toggle">
+                        <span><i class="fas fa-video mr-2"></i> Mostrar/Ocultar Video de Apoyo</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="video-content hidden" id="video-content">
+                        <div class="video-wrapper">
+                            <iframe id="video-iframe" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="image-section-container" class="w-full hidden">
+                    <div class="video-toggle" id="image-toggle">
+                        <span><i class="fas fa-image mr-2"></i> Mostrar/Ocultar Imagen de Apoyo</span>
+                        <i class="fas fa-chevron-up"></i>
+                    </div>
+                    <div id="image-content" class="video-content p-0 bg-transparent" style="margin-top: 1rem;">
+                        <div id="image-container" class="rounded-lg shadow-md m-auto">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="text-section-container" class="video-container w-full hidden">
+                    <div class="video-toggle" id="text-toggle">
+                        <span><i class="fas fa-file-alt mr-2"></i> Mostrar/Ocultar Lectura de Apoyo</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="video-content hidden" id="text-content">
+                    </div>
+                </div>
+
+                <div id="options-container" class="w-full space-y-3 mt-4"></div>
+            </div>
+
+            <div id="action-buttons" class="mt-6 space-y-3">
+                <div class="grid grid-cols-1 gap-3 mb-3">
+                    <button id="evaluate-btn" class="btn btn-primary w-full" disabled>EVALUAR</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="prev-btn" class="btn btn-secondary w-full">← ANTERIOR</button>
+                    <button id="next-btn" class="btn btn-secondary w-full" disabled>SIGUIENTE →</button>
+                </div>
+                <div class="grid grid-cols-1 gap-3 mt-3">
+                    <button id="finish-btn" class="btn btn-primary w-full" style="background: linear-gradient(45deg, #FFC107, #FF9800);">EVALUAR AVANCE</button>
+                </div>
+            </div>
+
+            <div id="calculator-section" class="w-full mt-6">
+                <div id="calculator-toggle">
+                    <span><i class="fas fa-calculator mr-2"></i> Calculadora</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div id="calculator-content" class="hidden">
+                    <div class="calculator-container">
+                        <div class="calculator-display" id="calc-display">0</div>
+                        <div class="calculator-buttons">
+                            <button class="calculator-btn clear" data-value="C">C</button>
+                            <button class="calculator-btn special" data-value="√">√</button>
+                            <button class="calculator-btn operator" data-value="/">÷</button>
+                            <button class="calculator-btn operator" data-value="*">×</button>
+                            <button class="calculator-btn" data-value="7">7</button>
+                            <button class="calculator-btn" data-value="8">8</button>
+                            <button class="calculator-btn" data-value="9">9</button>
+                            <button class="calculator-btn operator" data-value="-">-</button>
+                            <button class="calculator-btn" data-value="4">4</button>
+                            <button class="calculator-btn" data-value="5">5</button>
+                            <button class="calculator-btn" data-value="6">6</button>
+                            <button class="calculator-btn operator" data-value="+">+</button>
+                            <button class="calculator-btn" data-value="1">1</button>
+                            <button class="calculator-btn" data-value="2">2</button>
+                            <button class="calculator-btn" data-value="3">3</button>
+                            <button class="calculator-btn equals" data-value="=">=</button>
+                            <button class="calculator-btn zero" data-value="0">0</button>
+                            <button class="calculator-btn" data-value=".">.</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="results-screen" class="card p-4 sm:p-8 text-center hidden">
+            <h1 class="text-2xl sm:text-3xl font-bold">¡Resultados Finales!</h1>
+            <div id="result-image-container">
+                <img id="result-image" src="" alt="Imagen de resultado">
+            </div>
+            <div class="flex flex-col lg:flex-row justify-around items-center gap-6 my-6">
+                <div class="w-full lg:w-1/2"><canvas id="results-chart"></canvas></div>
+                <div class="text-left space-y-2">
+                    <p class="text-xl font-medium">Calificación: <span id="final-score" class="font-bold text-blue-400"></span></p>
+                    <p>Tiempo total: <span id="total-time" class="font-semibold"></span></p>
+                    <p>Tiempo promedio: <span id="avg-time" class="font-semibold"></span></p>
+                    <p class="text-green-400">Correctas: <span id="correct-count" class="font-semibold"></span></p>
+                    <p class="text-red-400">Incorrectas: <span id="incorrect-count" class="font-semibold"></span></p>
+                    <p class="text-yellow-400">Omitidas: <span id="omitted-count" class="font-semibold"></span></p>
+                </div>
+            </div>
+            <div class="mt-8 overflow-x-auto">
+                <h3 class="text-xl font-bold mb-4">Resumen de Respuestas (Solo las que contestaste)</h3>
+                <table id="results-table" class="w-full text-sm text-left">
+                    <thead class="text-xs uppercase bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-4 py-3">Pregunta</th>
+                            <th scope="col" class="px-4 py-3">Tu Respuesta</th>
+                            <th scope="col" class="px-4 py-3">Correcta</th>
+                            <th scope="col" class="px-4 py-3">Resultado</th>
+                            <th scope="col" class="px-4 py-3">Justificación</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <button id="return-to-menu-btn" class="btn btn-primary w-full mt-8">REGRESAR A PANTALLA PRINCIPAL</button>
+        </div>
+    </div>
+
+    <div id="footer">
+        <div id="footer-content">
+            <div id="footer-links">
+                <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" class="footer-link social-link">
+                    <i class="fas fa-globe"></i> WEB CEPREDIX
+                </a>
+            </div>
+            <div id="copyright">
+                &copy; CEPREDIX 2026 - Todos los derechos reservados.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/00-json-prueba-v2-170126.json';
+            const SUBMISSION_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxF2v5plRObokCgrV-3olVosjn-3q08B9bMUpeLMuYXyzuiRmsKAEadMUMb-WH2Dg7F/exec';
+            const ADS_CSV_URL = "https://docs.google.com/spreadsheets/d/1VkMosrVw7vJdZqGvInDcu3oKlK7WZlTrWAnH2YHqrew/export?format=csv&gid=0";
+            
+            const RESULT_IMAGES = {
+                less7: 'https://i.imgur.com/pyBFfO9.png',
+                between7_8: 'https://i.imgur.com/eMPH60B.png',
+                between8_9: 'https://i.imgur.com/OY5wmBo.png',
+                between9_9_5: 'https://i.imgur.com/uLpyVoj.png',
+                between9_5_10: 'https://i.imgur.com/89lj6aD.png',
+                perfect10: 'https://i.imgur.com/HGyyYIC.png'
+            };
+
+            const screens = {
+                setup: document.getElementById('setup-screen'),
+                quiz: document.getElementById('quiz-screen'),
+                results: document.getElementById('results-screen'),
+            };
+
+            window.addEventListener('beforeunload', function (e) {
+                if (!screens.quiz.classList.contains('hidden')) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            // Variables de Estado Configurado
+            let currentUser = { name: 'Invitado', email: 'invitado@example.com', whatsapp: '0000000000' };
+            let isGuest = true;
+            
+            // Forzar Modo Avance Real siempre
+            let isRealMode = true;
+
+            const statsTotal = document.getElementById('stats-total');
+            const statsTime = document.getElementById('stats-time');
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const errorMessage = document.getElementById('error-message');
+            
+            const currentQuestionNum = document.getElementById('current-question-num');
+            const totalQuestionsNum = document.getElementById('total-questions-num');
+            
+            const progressBar = document.getElementById('progress-bar');
+            const questionText = document.getElementById('question-text');
+            const imageSectionContainer = document.getElementById('image-section-container');
+            const imageToggle = document.getElementById('image-toggle');
+            const imageContent = document.getElementById('image-content');
+            const imageContainer = document.getElementById('image-container');
+            const optionsContainer = document.getElementById('options-container');
+            
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const evaluateBtn = document.getElementById('evaluate-btn');
+            const finishBtn = document.getElementById('finish-btn');
+            const returnToMenuBtn = document.getElementById('return-to-menu-btn');
+            
+            const resultImage = document.getElementById('result-image');
+            const finalScore = document.getElementById('final-score');
+            const totalTime = document.getElementById('total-time');
+            const avgTime = document.getElementById('avg-time');
+            const correctCount = document.getElementById('correct-count');
+            const incorrectCount = document.getElementById('incorrect-count');
+            const omittedCount = document.getElementById('omitted-count');
+            const resultsTableBody = document.querySelector('#results-table tbody');
+            const resultsChartCanvas = document.getElementById('results-chart');
+            
+            const guestInfoModal = document.getElementById('guest-info-modal');
+            const guestInfoForm = document.getElementById('guest-info-form');
+            const guestEmailInput = document.getElementById('guest-email-input');
+            const guestWhatsappInput = document.getElementById('guest-whatsapp-input');
+            const guestEmailError = document.getElementById('guest-email-error');
+            const guestWhatsappError = document.getElementById('guest-whatsapp-error');
+
+            const videoContainer = document.getElementById('video-container');
+            const videoToggle = document.getElementById('video-toggle');
+            const videoContent = document.getElementById('video-content');
+            const videoIframe = document.getElementById('video-iframe');
+
+            const textSectionContainer = document.getElementById('text-section-container');
+            const textToggle = document.getElementById('text-toggle');
+            const textContent = document.getElementById('text-content');
+
+            const calculatorToggle = document.getElementById('calculator-toggle');
+            const calculatorContent = document.getElementById('calculator-content');
+            const calculatorDisplay = document.getElementById('calc-display');
+
+            // Timer Global Setup
+            let dtInterval = null;
+            let dtSeconds = 0;
+            let dtTotalSeconds = 0;
+            let dtIsRunning = false;
+            const dtDisplay = document.getElementById('dt-display');
+
+            let allQuestions = [], quizQuestions = [], userAnswers = [];
+            let currentQuestionIndex = 0, resultsChart;
+            let questionStartTime = 0;
+            let questionCountInGuestMode = 0;
+            
+            let calculatorValue = '0';
+            let calculatorWaitingForOperand = false;
+            let calculatorOperator = null;
+            let calculatorPreviousValue = '0';
+
+            // Publicidad variables
+            let guestAds = [];
+            let mainBanner = null;
+            let pubBanners = [];
+            let lastShownAdUrl = null;
+            let adTimeoutId = null;
+            let adIntervalId = null;
+
+            // Fetch Ads logic (Guest rules)
+            fetch(ADS_CSV_URL)
+                .then(r => r.text())
+                .then(csv => {
+                    const rows = csv.split("\n").slice(1);
+                    rows.forEach(row => {
+                        const cols = row.split(",");
+                        if (cols.length >= 5) {
+                            const item = {
+                                Imagen: cols[0].trim(),
+                                Audio: cols[1].trim(),
+                                Infolink: cols[2].trim(),
+                                Tipo: cols[4].trim().replace(/\r/g, "")
+                            };
+                            if (item.Tipo === "PUB-INVITADO") guestAds.push(item);
+                            else if (item.Tipo === "BANNER-PRINCIPAL") mainBanner = item;
+                            else if (item.Tipo === "BANNER-PUB") pubBanners.push(item);
+                        }
+                    });
+                    initBannerCycle();
+                }).catch(err => console.error("Error al cargar publicidad:", err));
+
+            function initBannerCycle() {
+                const bannerContainer = document.getElementById('banner-container');
+                if (!mainBanner) { bannerContainer.style.display = 'none'; return; }
+                bannerContainer.style.display = 'block';
+                runMainBanner();
+            }
+
+            function runMainBanner() {
+                if (!mainBanner) return;
+                setBannerContent(mainBanner);
+                setTimeout(() => { runPubBanner(); }, 20000); 
+            }
+
+            function runPubBanner() {
+                if (pubBanners.length > 0) {
+                    const randomPub = pubBanners[Math.floor(Math.random() * pubBanners.length)];
+                    setBannerContent(randomPub);
+                    setTimeout(() => { runMainBanner(); }, 10000);
+                } else {
+                    runMainBanner();
+                }
+            }
+
+            function setBannerContent(item) {
+                const imgEl = document.getElementById('banner-img');
+                const linkEl = document.getElementById('banner-link');
+                const audioEl = document.getElementById('banner-audio-player');
+                if (imgEl) imgEl.src = item.Imagen;
+                if (linkEl) {
+                    if (item.Infolink && item.Infolink.length > 5) {
+                        linkEl.href = item.Infolink;
+                        linkEl.style.pointerEvents = "auto";
+                    } else {
+                        linkEl.removeAttribute('href');
+                        linkEl.style.pointerEvents = "none";
+                    }
+                }
+                if (audioEl && item.Audio && item.Audio.length > 5) {
+                    audioEl.src = item.Audio;
+                    audioEl.play().catch(e => {}); 
+                }
+            }
+
+            function showAd() {
+                if (!guestAds || guestAds.length === 0) return; 
+                if (adTimeoutId) clearTimeout(adTimeoutId);
+                if (adIntervalId) clearInterval(adIntervalId);
+
+                let candidateAds = guestAds;
+                if (guestAds.length > 1 && lastShownAdUrl) {
+                    candidateAds = guestAds.filter(ad => ad.Imagen !== lastShownAdUrl);
+                }
+                const ad = candidateAds[Math.floor(Math.random() * candidateAds.length)];
+                lastShownAdUrl = ad.Imagen;
+
+                const adImage = document.getElementById('adImage');
+                const adAudio = document.getElementById('adAudio');
+                const infoBtn = document.getElementById('infoBtn');
+                const skipBtnAd = document.getElementById('skipBtn');
+                const adOverlay = document.getElementById('adOverlay');
+
+                if(adImage) adImage.src = ad.Imagen;
+                if(adAudio) adAudio.src = ad.Audio;
+                if(adAudio) adAudio.play().catch(e => {});
+
+                if (infoBtn) {
+                    if (ad.Infolink && ad.Infolink.length > 5) {
+                        infoBtn.href = ad.Infolink;
+                        infoBtn.style.pointerEvents = "auto";
+                        infoBtn.style.opacity = "1";
+                    } else {
+                        infoBtn.removeAttribute('href');
+                        infoBtn.style.pointerEvents = "none";
+                        infoBtn.style.opacity = "0.5";
+                    }
+                }
+                
+                if (skipBtnAd) {
+                    skipBtnAd.disabled = true;
+                    skipBtnAd.style.opacity = "0.5";
+                    skipBtnAd.textContent = "Espera 5s...";
+                    skipBtnAd.onclick = hideAd;
+                }
+                
+                if (adOverlay) {
+                    adOverlay.style.display = "flex";
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                let countdown = 5;
+                adIntervalId = setInterval(() => {
+                    countdown--;
+                    if (skipBtnAd) {
+                        if (countdown > 0) {
+                            skipBtnAd.textContent = `Espera ${countdown}s...`;
+                        } else {
+                            clearInterval(adIntervalId);
+                            adIntervalId = null;
+                            skipBtnAd.disabled = false;
+                            skipBtnAd.style.opacity = "1";
+                            skipBtnAd.textContent = "Saltar Publicidad";
+                        }
+                    }
+                }, 1000);
+                
+                adTimeoutId = setTimeout(hideAd, 25000);
+            }
+            
+            function hideAd() {
+                if (adTimeoutId) { clearTimeout(adTimeoutId); adTimeoutId = null; }
+                if (adIntervalId) { clearInterval(adIntervalId); adIntervalId = null; }
+                const adAudio = document.getElementById('adAudio');
+                if(adAudio) { adAudio.pause(); adAudio.currentTime = 0; }
+                const adOverlay = document.getElementById('adOverlay');
+                if(adOverlay) { adOverlay.style.display = "none"; }
+                document.body.style.overflow = 'auto'; 
+            }
+
+            const loadData = async () => {
+                try {
+                    const response = await fetch(QUIZ_JSON_URL + '?v=' + new Date().getTime());
+                    if (!response.ok) throw new Error('No se pudo cargar el archivo JSON');
+                    let jsonText = await response.text();
+                    jsonText = jsonText.replace(/\\\\\\\\/g, '\\\\').replace(/\\u00a0/g, ' ').replace(/,\s*}/g, '}').replace(/,\s*\]/g, ']');
+                    
+                    allQuestions = JSON.parse(jsonText);
+                    statsTotal.textContent = allQuestions.length;
+                    
+                    // Cálculo del tiempo global (1.5 minutos por pregunta)
+                    const totalMinutes = allQuestions.length * 1.5;
+                    const m = Math.floor(totalMinutes);
+                    const s = Math.round((totalMinutes - m) * 60);
+                    statsTime.textContent = `${m}:${s < 10 ? '0' + s : s}`;
+
+                } catch (error) {
+                    errorMessage.textContent = 'Error: ' + error.message;
+                    startQuizBtn.disabled = true;
+                }
+            };
+            
+            // Calculator Events
+            calculatorToggle.addEventListener('click', () => {
+                const isHidden = calculatorContent.classList.toggle('hidden');
+                const icon = calculatorToggle.querySelector('.fa-chevron-down, .fa-chevron-up');
+                icon.classList.replace(isHidden ? 'fa-chevron-up' : 'fa-chevron-down', isHidden ? 'fa-chevron-down' : 'fa-chevron-up');
+            });
+            
+            document.querySelectorAll('.calculator-btn').forEach(button => {
+                button.addEventListener('click', () => calculatorButtonClick(button.dataset.value));
+            });
+            
+            function calculatorButtonClick(value) {
+                if (value === 'C') {
+                    calculatorValue = '0'; calculatorWaitingForOperand = false; calculatorOperator = null; calculatorPreviousValue = '0';
+                } else if (value === '√') {
+                    try {
+                        const num = parseFloat(calculatorValue);
+                        calculatorValue = num >= 0 ? String(Math.sqrt(num)) : 'Error';
+                        calculatorWaitingForOperand = true;
+                    } catch { calculatorValue = 'Error'; }
+                } else if (value === '=') {
+                    if (calculatorOperator) {
+                        const current = parseFloat(calculatorValue);
+                        const previous = parseFloat(calculatorPreviousValue);
+                        let result;
+                        switch (calculatorOperator) {
+                            case '+': result = previous + current; break;
+                            case '-': result = previous - current; break;
+                            case '*': result = previous * current; break;
+                            case '/': result = current !== 0 ? previous / current : 'Error'; break;
+                            default: result = current;
+                        }
+                        calculatorValue = String(result);
+                        calculatorOperator = null; calculatorPreviousValue = '0'; calculatorWaitingForOperand = true;
+                    }
+                } else if (['+', '-', '*', '/'].includes(value)) {
+                    if (calculatorOperator && !calculatorWaitingForOperand) calculatorButtonClick('=');
+                    calculatorPreviousValue = calculatorValue;
+                    calculatorOperator = value;
+                    calculatorWaitingForOperand = true;
+                } else {
+                    if (calculatorWaitingForOperand) {
+                        calculatorValue = '0'; calculatorWaitingForOperand = false;
+                    }
+                    if (value === '.') {
+                        if (!calculatorValue.includes('.')) calculatorValue += '.';
+                    } else {
+                        calculatorValue = calculatorValue === '0' ? value : calculatorValue + value;
+                    }
+                }
+                calculatorDisplay.textContent = calculatorValue;
+            }
+
+            // Audio Click Feedback Global
+            function playButtonSound() {
+                const buttonSound = document.getElementById('button-sound');
+                if(buttonSound) {
+                    buttonSound.currentTime = 0;
+                    buttonSound.play().catch(e => {});
+                }
+            }
+            
+            document.body.addEventListener('click', (e) => {
+                const target = e.target.closest('.btn, .option-btn, .calculator-btn, .video-toggle');
+                if (target && !target.disabled && !target.classList.contains('btn-disabled')) {
+                    playButtonSound();
+                }
+            });
+
+            // Toggle Visual Helpers
+            videoToggle.addEventListener('click', () => {
+                videoContent.classList.toggle('hidden');
+                videoToggle.querySelector('.fas.fa-chevron-down, .fas.fa-chevron-up').classList.toggle('fa-chevron-up');
+                videoToggle.querySelector('.fas.fa-chevron-down, .fas.fa-chevron-up').classList.toggle('fa-chevron-down');
+            });
+
+            imageToggle.addEventListener('click', () => {
+                imageContent.classList.toggle('hidden');
+                imageToggle.querySelector('.fas.fa-chevron-down, .fas.fa-chevron-up').classList.toggle('fa-chevron-up');
+                imageToggle.querySelector('.fas.fa-chevron-down, .fas.fa-chevron-up').classList.toggle('fa-chevron-down');
+            });
+
+            textToggle.addEventListener('click', () => {
+                textContent.classList.toggle('hidden');
+                textToggle.querySelector('.fas.fa-chevron-down, .fas.fa-chevron-up').classList.toggle('fa-chevron-up');
+                textToggle.querySelector('.fas.fa-chevron-down, .fas.fa-chevron-up').classList.toggle('fa-chevron-down');
+            });
+
+            // Inicio de Prueba
+            startQuizBtn.addEventListener('click', () => {
+                if (allQuestions.length === 0) return;
+                // Las preguntas se mantienen en el orden exacto del archivo JSON
+                quizQuestions = [...allQuestions];
+                startQuiz();
+            });
+
+            function updateDtVisuals() {
+                const m = Math.floor(dtSeconds / 60).toString().padStart(2, '0');
+                const s = (dtSeconds % 60).toString().padStart(2, '0');
+                if(dtDisplay) dtDisplay.textContent = `${m}:${s}`;
+            }
+
+            function startQuiz() {
+                screens.setup.classList.add('hidden');
+                screens.quiz.classList.remove('hidden');
+                currentQuestionIndex = 0;
+                questionCountInGuestMode = 0;
+                
+                // Configurar Temporizador: Total de preguntas * 1.5 minutos (90 seg)
+                dtSeconds = quizQuestions.length * 90;
+                dtTotalSeconds = dtSeconds;
+                
+                if (dtInterval) clearInterval(dtInterval);
+                dtIsRunning = true;
+                
+                updateDtVisuals();
+                dtInterval = setInterval(() => {
+                    if (dtSeconds > 0) {
+                        dtSeconds--;
+                        updateDtVisuals();
+                    } else {
+                        clearInterval(dtInterval);
+                        dtIsRunning = false;
+                        alert("¡Se agotó el tiempo! Entregando evaluación...");
+                        endQuiz();
+                    }
+                }, 1000);
+
+                userAnswers = quizQuestions.map(q => ({
+                    question: q, status: 'unanswered', selected: null, timeSpent: 0
+                }));
+                
+                displayQuestion();
+            }
+
+            function isImageOption(text) {
+                if (typeof text !== 'string') return false;
+                return text.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
+            }
+
+            function getYouTubeID(url) {
+                if (!url) return null;
+                const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+                const match = url.match(regExp);
+                if (!match) {
+                     const fallbackMatch = url.match(/([a-zA-Z0-9_-]{11})/);
+                     return fallbackMatch ? fallbackMatch[1] : null;
+                }
+                return match[1];
+            }
+
+            function evaluateCurrentAnswer() {
+                if (userAnswers[currentQuestionIndex].status !== 'unanswered') return;
+                const currentAnswer = userAnswers[currentQuestionIndex];
+                
+                const isHybrid = currentAnswer.question.options.some(opt => 'text_op1' in opt);
+                if (isHybrid) {
+                    const correctOp1 = currentAnswer.question.options.find(o => 'text_op1' in o && o.correct)?.text_op1;
+                    const correctOp2 = currentAnswer.question.options.find(o => 'text_op2' in o && o.correct)?.text_op2;
+                    
+                    if (currentAnswer.selected && currentAnswer.selected.includes('|')) {
+                        const parts = currentAnswer.selected.split('|');
+                        if(parts.length >= 2) {
+                            const val1 = parts[0].substring(parts[0].indexOf(':') + 1).trim();
+                            const val2 = parts[1].substring(parts[1].indexOf(':') + 1).trim();
+                            
+                            if (val1.includes("No puedo identificar") || val2.includes("No puedo identificar")) {
+                                currentAnswer.status = 'unidentified';
+                            } else if (val1 === correctOp1 && val2 === correctOp2) {
+                                currentAnswer.status = 'correct';
+                            } else {
+                                currentAnswer.status = 'incorrect';
+                            }
+                        } else currentAnswer.status = 'incorrect';
+                    } else currentAnswer.status = 'incorrect';
+                } else {
+                    const correctOption = currentAnswer.question.options.find(opt => opt.correct);
+                    if (currentAnswer.selected && currentAnswer.selected.includes("No puedo identificar")) {
+                        currentAnswer.status = 'unidentified';
+                    } else if (correctOption && correctOption.text === currentAnswer.selected) {
+                        currentAnswer.status = 'correct';
+                    } else {
+                        currentAnswer.status = 'incorrect';
+                    }
+                }
+
+                evaluateBtn.disabled = true;
+                nextBtn.disabled = false;
+
+                // En modo avance REAL, no damos pistas visuales extra, solo deshabilitamos
+                document.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.disabled = true;
+                });
+            }
+
+            evaluateBtn.addEventListener('click', evaluateCurrentAnswer);
+
+            function displayQuestion() {
+                const currentAnswer = userAnswers[currentQuestionIndex];
+                const { question } = currentAnswer;
+
+                const answeredCount = userAnswers.filter(a => a.status !== 'unanswered').length;
+                const progressPercentage = (answeredCount / quizQuestions.length) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+                
+                totalQuestionsNum.textContent = quizQuestions.length;
+                currentQuestionNum.textContent = currentQuestionIndex + 1;
+                
+                questionText.style.whiteSpace = 'pre-line';
+                questionText.innerHTML = question.question;
+                questionStartTime = Date.now();
+
+                // Videos
+                if (question.explanative_video) {
+                    const videoId = getYouTubeID(question.explanative_video);
+                    if (videoId) {
+                        videoIframe.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+                        videoContainer.style.display = 'block';
+                        videoContent.classList.add('hidden');
+                        videoToggle.querySelector('.fa-chevron-down, .fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
+                    } else {
+                        videoContainer.style.display = 'none';
+                    }
+                } else {
+                    videoContainer.style.display = 'none';
+                }
+
+                // Imágenes
+                if (question.image) {
+                    imageSectionContainer.classList.remove('hidden');
+                    imageContent.classList.remove('hidden');
+                    imageToggle.querySelector('.fa-chevron-down, .fa-chevron-up').classList.replace('fa-chevron-down', 'fa-chevron-up');
+                    imageContainer.innerHTML = `<img src="${question.image}" style="max-width: 100%; max-height: 100%; object-fit: contain; margin: 0 auto; display: block; border-radius: 10px;">`;
+                } else {
+                    imageSectionContainer.classList.add('hidden');
+                }
+
+                // Lectura
+                if (question.collapsible_text) {
+                    textSectionContainer.classList.remove('hidden');
+                    let processedText = question.collapsible_text || '';
+                    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+                    processedText = processedText.replace(urlRegex, function(url) {
+                        return '<a href="' + url + '" target="_blank" class="text-blue-400 underline break-all">' + url + '</a>';
+                    });
+                    textContent.innerHTML = processedText;
+                    textContent.classList.add('hidden');
+                    textToggle.querySelector('.fa-chevron-down, .fa-chevron-up').classList.replace('fa-chevron-up', 'fa-chevron-down');
+                } else {
+                    textSectionContainer.classList.add('hidden');
+                }
+
+                optionsContainer.innerHTML = '';
+                const isHybrid = question.options.some(opt => 'text_op1' in opt);
+
+               if (currentAnswer.status === 'unanswered') {
+                    evaluateBtn.disabled = (currentAnswer.selected === null);
+                    nextBtn.disabled = true;
+                } else {
+                    evaluateBtn.disabled = true;
+                    nextBtn.disabled = false;
+                }
+
+                if (isHybrid) {
+                    optionsContainer.className = 'hybrid-container';
+                    let group1 = question.options.filter(o => 'text_op1' in o).map(o => ({ text: o.text_op1, correct: o.correct, group: 1 }));
+                    let group2 = question.options.filter(o => 'text_op2' in o).map(o => ({ text: o.text_op2, correct: o.correct, group: 2 }));
+                    
+                    const noIdObj = { text: "No puedo identificar la respuesta 😥", correct: false, isNoId: true };
+                    group1.push({...noIdObj, group: 1});
+                    group2.push({...noIdObj, group: 2});
+
+                    // Modificación: las opciones no se revuelven si así es el comportamiento original por defecto (opcional), 
+                    // pero para preguntas de opción múltiple mantenerlas mezcladas previene el aprendizaje de posiciones. 
+                    // El requerimiento fue "las preguntas en orden". Mantenemos el mix de OPCIONES localmente.
+                    const mixArray = (arr) => {
+                        let mainOpts = arr.filter(o => !o.isNoId);
+                        for (let i = mainOpts.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [mainOpts[i], mainOpts[j]] = [mainOpts[j], mainOpts[i]];
+                        }
+                        let lastOpt = arr.find(o => o.isNoId);
+                        if(lastOpt) mainOpts.push(lastOpt);
+                        return mainOpts;
+                    };
+
+                    let prevSel1 = null; let prevSel2 = null;
+                    if (currentAnswer.selected && currentAnswer.selected.includes('|')) {
+                        const parts = currentAnswer.selected.split('|');
+                        if(parts.length >= 2) {
+                            prevSel1 = parts[0].substring(parts[0].indexOf(':') + 1).trim();
+                            prevSel2 = parts[1].substring(parts[1].indexOf(':') + 1).trim();
+                        }
+                    }
+
+                    let clickCount = 0;
+                    let clickTimer = null;
+
+                    const renderGroup = (opts, groupNum) => {
+                        const colDiv = document.createElement('div');
+                        colDiv.className = 'hybrid-group';
+                        colDiv.innerHTML = `<div class="hybrid-group-title">Columna ${groupNum}</div>`;
+                        
+                        opts.forEach((opt, idx) => {
+                            const btn = document.createElement('button');
+                            btn.className = 'option-btn';
+                            btn.dataset.text = opt.text;
+                            btn.dataset.group = groupNum;
+                            btn.style.fontSize = '0.9rem'; 
+
+                            if (groupNum === 1 && opt.text === prevSel1) btn.classList.add('selected');
+                            if (groupNum === 2 && opt.text === prevSel2) btn.classList.add('selected');
+                            
+                            if (currentAnswer.status !== 'unanswered') {
+                                btn.disabled = true;
+                            }
+
+                            const letter = document.createElement('div');
+                            letter.className = 'option-letter';
+                            const letterCode = groupNum === 1 ? (65 + idx) : (70 + idx); 
+                            
+                            if (opt.isNoId) {
+                                letter.style.display = 'none';
+                                btn.style.paddingLeft = '15px';
+                            } else {
+                                letter.textContent = String.fromCharCode(letterCode);
+                            }
+                            
+                            btn.appendChild(letter);
+                            
+                            const span = document.createElement('span');
+                            span.innerHTML = opt.text;
+                            btn.appendChild(span);
+
+                            btn.addEventListener('click', () => {
+                                if (currentAnswer.status !== 'unanswered') return;
+
+                                colDiv.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                                btn.classList.add('selected');
+
+                                const g1Selected = optionsContainer.querySelector('.option-btn[data-group="1"].selected');
+                                const g2Selected = optionsContainer.querySelector('.option-btn[data-group="2"].selected');
+                                
+                                if (g1Selected && g2Selected) {
+                                    const val1 = g1Selected.dataset.text;
+                                    const val2 = g2Selected.dataset.text;
+                                    currentAnswer.selected = `[1]: ${val1} | [2]: ${val2}`;
+                                    evaluateBtn.disabled = false;
+
+                                    clickCount++;
+                                    if (clickTimer) clearTimeout(clickTimer);
+                                    if (clickCount === 3) {
+                                        clickCount = 0;
+                                        evaluateCurrentAnswer();
+                                    } else {
+                                        clickTimer = setTimeout(() => { clickCount = 0; }, 400);
+                                    }
+                                }
+                            });
+
+                            const wrapper = document.createElement('div');
+                            wrapper.className = 'option-wrapper';
+                            wrapper.appendChild(btn);
+                            colDiv.appendChild(wrapper);
+                        });
+                        return colDiv;
+                    };
+                    optionsContainer.appendChild(renderGroup(mixArray(group1), 1));
+                    optionsContainer.appendChild(renderGroup(mixArray(group2), 2));
+
+                } else {
+                    let options = [...question.options];
+                    options.push({ text: "No puedo identificar la respuesta 😥", correct: false, isNoId: true });
+                    
+                    let mainOpts = options.filter(opt => !opt.isNoId);
+                    for (let i = mainOpts.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [mainOpts[i], mainOpts[j]] = [mainOpts[j], mainOpts[i]];
+                    }
+                    const noIdOption = options.find(opt => opt.isNoId);
+                    if(noIdOption) mainOpts.push(noIdOption);
+
+                    let shuffledOptions = mainOpts;
+
+                    const hasImages = shuffledOptions.some(opt => isImageOption(opt.text));
+                    optionsContainer.className = hasImages ? 'w-full options-grid-mode' : 'w-full space-y-3';
+
+                    let clickCount = 0;
+                    let clickTimer = null;
+
+                    shuffledOptions.forEach((option, index) => {
+                        const isImg = isImageOption(option.text);
+                        const isNoId = option.isNoId;
+                        const button = document.createElement('button');
+                        const letterElement = document.createElement('div');
+                        
+                        letterElement.className = 'option-letter';
+                        button.className = 'option-btn';
+                        if (isImg) button.classList.add('is-image');
+                        if (isNoId && hasImages) button.classList.add('full-width');
+
+                        if (isNoId) {
+                            letterElement.style.display = 'none';
+                            if (!hasImages) button.style.paddingLeft = '15px';
+                        } else {
+                            letterElement.textContent = String.fromCharCode(65 + index);
+                        }
+                        
+                        button.appendChild(letterElement);
+
+                        if (isImg) {
+                            const img = document.createElement('img');
+                            img.src = option.text;
+                            img.className = 'option-image-content';
+                            button.appendChild(img);
+                        } else {
+                            const textSpan = document.createElement('span');
+                            textSpan.innerHTML = option.text;
+                            button.appendChild(textSpan);
+                        }
+
+                        button.dataset.text = option.text;
+                        
+                        if (option.text === currentAnswer.selected) {
+                            button.classList.add('selected');
+                        }
+                        
+                        if (currentAnswer.status !== 'unanswered') {
+                            button.disabled = true;
+                        }
+
+                        button.addEventListener('click', () => {
+                            if (currentAnswer.status !== 'unanswered') return;
+
+                            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+                            button.classList.add('selected');
+                            
+                            currentAnswer.selected = option.text;
+                            evaluateBtn.disabled = false;
+
+                            clickCount++;
+                            if (clickTimer) clearTimeout(clickTimer);
+                            if (clickCount === 3) {
+                                clickCount = 0;
+                                evaluateCurrentAnswer();
+                            } else {
+                                clickTimer = setTimeout(() => { clickCount = 0; }, 400);
+                            }
+                        });
+                        
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'option-wrapper';
+                        wrapper.appendChild(button);
+                        optionsContainer.appendChild(wrapper);
+                    });
+                }
+
+                setTimeout(() => {
+                    if (window.MathJax && window.MathJax.typesetClear) {
+                        window.MathJax.typesetClear([questionText, optionsContainer, textContent]);
+                    }
+                    MathJax.typesetPromise([questionText, optionsContainer, textContent]).catch(() => {});
+                }, 50);
+            }
+
+            // Buttons navigation Logic
+            prevBtn.addEventListener('click', () => {
+                if (currentQuestionIndex > 0) {
+                    saveTimeSpent();
+                    currentQuestionIndex--;
+                    displayQuestion();
+                }
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                saveTimeSpent();
+                
+                if (isGuest) {
+                    questionCountInGuestMode++;
+                    if (questionCountInGuestMode % 5 === 0) setTimeout(showAd, 500);
+                }
+                
+                if (currentQuestionIndex < userAnswers.length - 1) {
+                    currentQuestionIndex++;
+                    displayQuestion();
+                } else {
+                    // Fin del quiz si está en el último
+                    finishBtn.click();
+                }
+            });
+
+            finishBtn.addEventListener('click', () => {
+                saveTimeSpent();
+                if (confirm("¿Estás seguro de que deseas entregar tu avance ahora?")) {
+                    endQuiz();
+                }
+            });
+
+            returnToMenuBtn.addEventListener('click', () => {
+                screens.results.classList.add('hidden');
+                screens.setup.classList.remove('hidden');
+            });
+
+            function saveTimeSpent() {
+                const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
+                userAnswers[currentQuestionIndex].timeSpent += timeSpent;
+            }
+
+            function gradeAllAnswersSilent() {
+                userAnswers.forEach(answer => {
+                    if(answer.status === 'unanswered' || !answer.selected) {
+                        answer.status = 'omitted';
+                        return;
+                    }
+                    const isHybrid = answer.question.options.some(opt => 'text_op1' in opt);
+                    
+                    if (isHybrid) {
+                        const correctOp1 = answer.question.options.find(o => 'text_op1' in o && o.correct)?.text_op1;
+                        const correctOp2 = answer.question.options.find(o => 'text_op2' in o && o.correct)?.text_op2;
+                        if (answer.selected && answer.selected.includes('|')) {
+                            const parts = answer.selected.split('|');
+                            if(parts.length >= 2) {
+                                const val1 = parts[0].substring(parts[0].indexOf(':') + 1).trim();
+                                const val2 = parts[1].substring(parts[1].indexOf(':') + 1).trim();
+                                if (val1 === correctOp1 && val2 === correctOp2) {
+                                    answer.status = 'correct';
+                                } else {
+                                    answer.status = 'incorrect';
+                                }
+                            } else answer.status = 'incorrect';
+                        } else answer.status = 'incorrect';
+                    } else {
+                        const correctOption = answer.question.options.find(opt => opt.correct);
+                        if (correctOption && correctOption.text === answer.selected) {
+                            answer.status = 'correct';
+                        } else {
+                            answer.status = 'incorrect';
+                        }
+                    }
+                });
+            }
+
+            function endQuiz() {
+                clearInterval(dtInterval);
+                dtIsRunning = false;
+                
+                gradeAllAnswersSilent();
+
+                if (isGuest && currentUser.email === 'invitado@example.com') {
+                    showGuestInfoModal();
+                    return;
+                }
+
+                screens.quiz.classList.add('hidden');
+                screens.results.classList.remove('hidden');
+                
+                const stats = {
+                    correct: userAnswers.filter(a => a.status === 'correct').length,
+                    incorrect: userAnswers.filter(a => a.status === 'incorrect').length,
+                    omitted: userAnswers.filter(a => a.status === 'omitted').length
+                };
+                
+                const totalEvaluated = userAnswers.length;
+                const finalScoreValue = totalEvaluated > 0 ? (stats.correct / totalEvaluated) * 10 : 0;
+                const totalTimeEvaluated = userAnswers.reduce((acc, curr) => acc + curr.timeSpent, 0);
+                const averageTime = userAnswers.length > 0 ? (totalTimeEvaluated / userAnswers.length).toFixed(2) : 0;
+                
+                finalScore.textContent = `${finalScoreValue.toFixed(2)} / 10.00`;
+                totalTime.textContent = `${totalTimeEvaluated} segundos`;
+                avgTime.textContent = `${averageTime} seg por pregunta`;
+                correctCount.textContent = stats.correct;
+                incorrectCount.textContent = stats.incorrect;
+                omittedCount.textContent = stats.omitted;
+                
+                if (finalScoreValue === 10) resultImage.src = RESULT_IMAGES.perfect10;
+                else if (finalScoreValue >= 9.5) resultImage.src = RESULT_IMAGES.between9_5_10;
+                else if (finalScoreValue >= 9) resultImage.src = RESULT_IMAGES.between9_9_5;
+                else if (finalScoreValue >= 8) resultImage.src = RESULT_IMAGES.between8_9;
+                else if (finalScoreValue >= 7) resultImage.src = RESULT_IMAGES.between7_8;
+                else resultImage.src = RESULT_IMAGES.less7;
+                
+                const idsString = userAnswers.map(a => a.question.id).filter(id => id).join(', ');
+                submitResults(stats, finalScoreValue, totalTimeEvaluated, idsString, userAnswers.length);
+                
+                populateResultsTable(userAnswers);
+                drawResultsChart(stats);
+            }
+            
+            function showGuestInfoModal() {
+                guestInfoModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                guestEmailInput.value = '';
+                guestWhatsappInput.value = '';
+                guestEmailError.style.display = 'none';
+                guestWhatsappError.style.display = 'none';
+                
+                guestEmailInput.addEventListener('input', function() {
+                    if (this.value.includes('@')) {
+                        guestEmailError.style.display = 'none';
+                        this.style.borderColor = 'rgba(79, 195, 247, 0.3)';
+                    }
+                });
+                
+                guestWhatsappInput.addEventListener('input', function() {
+                    const digits = this.value.replace(/\D/g, '');
+                    this.value = digits;
+                    if (digits.length === 10) {
+                        guestWhatsappError.style.display = 'none';
+                        this.style.borderColor = 'rgba(79, 195, 247, 0.3)';
+                    }
+                });
+                
+                guestInfoForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    let isValid = true;
+                    if (!guestEmailInput.value.includes('@')) {
+                        guestEmailError.style.display = 'block';
+                        guestEmailInput.style.borderColor = '#f44336';
+                        isValid = false;
+                    }
+                    const whatsappDigits = guestWhatsappInput.value.replace(/\D/g, '');
+                    if (whatsappDigits.length !== 10) {
+                        guestWhatsappError.style.display = 'block';
+                        guestWhatsappInput.style.borderColor = '#f44336';
+                        isValid = false;
+                    }
+                    if (isValid) {
+                        currentUser = {
+                            name: 'Invitado',
+                            email: guestEmailInput.value.trim(),
+                            whatsapp: whatsappDigits
+                        };
+                        guestInfoModal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                        endQuiz();
+                    }
+                };
+            }
+            
+            function populateResultsTable(answers) {
+                resultsTableBody.innerHTML = '';
+                
+                // Filtramos solo las que tienen interacción por parte del usuario
+                const answeredOnly = answers.filter(a => ['correct', 'incorrect', 'unidentified'].includes(a.status));
+                
+                answeredOnly.forEach(answer => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-gray-700 border-b border-gray-600';
+                    const isHybrid = answer.question.options.some(opt => 'text_op1' in opt);
+                    let correctText = 'N/A';
+                    
+                    if(isHybrid) {
+                        const correctOp1 = answer.question.options.find(o => 'text_op1' in o && o.correct)?.text_op1;
+                        const correctOp2 = answer.question.options.find(o => 'text_op2' in o && o.correct)?.text_op2;
+                        correctText = `[1]: ${correctOp1} | [2]: ${correctOp2}`;
+                    } else {
+                        const correctOption = answer.question.options.find(o => o.correct);
+                        if(correctOption) correctText = correctOption.text;
+                    }
+
+                    let resultText, resultClass;
+                    switch(answer.status) {
+                        case 'correct': resultText = 'Correcta'; resultClass = 'text-green-400 font-bold'; break;
+                        case 'incorrect': resultText = 'Incorrecta'; resultClass = 'text-red-400 font-bold'; break;
+                        case 'unidentified': resultText = 'No Identificada'; resultClass = 'text-yellow-400 font-bold'; break;
+                        default: resultText = 'Omitida'; resultClass = 'text-gray-400 font-bold';
+                    }
+                    
+                    const explanationText = answer.question.explanation || 'Sin justificación disponible.';
+
+                    row.innerHTML = `
+                        <td class="px-4 py-2">${answer.question.question}</td>
+                        <td class="px-4 py-2">${answer.selected || '---'}</td>
+                        <td class="px-4 py-2">${correctText}</td>
+                        <td class="px-4 py-2 ${resultClass}">${resultText}</td>
+                        <td class="px-4 py-2 text-gray-300 text-xs">${explanationText}</td>
+                    `;
+                    resultsTableBody.appendChild(row);
+                });
+                setTimeout(() => {
+                    MathJax.typesetPromise([resultsTableBody]).catch(()=>{});
+                }, 50);
+            }
+
+            function drawResultsChart(stats) {
+                if (resultsChart) resultsChart.destroy();
+                resultsChart = new Chart(resultsChartCanvas, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Correctas', 'Incorrectas', 'Omitidas'],
+                        datasets: [{
+                            data: [stats.correct, stats.incorrect, stats.omitted],
+                            backgroundColor: ['#10b981', '#ef4444', '#6b7280'],
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        plugins: { 
+                            legend: { position: 'top', labels: { color: '#fff' } } 
+                        } 
+                    }
+                });
+            }
+
+            async function submitResults(stats, score, totalTime, idsString, numQuestions) {
+                const payload = {
+                    EvaluationName: "PRUEBA (Global)",
+                    Name: currentUser.name || 'Invitado',
+                    Email: currentUser.email || 'sin_email',
+                    WhatsApp: currentUser.whatsapp || '0000000000',
+                    TotalTime: totalTime,
+                    AverageTime: numQuestions > 0 ? (totalTime / numQuestions).toFixed(2) : 0,
+                    Score: score.toFixed(2),
+                    CorrectAnswers: stats.correct,
+                    TotalQuestions: numQuestions,
+                    IDs: idsString,
+                    UserType: 'Invitado',
+                    Timestamp: new Date().toLocaleString('es-MX')
+                };
+
+                if (navigator.onLine) {
+                    try {
+                        const formData = new FormData();
+                        for (const key in payload) {
+                            formData.append(key, payload[key]);
+                        }
+                        await fetch(SUBMISSION_SCRIPT_URL, { method: 'POST', body: formData });
+                    } catch (error) {
+                        saveToOfflineQueue(payload);
+                    }
+                } else {
+                    saveToOfflineQueue(payload);
+                }
+            }
+
+            function saveToOfflineQueue(payload) {
+                let queue = JSON.parse(localStorage.getItem('cepredix_offline_queue') || '[]');
+                queue.push(payload);
+                localStorage.setItem('cepredix_offline_queue', JSON.stringify(queue));
+            }
+
+            async function processOfflineQueue() {
+                if (!navigator.onLine) return;
+                let queue = JSON.parse(localStorage.getItem('cepredix_offline_queue') || '[]');
+                if (queue.length === 0) return;
+
+                let remainingQueue = [];
+                for (const payload of queue) {
+                    try {
+                        const formData = new FormData();
+                        for (const key in payload) {
+                            formData.append(key, payload[key]);
+                        }
+                        await fetch(SUBMISSION_SCRIPT_URL, { method: 'POST', body: formData });
+                    } catch (error) {
+                        remainingQueue.push(payload);
+                    }
+                }
+                localStorage.setItem('cepredix_offline_queue', JSON.stringify(remainingQueue));
+            }
+
+            window.addEventListener('online', processOfflineQueue);
+            setTimeout(processOfflineQueue, 3000);
+
+            // Bypass Login logic
+            loadData();
+        });
+    </script>
+</body>
+</html>
