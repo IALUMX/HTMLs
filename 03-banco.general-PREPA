@@ -4793,7 +4793,14 @@
                         }
                     }
 
-                    setTimeout(() => { if (window.MathJax) MathJax.typesetPromise([memoryCorrectText]); }, 50);
+                    setTimeout(() => { 
+                        if (window.MathJax) {
+                            if (window.MathJax.typesetClear) {
+                                window.MathJax.typesetClear([questionText, textContent, memoryCorrectText]);
+                            }
+                            MathJax.typesetPromise([questionText, textContent, memoryCorrectText]).catch((err) => console.log('Error renderizando formulas en memoria:', err));
+                        }
+                    }, 50);
                     return; // Terminamos aquí la renderización de la pregunta
                 } else {
                     optionsContainer.style.display = ''; 
