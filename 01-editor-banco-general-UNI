@@ -8,19 +8,7 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que en la página de inicio de sesión agregues uno botones de perfil de acceso, diseño disrcreto como tipo cheklist donde se puede escoger uno o varios de los siguintes opciones: 
-👩‍⚕️ MEDICINA, [Selecciona si vas para MEDICINA]
-👨‍⚕️ OTRAS CARRERAS DE LA SALUD, [Selecciona si vas para enfermería, nutrición, estomatología u otra carrera de área de la salud]
-👷‍♀️ INGENIERÍAS O ARQUITECTURA, [Selecciona si vas para alguna ingeniería o arquitectura]
-📈 ECONÓMICO ADMINISTRATIVAS, [Selecciona si vas para carreras como LAG, relaciones internacionales, etc.]
-🤝SOCIALES [Selecciona si vas para derecho, filosofía, pedagogía, etc.]
-
-La información que está entre [ ] se desplegará al poner el cursos sobre cada opción, 
-el estudinate deberá seleccionar por lo menos una opción para habilitar el botón de acceso, incluso si es invitado. 
-Estos botones en realidad NO hacen nada pero el estudinate no lo sabe. 
-Diseño discreto y minimalista
-
-
+1) Requiero que 
 
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
