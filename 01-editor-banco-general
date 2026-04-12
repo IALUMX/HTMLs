@@ -8,7 +8,17 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Requiero que confirmes que 
+1) Requiero que en la página de inicio de sesión agregues uno botones de perfil de acceso, diseño disrcreto como tipo cheklist donde se puede escoger uno o varios de los siguintes opciones: 
+👩‍⚕️ MEDICINA, [Selecciona si vas para MEDICINA]
+👨‍⚕️ OTRAS CARRERAS DE LA SALUD, [Selecciona si vas para enfermería, nutrición, estomatología u otra carrera de área de la salud]
+👷‍♀️ INGENIERÍAS O ARQUITECTURA, [Selecciona si vas para alguna ingeniería o arquitectura]
+📈 ECONÓMICO ADMINISTRATIVAS, [Selecciona si vas para carreras como LAG, relaciones internacionales, etc.]
+🤝SOCIALES [Selecciona si vas para derecho, filosofía, pedagogía, etc.]
+
+La información que está entre [ ] se desplegará al poner el cursos sobre cada opción, 
+el estudinate deberá seleccionar por lo menos una opción para habilitar el botón de acceso, incluso si es invitado. 
+Estos botones en realidad NO hacen nada pero el estudinate no lo sabe. 
+Diseño discreto y minimalista
 
 
 
@@ -1285,6 +1295,19 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             color: #fff;
             line-height: 1;
         }
+        .profile-option { cursor: pointer; display: block; }
+        .profile-content {
+            display: block; padding: 8px 12px; background: rgba(30, 30, 40, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
+            font-size: 0.85rem; color: #bbb; transition: all 0.3s ease; text-align: center;
+        }
+        .profile-option:hover .profile-content {
+            background: rgba(50, 50, 70, 0.8); border-color: rgba(79, 195, 247, 0.4);
+        }
+        .profile-checkbox:checked + .profile-content {
+            background: rgba(79, 195, 247, 0.2); border-color: #4fc3f7;
+            color: #fff; font-weight: bold; box-shadow: 0 0 8px rgba(79, 195, 247, 0.3);
+        }
     </style>
 </head>
 <body class="p-2 sm:p-4">
@@ -1462,6 +1485,31 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 <div>
                     <label for="whatsapp-input" class="font-medium">WhatsApp (10 dígitos sin espacios)</label>
                     <input type="password" id="whatsapp-input" class="w-full p-3 mt-1 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="••••••••••" maxlength="10" inputmode="numeric" required>
+                </div>
+                <div id="profile-selection" class="mt-4 mb-2">
+                    <p class="font-medium text-sm text-gray-300 mb-3 text-center">Selecciona tu área de interés (Obligatorio)</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="profile-option" title="Selecciona si vas para MEDICINA">
+                            <input type="checkbox" class="profile-checkbox hidden" value="MEDICINA">
+                            <span class="profile-content">👩‍⚕️ MEDICINA</span>
+                        </label>
+                        <label class="profile-option" title="Selecciona si vas para enfermería, nutrición, estomatología u otra carrera de área de la salud">
+                            <input type="checkbox" class="profile-checkbox hidden" value="SALUD">
+                            <span class="profile-content">👨‍⚕️ OTRAS CARRERAS DE LA SALUD</span>
+                        </label>
+                        <label class="profile-option" title="Selecciona si vas para alguna ingeniería o arquitectura">
+                            <input type="checkbox" class="profile-checkbox hidden" value="INGENIERIA">
+                            <span class="profile-content">👷‍♀️ INGENIERÍAS O ARQUITECTURA</span>
+                        </label>
+                        <label class="profile-option" title="Selecciona si vas para carreras como LAG, relaciones internacionales, etc.">
+                            <input type="checkbox" class="profile-checkbox hidden" value="ECONOMICO">
+                            <span class="profile-content">📈 ECONÓMICO ADMINISTRATIVAS</span>
+                        </label>
+                        <label class="profile-option sm:col-span-2" title="Selecciona si vas para derecho, filosofía, pedagogía, etc.">
+                            <input type="checkbox" class="profile-checkbox hidden" value="SOCIALES">
+                            <span class="profile-content text-center">🤝 SOCIALES</span>
+                        </label>
+                    </div>
                 </div>
                 <button id="login-btn" type="submit" class="btn btn-correct w-full text-lg">
                     <span id="login-btn-text">Verificar y Entrar</span>
@@ -2139,6 +2187,11 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             const loginBtnSpinner = document.getElementById('login-btn-spinner');
             const loginErrorMessage = document.getElementById('login-error-message');
             const guestLoginBtn = document.getElementById('guest-login-btn');
+            document.addEventListener('change', (e) => {
+                if (e.target.classList.contains('profile-checkbox')) {
+                    if(loginErrorMessage) loginErrorMessage.textContent = '';
+                }
+            });
             const noAccessBtn = document.querySelector('a[href="https://wa.link/i5rp89"]');
             const welcomeName = document.getElementById('welcome-name');
             const gameModeToggle = document.getElementById('game-mode-toggle');
@@ -4033,6 +4086,18 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
             
             guestLoginBtn.addEventListener('click', () => {
+                // NUEVO: Validación de perfil obligatorio para invitado
+                const checkboxes = document.querySelectorAll('.profile-checkbox');
+                let isChecked = false;
+                for (let i = 0; i < checkboxes.length; i++) {
+                    if (checkboxes[i].checked) isChecked = true;
+                }
+                if (!isChecked) {
+                    loginErrorMessage.textContent = 'Debes seleccionar al menos un área de interés para continuar.';
+                    return;
+                }
+                // FIN NUEVO
+
                 isGuest = true;
                 currentUser = { name: 'Invitado', email: 'invitado@example.com', whatsapp: '0000000000' };
                 screens.login.classList.add('hidden');
@@ -4060,6 +4125,19 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             
             loginForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
+
+                // NUEVO: Validación de perfil obligatorio
+                const checkboxes = document.querySelectorAll('.profile-checkbox');
+                let isChecked = false;
+                for (let i = 0; i < checkboxes.length; i++) {
+                    if (checkboxes[i].checked) isChecked = true;
+                }
+                if (!isChecked) {
+                    loginErrorMessage.textContent = 'Debes seleccionar al menos un área de interés para continuar.';
+                    return;
+                }
+                // FIN NUEVO
+
                 const name = nameInput.value.trim();
                 const emailToValidate = emailInput.value.trim();
                 const whatsappToValidate = whatsappInput.value.trim();
