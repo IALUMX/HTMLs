@@ -19,7 +19,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <title>PRUEBA (Global)</title>
     <link rel="icon" href="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/00-WEBLogo-circular-cepredix.png" type="image/png">
     
@@ -36,7 +39,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         window.MathJax = {
@@ -67,6 +70,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             line-height: 1.4; /* Ajuste global de interlineado */
             overscroll-behavior-y: none; /* EVITA EL PULL-TO-REFRESH EN IPHONE */
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: auto;
+            touch-action: pan-y;
         }
         #question-text {
             line-height: 1.25 !important; /* Interlineado más compacto en la pregunta */
@@ -430,7 +436,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             gap: 8px;
             width: fit-content;
         }
-        .question-id { color: #4fc3f7; }
+        .question-id { color: #4fc3f7; font-family: 'Roboto Mono', monospace; font-weight: 500; letter-spacing: 0.05em; }
         .mini-nav-btn {
             width: 32px; height: 32px; border-radius: 50%; 
             background: rgba(30, 30, 40, 0.8); border: 1px solid #4fc3f7; 
@@ -1493,9 +1499,17 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                             <input type="checkbox" class="profile-checkbox hidden" value="ECONOMICO">
                             <span class="profile-content">📈 ECONÓMICO ADMINISTRATIVAS</span>
                         </label>
-                        <label class="profile-option sm:col-span-2" title="Selecciona si vas para derecho, filosofía, pedagogía, etc.">
+                        <label class="profile-option" title="Selecciona si vas para derecho, filosofía, pedagogía, etc.">
                             <input type="checkbox" class="profile-checkbox hidden" value="SOCIALES">
-                            <span class="profile-content text-center">🤝 SOCIALES</span>
+                            <span class="profile-content">🤝 SOCIALES</span>
+                        </label>
+                        <label class="profile-option" title="Selecciona si eres docente o estudias una carrera de educación">
+                            <input type="checkbox" class="profile-checkbox hidden" value="DOCENCIA">
+                            <span class="profile-content">👩‍🏫 DOCENCIA/EDUCACIÓN</span>
+                        </label>
+                        <label class="profile-option" title="Selecciona si tu área de interés no está en la lista">
+                            <input type="checkbox" class="profile-checkbox hidden" value="OTRO">
+                            <span class="profile-content">📚 OTRO</span>
                         </label>
                     </div>
                 </div>
@@ -2158,6 +2172,33 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 quiz: document.getElementById('quiz-screen'),
                 results: document.getElementById('results-screen'),
             };
+
+            // PREVENCIÓN DE PULL-TO-REFRESH Y RECARGA ACCIDENTAL EN IOS SAFARI
+            document.addEventListener('touchstart', function(e) {}, { passive: true });
+            
+            let lastTouchY = 0;
+            document.addEventListener('touchstart', function(e) {
+                lastTouchY = e.touches[0].clientY;
+            }, { passive: true });
+
+            document.addEventListener('touchmove', function(e) {
+                const touchY = e.touches[0].clientY;
+                const touchYDelta = touchY - lastTouchY;
+                const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                if (scrollTop === 0 && touchYDelta > 0) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            // Prevenir zoom con doble toque
+            let lastTap = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = Date.now();
+                if (now - lastTap < 300) {
+                    e.preventDefault();
+                }
+                lastTap = now;
+            }, { passive: false });
 
             // ALERTA DE PROTECCIÓN CONTRA CIERRE ACCIDENTAL
             window.addEventListener('beforeunload', function (e) {
