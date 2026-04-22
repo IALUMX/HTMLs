@@ -2151,7 +2151,13 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const QUIZ_JSON_URL = 'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/00-json-prueba-v2-170126.json';
+            const QUIZ_JSON_URLS = [
+                'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/00-json-prueba-v2-170126.json',
+                'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/ARCHIVO-2.json',
+                'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/ARCHIVO-3.json',
+                'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/ARCHIVO-4.json',
+                'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/ARCHIVO-5.json',
+            ];
             const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS5sU2hYNByYHNDESXxZPoe3dikV115hY_TII15wZtF8E0NWBFmnLSW2ad7ZqDdwk-jTPQfX-92n6zQ/pub?gid=0&single=true&output=csv';
             const CORS_PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(GOOGLE_SHEET_URL);
             const RESULTS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYESY3dBy0h5QrY5EyJ_jfHwlEwnhByFcPTywwK4jJhGa3rvrnIzR9OXleZUZ7zVqUqw/exec';
@@ -4217,27 +4223,74 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             
             const loadData = async () => {
                 try {
-                    const response = await fetch(QUIZ_JSON_URL + '?v=' + new Date().getTime());
-                    if (!response.ok) {
-                        throw new Error('No se pudo cargar el archivo JSON');
+                    startQuizBtn.disabled = true;
+                    if(statsTotal) statsTotal.textContent = 'Cargando...';
+
+                    const timestamp = new Date().getTime();
+                    let loadedCount = 0;
+                    let errorCount = 0;
+
+                    const fetchPromises = QUIZ_JSON_URLS.map(url =>
+                        fetch(url + '?v=' + timestamp)
+                            .then(response => {
+                                if (!response.ok) throw new Error('Error al cargar: ' + url);
+                                return response.text();
+                            })
+                            .then(jsonText => {
+                                jsonText = jsonText.replace(/\\\\\\\\/g, '\\\\');
+                                jsonText = jsonText.replace(/\\u00a0/g, ' ');
+                                jsonText = jsonText.replace(/,\s*}/g, '}');
+                                jsonText = jsonText.replace(/,\s*\]/g, ']');
+                                try {
+                                    const questions = JSON.parse(jsonText);
+                                    loadedCount++;
+                                    if(statsTotal) statsTotal.textContent = 'Cargando ' + loadedCount + '/' + QUIZ_JSON_URLS.length + '...';
+                                    return Array.isArray(questions) ? questions : [];
+                                } catch (parseError) {
+                                    console.error('Error al parsear JSON de: ' + url, parseError.message);
+                                    errorCount++;
+                                    return [];
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error al cargar archivo:', err.message);
+                                errorCount++;
+                                return [];
+                            })
+                    );
+
+                    const results = await Promise.all(fetchPromises);
+
+                    allQuestions = results.flat();
+
+                    // Eliminar duplicados por ID
+                    const seen = new Set();
+                    allQuestions = allQuestions.filter(q => {
+                        if (!q.id || seen.has(q.id)) return false;
+                        seen.add(q.id);
+                        return true;
+                    });
+
+                    if (allQuestions.length === 0) {
+                        throw new Error('No se pudo cargar ningún archivo JSON correctamente.');
                     }
-                    let jsonText = await response.text();
-                    jsonText = jsonText.replace(/\\\\\\\\/g, '\\\\');
-                    jsonText = jsonText.replace(/\\u00a0/g, ' ');
-                    jsonText = jsonText.replace(/,\s*}/g, '}');
-                    jsonText = jsonText.replace(/,\s*\]/g, ']');
-                    try {
-                        allQuestions = JSON.parse(jsonText);
-                    } catch (parseError) {
-                        console.error('Error al parsear JSON:', parseError.message);
-                        allQuestions = [];
+
+                    if (errorCount > 0) {
+                        showTemporaryMessage(
+                            errorCount + ' archivo(s) no se pudieron cargar. Se cargaron ' + loadedCount + ' de ' + QUIZ_JSON_URLS.length + ' archivos.',
+                            'bg-yellow-600'
+                        );
                     }
+
                     statsTotal.textContent = allQuestions.length;
                     populateTagFilters();
                     updateQuestionStats();
+                    startQuizBtn.disabled = false;
+
                 } catch (error) {
-                    errorMessage.textContent = 'Error: ' + error.message;
+                    if(errorMessage) errorMessage.textContent = 'Error: ' + error.message;
                     console.error('Error crítico:', error);
+                    if(statsTotal) statsTotal.textContent = 'Error';
                     startQuizBtn.disabled = true;
                 }
             };
