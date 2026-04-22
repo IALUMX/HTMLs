@@ -2416,6 +2416,14 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             let lineProjectionDataset = null;
             let algebraicDataset = null;
             let guestAds = [];
+            function renderMath(...elements) {
+                const validElements = elements.filter(el => el && document.contains(el));
+                if (!window.MathJax) return;
+                try {
+                    if (MathJax.typesetClear) MathJax.typesetClear(validElements);
+                    MathJax.typesetPromise(validElements).catch(err => console.warn('MathJax:', err));
+                } catch(e) { console.warn('MathJax error:', e); }
+            }
             let mainBanner = null;
             let pubBanners = [];
             let lastShownAdUrl = null;
@@ -2500,7 +2508,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 const linkEl = document.getElementById('banner-link');
                 const audioEl = document.getElementById('banner-audio-player');
 
-                if (imgEl) imgEl.src = item.Imagen;
+                if (imgEl) { imgEl.src = ''; imgEl.src = item.Imagen; }
                 
                 if (linkEl) {
                     if (item.Infolink && item.Infolink.length > 5) {
@@ -4799,6 +4807,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     }, 1000);
                 }
                 justificationText.innerHTML = '';
+                renderMath(questionText, optionsContainer, justificationBox, textContent, justificationText);
                 
                 if (isContinuousMode) {
                     const allAnsweredIds = new Set([...pastedAnsweredIds, ...answeredIdsInContinuousMode]);
@@ -4919,13 +4928,8 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         }
                     }
 
-                    setTimeout(() => { 
-                        if (window.MathJax) {
-                            if (window.MathJax.typesetClear) {
-                                window.MathJax.typesetClear([questionText, textContent, memoryCorrectText]);
-                            }
-                            MathJax.typesetPromise([questionText, textContent, memoryCorrectText]).catch((err) => console.log('Error renderizando formulas en memoria:', err));
-                        }
+                    setTimeout(() => {
+                        renderMath(questionText, textContent, memoryCorrectText);
                     }, 50);
                     return; // Terminamos aquí la renderización de la pregunta
                 } else {
@@ -5129,12 +5133,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     });
                 }
                 setTimeout(() => {
-                    // Liberar memoria de MathJax antes de renderizar (Crucial para evitar crasheos en iOS)
-                    if (window.MathJax && window.MathJax.typesetClear) {
-                        window.MathJax.typesetClear([questionText, optionsContainer, textContent]);
-                    }
-                    MathJax.typesetPromise([questionText, optionsContainer, textContent]).then(() => {
-                    }).catch((err) => console.log('Error renderizando formulas:', err));
+                    renderMath(questionText, optionsContainer, textContent, justificationText);
                 }, 50);
                 
                 updateButtonStates();
@@ -5265,10 +5264,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 }
 
                 if (question.explanation && !isRealMode) {
-                    justificationText.innerHTML = question.explanation;
-                    justificationBox.classList.remove('hidden');
-                    MathJax.typesetPromise([justificationText]);
-                }
+                    justificationText.innerHTML = question.explanation;
+                    justificationBox.classList.remove('hidden');
+                    renderMath(justificationText);
+                }
             }
             
             function playSound(soundId) {
@@ -5364,6 +5363,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             cancelBtn.addEventListener('click', () => {
                 clearInterval(timer);
                 clearInterval(gameModeTimer);
+                document.querySelectorAll('audio').forEach(function(audio) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                });
                 
                 if (dtInterval) clearInterval(dtInterval);
                 dtIsRunning = false;
@@ -5407,10 +5410,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 modalElement.querySelector('.close-modal-btn').addEventListener('click', () => {
                     modalElement.remove();
                 });
-                if (window.MathJax && window.MathJax.typesetClear) {
-                    window.MathJax.typesetClear([modalElement.querySelector('.hint-content')]);
-                }
-                MathJax.typesetPromise([modalElement.querySelector('.hint-content')]);
+                renderMath(modalElement.querySelector('.hint-content'));
             });
             
             function updateLiveScore() {
@@ -5958,10 +5958,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     </div>
                 `;
                 lookupResultContainer.classList.remove('hidden');
-                if (window.MathJax && window.MathJax.typesetClear) {
-                    window.MathJax.typesetClear([lookupResultContainer]);
-                }
-                MathJax.typesetPromise([lookupResultContainer]);
+                renderMath(lookupResultContainer);
             }
             
             loadData();
@@ -6117,7 +6114,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 wbStep++;
                 
                 // LÍMITE DE MEMORIA PARA EVITAR CRASHEOS EN SAFARI/IPHONE
-                if (wbHistory.length > 8) {
+                if (wbHistory.length > 5) {
                     wbHistory.shift();
                     wbStep--;
                 }
@@ -6151,6 +6148,19 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 });
             }
 
+            function simplifyPoints(points, tolerance) {
+                tolerance = tolerance || 3;
+                if (points.length <= 2) return points;
+                var simplified = [points[0]];
+                for (var i = 1; i < points.length - 1; i++) {
+                    var prev = simplified[simplified.length - 1];
+                    var curr = points[i];
+                    var dist = Math.sqrt(Math.pow(curr.x - prev.x, 2) + Math.pow(curr.y - prev.y, 2));
+                    if (dist > tolerance) simplified.push(curr);
+                }
+                simplified.push(points[points.length - 1]);
+                return simplified;
+            }
             if (wbOverlay) {
                 const openWhiteboard = () => {
                     wbOverlay.classList.remove('hidden');
@@ -6215,9 +6225,9 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                         wbPaths.push({
                             color: wbCurrentColor,
                             width: wbCurrentWidth,
-                            points: currentPathPoints
+                            points: simplifyPoints(currentPathPoints, 3)
                         });
-                        saveHistory(); // <--- GUARDAR ESTADO AL TERMINAR DE DIBUJAR
+                        saveHistory();
                     }
                 };
 
