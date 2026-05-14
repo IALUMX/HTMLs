@@ -8,8 +8,58 @@ Instrucciones críticas:
 
 
 Estos son los cambios que requiero:
-1) Necesito que 
+1) Necesito que modifiques todo lo necesario para que ahora reconozca estos nuevos formatos JSON
+Este formato para preguntas de única respuesta:
+[
+  {
+    "id": "ID_EXAMPLE",
+    "tag01": ["GENERAL_01"],
+    "tag02": ["GENERAL_02"],
+    "tag03": ["GENERAL_01"],
+    "tag04": ["Test"],
+    "question": "Example_normal_question",
+    "options": [
+      { "text": "Option 1", "correct": true },
+      { "text": "Option 2", "correct": false },
+      { "text": "Option 3", "correct": false },
+      { "text": "Option 4", "correct": false }
+    ],
+    "hint": "Hint_example",
+    "explanation": "Explanation_example",
+    "image": null,
+    "explanative_video": null,
+    "collapsible_text": null
+  }
+]
 
+Y este fomrato para ejercicios híbridos:
+[
+  {
+    "id": "CEP00AB",
+	"tag01": ["GENERAL_01"],
+    "tag02": ["GENERAL_02"],
+    "tag03": ["GENERAL_01"],
+    "tag04": ["Test"],
+    "question": "Esto es una prueba.",
+    "options": [
+      { "text_op1": "A1", "correct": true },
+      { "text_op1": "B1", "correct": false },
+      { "text_op1": "C1", "correct": false },
+      { "text_op1": "D1", "correct": false },
+      { "text_op2": "A2", "correct": true },
+      { "text_op2": "B2", "correct": false },
+      { "text_op2": "C2", "correct": false },
+      { "text_op2": "D2", "correct": false }
+    ],
+    "hint": "Esto es una prueba.",
+	"explanation": "Explanation_example",
+	"image": null,
+    "explanative_video": null,
+    "collapsible_text": null
+  }
+]
+
+Además, el programa debe mostrar solamente los contenedores para seleccionar los tags que se ocupen, por ejemplo, si un banco de ejercicios solo tiene información en  "tag01" pero "null" en los demás, solo de debe mostrar el contenedor con las etiquets del "tag01" y está misma lógica para "tag02", "tag03" y "tag04", ya que hab´ra bancos de preguntas que usen los 4 tags y bancos que solo ocupen 1, 2 o 3 tags.
 
 
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
@@ -173,9 +223,16 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
         }
         .question-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; justify-content: center; }
         .tag {
-            background: rgba(79, 195, 247, 0.2); padding: 4px 10px; border-radius: 15px;
-            font-size: 0.8rem; border: 1px solid #4fc3f7; cursor: pointer; transition: all 0.2s ease;
-        }
+            background: rgba(79, 195, 247, 0.2); padding: 3px 8px; border-radius: 12px;
+            font-size: 0.75rem; border: 1px solid #4fc3f7; cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        /* SCROLLBAR PERSONALIZADO PARA LOS CONTENEDORES DE FILTROS */
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(79, 195, 247, 0.5); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(79, 195, 247, 0.8); }
         .tag.selected { background: rgba(79, 195, 247, 0.8); color: white; font-weight: bold; transform: scale(1.05); }
         .option-btn {
             padding: 15px 15px 15px 50px; background: rgba(50, 50, 70, 0.8);
@@ -1290,20 +1347,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             color: #fff;
             line-height: 1;
         }
-        .profile-option { cursor: pointer; display: block; }
-        .profile-content {
-            display: block; padding: 8px 12px; background: rgba(30, 30, 40, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
-            font-size: 0.85rem; color: #bbb; transition: all 0.3s ease; text-align: center;
-        }
-        .profile-option:hover .profile-content {
-            background: rgba(50, 50, 70, 0.8); border-color: rgba(79, 195, 247, 0.4);
-        }
-        .profile-checkbox:checked + .profile-content {
-            background: rgba(79, 195, 247, 0.2); border-color: #4fc3f7;
-            color: #fff; font-weight: bold; box-shadow: 0 0 8px rgba(79, 195, 247, 0.3);
-        }
-    </style>
+        </style>
 </head>
 <body class="p-2 sm:p-4">
     <audio id="correct-sound" src="https://github.com/IALUMX/Audios_cepredix/raw/refs/heads/main/Correct_sound.mp3" preload="auto"></audio>
@@ -1481,39 +1525,6 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     <label for="whatsapp-input" class="font-medium">WhatsApp (10 dígitos sin espacios)</label>
                     <input type="password" id="whatsapp-input" class="w-full p-3 mt-1 bg-gray-700 rounded-lg border border-gray-600 text-white" placeholder="••••••••••" maxlength="10" inputmode="numeric" required>
                 </div>
-                <div id="profile-selection" class="mt-4 mb-2">
-                    <p class="font-medium text-sm text-gray-300 mb-3 text-center">Selecciona tu área de interés (Obligatorio)</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <label class="profile-option" title="Selecciona si vas para MEDICINA">
-                            <input type="checkbox" class="profile-checkbox hidden" value="MEDICINA">
-                            <span class="profile-content">👩‍⚕️ MEDICINA</span>
-                        </label>
-                        <label class="profile-option" title="Selecciona si vas para enfermería, nutrición, estomatología u otra carrera de área de la salud">
-                            <input type="checkbox" class="profile-checkbox hidden" value="SALUD">
-                            <span class="profile-content">👨‍⚕️ OTRAS CARRERAS DE LA SALUD</span>
-                        </label>
-                        <label class="profile-option" title="Selecciona si vas para alguna ingeniería o arquitectura">
-                            <input type="checkbox" class="profile-checkbox hidden" value="INGENIERIA">
-                            <span class="profile-content">👷‍♀️ INGENIERÍAS O ARQUITECTURA</span>
-                        </label>
-                        <label class="profile-option" title="Selecciona si vas para carreras como LAG, relaciones internacionales, etc.">
-                            <input type="checkbox" class="profile-checkbox hidden" value="ECONOMICO">
-                            <span class="profile-content">📈 ECONÓMICO ADMINISTRATIVAS</span>
-                        </label>
-                        <label class="profile-option" title="Selecciona si vas para derecho, filosofía, pedagogía, etc.">
-                            <input type="checkbox" class="profile-checkbox hidden" value="SOCIALES">
-                            <span class="profile-content">🤝 SOCIALES</span>
-                        </label>
-                        <label class="profile-option" title="Selecciona si eres docente o estudias una carrera de educación">
-                            <input type="checkbox" class="profile-checkbox hidden" value="DOCENCIA">
-                            <span class="profile-content">👩‍🏫 DOCENCIA/EDUCACIÓN</span>
-                        </label>
-                        <label class="profile-option" title="Selecciona si tu área de interés no está en la lista">
-                            <input type="checkbox" class="profile-checkbox hidden" value="OTRO">
-                            <span class="profile-content">📚 OTRO</span>
-                        </label>
-                    </div>
-                </div>
                 <button id="login-btn" type="submit" class="btn btn-correct w-full text-lg">
                     <span id="login-btn-text">Verificar y Entrar</span>
                     <span id="login-btn-spinner" class="hidden animate-spin">&#9696;</span>
@@ -1597,20 +1608,24 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <p class="font-medium">Proceso de Admisión o Materia</p>
-                    <p class="text-xs text-gray-400">Selecciona tu proceso de admisión o materia(s), recuerda que "GENERAL" significa que el ejercicio aplica para todos los procesos de admisión.</p>
-                    <div id="uni-tags-container" class="flex flex-wrap gap-2"></div>
-                </div>
-                <div class="space-y-2">
-                    <p class="font-medium">Nivel de Dificultad</p>
-                    <p class="text-xs text-gray-400">Selecciona el grado de dificultad de los ejercicios.</p>
-                    <div id="level-tags-container" class="flex flex-wrap gap-2"></div>
-                </div>
-                <div class="space-y-2">
-                    <p class="font-medium">Tipo de Reactivo</p>
-                    <p class="text-xs text-gray-400">Selecciona el tipo de pregunta (ej. TEST, REAL, HÍBRIDO).</p>
-                    <div id="type-tags-container" class="flex flex-wrap gap-2"></div>
+                <!-- Contenedor en Grid (2 columnas en PC/Tablet, 1 en celulares) para ahorrar espacio -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                    <div id="container-tag01" class="space-y-1 hidden bg-gray-800 p-3 rounded-lg border border-gray-600">
+                        <p class="font-medium text-sm text-blue-400">Filtro 1</p>
+                        <div id="tag01-container" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1"></div>
+                    </div>
+                    <div id="container-tag02" class="space-y-1 hidden bg-gray-800 p-3 rounded-lg border border-gray-600">
+                        <p class="font-medium text-sm text-blue-400">Filtro 2</p>
+                        <div id="tag02-container" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1"></div>
+                    </div>
+                    <div id="container-tag03" class="space-y-1 hidden bg-gray-800 p-3 rounded-lg border border-gray-600">
+                        <p class="font-medium text-sm text-blue-400">Filtro 3</p>
+                        <div id="tag03-container" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1"></div>
+                    </div>
+                    <div id="container-tag04" class="space-y-1 hidden bg-gray-800 p-3 rounded-lg border border-gray-600">
+                        <p class="font-medium text-sm text-blue-400">Filtro 4</p>
+                        <div id="tag04-container" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1"></div>
+                    </div>
                 </div>
             </div>
             <div class="space-y-2">
@@ -1764,8 +1779,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     <div class="flex flex-row flex-wrap items-center justify-center gap-2">
                         <div id="question-id-tags" class="question-id-tags !m-0">
                             <span id="question-id-display" class="question-id"></span>
-                            <span id="uni-tags-display"></span>
-                            <span id="level-tag-display"></span>
+                            <span id="question-tags-display"></span>
                         </div>
 
                         <button id="whiteboard-trigger-btn" class="text-blue-400 hover:text-white transition-all hover:scale-110 p-2 bg-gray-800 bg-opacity-80 rounded-full w-10 h-10 flex items-center justify-center border border-blue-400 shadow-lg" title="Abrir Pizarra de Cálculos">
@@ -2223,19 +2237,19 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             const loginBtnSpinner = document.getElementById('login-btn-spinner');
             const loginErrorMessage = document.getElementById('login-error-message');
             const guestLoginBtn = document.getElementById('guest-login-btn');
-            document.addEventListener('change', (e) => {
-                if (e.target.classList.contains('profile-checkbox')) {
-                    if(loginErrorMessage) loginErrorMessage.textContent = '';
-                }
-            });
             const noAccessBtn = document.querySelector('a[href="https://wa.link/i5rp89"]');
             const welcomeName = document.getElementById('welcome-name');
             const gameModeToggle = document.getElementById('game-mode-toggle');
             const continuousModeToggle = document.getElementById('continuous-mode-toggle');
             const realModeToggle = document.getElementById('real-mode-toggle');
-            const uniTagsContainer = document.getElementById('uni-tags-container');
-            const levelTagsContainer = document.getElementById('level-tags-container');
-            const typeTagsContainer = document.getElementById('type-tags-container');
+            const tag01Container = document.getElementById('tag01-container');
+            const tag02Container = document.getElementById('tag02-container');
+            const tag03Container = document.getElementById('tag03-container');
+            const tag04Container = document.getElementById('tag04-container');
+            const containerTag01 = document.getElementById('container-tag01');
+            const containerTag02 = document.getElementById('container-tag02');
+            const containerTag03 = document.getElementById('container-tag03');
+            const containerTag04 = document.getElementById('container-tag04');
             const answeredIdsInput = document.getElementById('answered-ids-input');
             const startIdInput = document.getElementById('start-id-input'); // Nuevo filtro ID inicio
             const endIdInput = document.getElementById('end-id-input');     // Nuevo filtro ID fin
@@ -2263,8 +2277,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             const progressBar = document.getElementById('progress-bar');
             const questionText = document.getElementById('question-text');
             const questionIdDisplay = document.getElementById('question-id-display');
-            const uniTagsDisplay = document.getElementById('uni-tags-display');
-            const levelTagDisplay = document.getElementById('level-tag-display');
+            const questionTagsDisplay = document.getElementById('question-tags-display');
             const imageContainer = document.getElementById('image-container');
             const watermarkOverlay = document.getElementById('watermark-overlay');
             const optionsContainer = document.getElementById('options-container');
@@ -4130,17 +4143,6 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
             
             guestLoginBtn.addEventListener('click', () => {
-                // NUEVO: Validación de perfil obligatorio para invitado
-                const checkboxes = document.querySelectorAll('.profile-checkbox');
-                let isChecked = false;
-                for (let i = 0; i < checkboxes.length; i++) {
-                    if (checkboxes[i].checked) isChecked = true;
-                }
-                if (!isChecked) {
-                    loginErrorMessage.textContent = 'Debes seleccionar al menos un área de interés para continuar.';
-                    return;
-                }
-                // FIN NUEVO
 
                 isGuest = true;
                 currentUser = { name: 'Invitado', email: 'invitado@example.com', whatsapp: '0000000000' };
@@ -4168,19 +4170,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             });
             
             loginForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                // NUEVO: Validación de perfil obligatorio
-                const checkboxes = document.querySelectorAll('.profile-checkbox');
-                let isChecked = false;
-                for (let i = 0; i < checkboxes.length; i++) {
-                    if (checkboxes[i].checked) isChecked = true;
-                }
-                if (!isChecked) {
-                    loginErrorMessage.textContent = 'Debes seleccionar al menos un área de interés para continuar.';
-                    return;
-                }
-                // FIN NUEVO
+                event.preventDefault();
 
                 const name = nameInput.value.trim();
                 const emailToValidate = emailInput.value.trim();
@@ -4318,68 +4308,73 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     return inIdRange;
                 });
 
-                // --- LÓGICA DE CASCADA PARA ETIQUETAS ---
-                
-                // Nivel 1: Universidades disponibles en el basePool
-                const availableUniTags = new Set(basePool.flatMap(q => q.uni_tags || []));
-                uniTagsContainer.querySelectorAll('.tag').forEach(tagEl => {
-                    if (availableUniTags.has(tagEl.textContent)) {
-                        tagEl.style.display = '';
-                    } else {
-                        tagEl.style.display = 'none';
-                        tagEl.classList.remove('selected');
-                    }
-                });
-                const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                // --- LÓGICA DE CASCADA PARA ETIQUETAS NUEVAS ---
+                const availableTag01 = new Set(basePool.flatMap(q => q.tag01 || []));
+                tag01Container.querySelectorAll('.tag').forEach(tagEl => {
+                    if (availableTag01.has(tagEl.textContent)) {
+                        tagEl.style.display = '';
+                    } else {
+                        tagEl.style.display = 'none';
+                        tagEl.classList.remove('selected');
+                    }
+                });
+                const selectedTag01 = Array.from(tag01Container.querySelectorAll('.selected')).map(el => el.textContent);
 
-                // Nivel 2: Niveles disponibles después de aplicar filtro de Universidad
-                const poolAfterUni = basePool.filter(q => selectedUniTags.length === 0 || (q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag))));
-                const availableLevelTags = new Set(poolAfterUni.flatMap(q => q.level_tag || []));
-                levelTagsContainer.querySelectorAll('.tag').forEach(tagEl => {
-                    if (availableLevelTags.has(tagEl.textContent)) {
-                        tagEl.style.display = '';
-                    } else {
-                        tagEl.style.display = 'none';
-                        tagEl.classList.remove('selected');
-                    }
-                });
-                const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                const poolAfterTag01 = basePool.filter(q => selectedTag01.length === 0 || (q.tag01 && q.tag01.some(tag => selectedTag01.includes(tag))));
+                const availableTag02 = new Set(poolAfterTag01.flatMap(q => q.tag02 || []));
+                tag02Container.querySelectorAll('.tag').forEach(tagEl => {
+                    if (availableTag02.has(tagEl.textContent)) {
+                        tagEl.style.display = '';
+                    } else {
+                        tagEl.style.display = 'none';
+                        tagEl.classList.remove('selected');
+                    }
+                });
+                const selectedTag02 = Array.from(tag02Container.querySelectorAll('.selected')).map(el => el.textContent);
 
-                // Nivel 3: Tipos disponibles después de aplicar filtro de Nivel
-                const poolAfterLevel = poolAfterUni.filter(q => selectedLevelTags.length === 0 || (q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag))));
-                const availableTypeTags = new Set(poolAfterLevel.flatMap(q => q.type_tag || []));
-                typeTagsContainer.querySelectorAll('.tag').forEach(tagEl => {
-                    if (availableTypeTags.has(tagEl.textContent)) {
-                        tagEl.style.display = '';
-                    } else {
-                        tagEl.style.display = 'none';
-                        tagEl.classList.remove('selected');
-                    }
-                });
-                const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
+                const poolAfterTag02 = poolAfterTag01.filter(q => selectedTag02.length === 0 || (q.tag02 && q.tag02.some(tag => selectedTag02.includes(tag))));
+                const availableTag03 = new Set(poolAfterTag02.flatMap(q => q.tag03 || []));
+                tag03Container.querySelectorAll('.tag').forEach(tagEl => {
+                    if (availableTag03.has(tagEl.textContent)) {
+                        tagEl.style.display = '';
+                    } else {
+                        tagEl.style.display = 'none';
+                        tagEl.classList.remove('selected');
+                    }
+                });
+                const selectedTag03 = Array.from(tag03Container.querySelectorAll('.selected')).map(el => el.textContent);
 
-                // 4. Filtro Final de preguntas
-                let filteredQuestions = poolAfterLevel.filter(q => selectedTypeTags.length === 0 || (q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag))));
-                // REGLAS PARA INVITADOS: Sin Imgur y que terminen en A, B, C o D
-                if (isGuest) {
-                    filteredQuestions = filteredQuestions.filter(q => {
-                        const hasImgurMain = q.image && q.image.includes('imgur.com');
-                        const hasImgurOption = q.options && q.options.some(opt => opt.text && opt.text.includes('imgur.com'));
-                        const lastChar = q.id ? q.id.slice(-1).toUpperCase() : '';
-                        const hasValidEndChar = ['A', 'B', 'C', 'D'].includes(lastChar);
-                        return !hasImgurMain && !hasImgurOption && hasValidEndChar;
-                    });
-                }
+                const poolAfterTag03 = poolAfterTag02.filter(q => selectedTag03.length === 0 || (q.tag03 && q.tag03.some(tag => selectedTag03.includes(tag))));
+                const availableTag04 = new Set(poolAfterTag03.flatMap(q => q.tag04 || []));
+                tag04Container.querySelectorAll('.tag').forEach(tagEl => {
+                    if (availableTag04.has(tagEl.textContent)) {
+                        tagEl.style.display = '';
+                    } else {
+                        tagEl.style.display = 'none';
+                        tagEl.classList.remove('selected');
+                    }
+                });
+                const selectedTag04 = Array.from(tag04Container.querySelectorAll('.selected')).map(el => el.textContent);
 
-                // 2. Preguntas con Filtros
-                if(statsTotalFiltered) statsTotalFiltered.textContent = filteredQuestions.length;
+                let filteredQuestions = poolAfterTag03.filter(q => selectedTag04.length === 0 || (q.tag04 && q.tag04.some(tag => selectedTag04.includes(tag))));
 
-                // 3. Preguntas Restantes (Filtros menos IDs pegados)
-                const answeredInFilter = filteredQuestions.filter(q => pastedAnsweredIds.has(q.id)).length;
-                const remaining = Math.max(0, filteredQuestions.length - answeredInFilter);
-                
-                if(statsRemainingFiltered) statsRemainingFiltered.textContent = remaining;
-            }
+                if (isGuest) {
+                    filteredQuestions = filteredQuestions.filter(q => {
+                        const hasImgurMain = q.image && q.image.includes('imgur.com');
+                        const hasImgurOption = q.options && q.options.some(opt => opt.text && opt.text.includes('imgur.com'));
+                        const lastChar = q.id ? q.id.slice(-1).toUpperCase() : '';
+                        const hasValidEndChar = ['A', 'B', 'C', 'D'].includes(lastChar);
+                        return !hasImgurMain && !hasImgurOption && hasValidEndChar;
+                    });
+                }
+
+                if(statsTotalFiltered) statsTotalFiltered.textContent = filteredQuestions.length;
+
+                const answeredInFilter = filteredQuestions.filter(q => pastedAnsweredIds.has(q.id)).length;
+                const remaining = Math.max(0, filteredQuestions.length - answeredInFilter);
+                
+                if(statsRemainingFiltered) statsRemainingFiltered.textContent = remaining;
+            }
             
             answeredIdsInput.addEventListener('input', updateQuestionStats);
             // Nuevos eventos para filtros y recarga
@@ -4430,62 +4425,42 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
             
             function populateTagFilters(dataSource = allQuestions) {
-                const uniTags = [...new Set(dataSource.flatMap(q => q.uni_tags || []))];
-                const levelTags = [...new Set(dataSource.flatMap(q => q.level_tag || []))];
-                const typeTags = [...new Set(dataSource.flatMap(q => q.type_tag || []))];
+                const tags01 = [...new Set(dataSource.flatMap(q => q.tag01 || []))];
+                const tags02 = [...new Set(dataSource.flatMap(q => q.tag02 || []))];
+                const tags03 = [...new Set(dataSource.flatMap(q => q.tag03 || []))];
+                const tags04 = [...new Set(dataSource.flatMap(q => q.tag04 || []))];
 
-                uniTagsContainer.innerHTML = '';
-                levelTagsContainer.innerHTML = '';
-                typeTagsContainer.innerHTML = ''; // Nuevo
+                tag01Container.innerHTML = '';
+                tag02Container.innerHTML = '';
+                tag03Container.innerHTML = '';
+                tag04Container.innerHTML = '';
 
-                // Filtro Universidades
-                uniTags.forEach(tag => {
-                    const tagEl = document.createElement('span');
-                    tagEl.textContent = tag;
-                    tagEl.className = 'tag';
-                    if (tag.toUpperCase() === 'GENERAL') {
-                        tagEl.classList.add('selected');
-                    }
-                    tagEl.addEventListener('click', () => {
-                        tagEl.classList.toggle('selected');
-                        updateQuestionStats();
-                    });
-                    uniTagsContainer.appendChild(tagEl);
-                });
+                const createTags = (tagsArray, container, parentDiv) => {
+                    if(tagsArray.length === 0) {
+                        parentDiv.classList.add('hidden');
+                        return;
+                    }
+                    parentDiv.classList.remove('hidden');
+                    tagsArray.forEach((tag, index) => {
+                        const tagEl = document.createElement('span');
+                        tagEl.textContent = tag;
+                        tagEl.className = 'tag';
+                        if (index === 0 || tag.toUpperCase() === 'GENERAL') tagEl.classList.add('selected');
+                        tagEl.addEventListener('click', () => {
+                            tagEl.classList.toggle('selected');
+                            updateQuestionStats();
+                        });
+                        container.appendChild(tagEl);
+                    });
+                };
 
-                // Filtro Niveles
-                levelTags.forEach(tag => {
-                    const tagEl = document.createElement('span');
-                    tagEl.textContent = tag;
-                    tagEl.className = 'tag';
-                    if (tag.toUpperCase() === 'BÁSICO') {
-                        tagEl.classList.add('selected');
-                    }
-                    tagEl.addEventListener('click', () => {
-                        tagEl.classList.toggle('selected');
-                        updateQuestionStats();
-                    });
-                    levelTagsContainer.appendChild(tagEl);
-                });
+                createTags(tags01, tag01Container, containerTag01);
+                createTags(tags02, tag02Container, containerTag02);
+                createTags(tags03, tag03Container, containerTag03);
+                createTags(tags04, tag04Container, containerTag04);
 
-                // NUEVO: Filtro Tipos
-                typeTags.forEach((tag, index) => {
-                    const tagEl = document.createElement('span');
-                    tagEl.textContent = tag;
-                    tagEl.className = 'tag';
-                    // Seleccionar el primer tag por defecto
-                    if (index === 0) {
-                        tagEl.classList.add('selected');
-                    }
-                    tagEl.addEventListener('click', () => {
-                        tagEl.classList.toggle('selected');
-                        updateQuestionStats();
-                    });
-                    typeTagsContainer.appendChild(tagEl);
-                });
-
-                updateQuestionStats();
-            }
+                updateQuestionStats();
+            }
 
             continuousModeToggle.addEventListener('click', (e) => {
                 if (isGuest) { e.preventDefault(); continuousModeToggle.checked = false; showProAlert(); return; }
@@ -4551,51 +4526,52 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     questionCountInGuestMode = 0;
                 }
 
-                const selectedUniTags = Array.from(uniTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                const selectedLevelTags = Array.from(levelTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                const selectedTypeTags = Array.from(typeTagsContainer.querySelectorAll('.selected')).map(el => el.textContent);
-                
-                if (selectedUniTags.length === 0) {
-                    errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Proceso de Admisión o Materias".';
-                    return;
-                }
-                if (selectedLevelTags.length === 0) {
-                    errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Nivel de Dificultad".';
-                    return;
-                }
-                if (selectedTypeTags.length === 0) {
-                    errorMessage.textContent = 'Debes seleccionar al menos un filtro de "Tipo de Reactivo".';
-                    return;
-                }
+                const selectedTag01 = Array.from(tag01Container.querySelectorAll('.selected')).map(el => el.textContent);
+                const selectedTag02 = Array.from(tag02Container.querySelectorAll('.selected')).map(el => el.textContent);
+                const selectedTag03 = Array.from(tag03Container.querySelectorAll('.selected')).map(el => el.textContent);
+                const selectedTag04 = Array.from(tag04Container.querySelectorAll('.selected')).map(el => el.textContent);
+                
+                if (!containerTag01.classList.contains('hidden') && selectedTag01.length === 0) {
+                    errorMessage.textContent = 'Debes seleccionar al menos un Filtro 1.'; return;
+                }
+                if (!containerTag02.classList.contains('hidden') && selectedTag02.length === 0) {
+                    errorMessage.textContent = 'Debes seleccionar al menos un Filtro 2.'; return;
+                }
+                if (!containerTag03.classList.contains('hidden') && selectedTag03.length === 0) {
+                    errorMessage.textContent = 'Debes seleccionar al menos un Filtro 3.'; return;
+                }
+                if (!containerTag04.classList.contains('hidden') && selectedTag04.length === 0) {
+                    errorMessage.textContent = 'Debes seleccionar al menos un Filtro 4.'; return;
+                }
 
-                const startIdVal = startIdInput ? startIdInput.value.trim().toUpperCase() : '';
-                const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
+                const startIdVal = startIdInput ? startIdInput.value.trim().toUpperCase() : '';
+                const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
 
-                let availableQuestions = allQuestions.filter(q => {
-                    const hasUniTag = q.uni_tags && q.uni_tags.some(tag => selectedUniTags.includes(tag));
-                    const hasLevelTag = q.level_tag && q.level_tag.some(tag => selectedLevelTags.includes(tag));
-                    const hasTypeTag = q.type_tag && q.type_tag.some(tag => selectedTypeTags.includes(tag));
-                    
-                    let inIdRange = true;
-                    if (startIdVal && endIdVal) {
-                        inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
-                    } else if (startIdVal) {
-                        inIdRange = (q.id >= startIdVal);
-                    } else if (endIdVal) {
-                        inIdRange = (q.id <= endIdVal);
-                    }
+                let availableQuestions = allQuestions.filter(q => {
+                    const hasTag01 = selectedTag01.length === 0 || (q.tag01 && q.tag01.some(tag => selectedTag01.includes(tag)));
+                    const hasTag02 = selectedTag02.length === 0 || (q.tag02 && q.tag02.some(tag => selectedTag02.includes(tag)));
+                    const hasTag03 = selectedTag03.length === 0 || (q.tag03 && q.tag03.some(tag => selectedTag03.includes(tag)));
+                    const hasTag04 = selectedTag04.length === 0 || (q.tag04 && q.tag04.some(tag => selectedTag04.includes(tag)));
+                    
+                    let inIdRange = true;
+                    if (startIdVal && endIdVal) {
+                        inIdRange = (q.id >= startIdVal && q.id <= endIdVal);
+                    } else if (startIdVal) {
+                        inIdRange = (q.id >= startIdVal);
+                    } else if (endIdVal) {
+                        inIdRange = (q.id <= endIdVal);
+                    }
 
-                    // Regla de invitado integrada aquí
-                    let isAllowedForGuest = true;
-                    if (isGuest) {
-                        const hasImgurMain = q.image && q.image.includes('imgur.com');
-                        const hasImgurOption = q.options && q.options.some(opt => opt.text && opt.text.includes('imgur.com'));
-                        const lastChar = q.id ? q.id.slice(-1).toUpperCase() : '';
-                        isAllowedForGuest = !hasImgurMain && !hasImgurOption && ['A', 'B', 'C', 'D'].includes(lastChar);
-                    }
+                    let isAllowedForGuest = true;
+                    if (isGuest) {
+                        const hasImgurMain = q.image && q.image.includes('imgur.com');
+                        const hasImgurOption = q.options && q.options.some(opt => opt.text && opt.text.includes('imgur.com'));
+                        const lastChar = q.id ? q.id.slice(-1).toUpperCase() : '';
+                        isAllowedForGuest = !hasImgurMain && !hasImgurOption && ['A', 'B', 'C', 'D'].includes(lastChar);
+                    }
 
-                    return hasUniTag && hasLevelTag && hasTypeTag && inIdRange && isAllowedForGuest;
-                });
+                    return hasTag01 && hasTag02 && hasTag03 && hasTag04 && inIdRange && isAllowedForGuest;
+                });
 
                 let finalQuestionPool = availableQuestions.filter(q => !pastedAnsweredIds.has(q.id));
 
@@ -4835,9 +4811,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 
                 if (isRealMode) {
                     let timeToSet = 90; // Default BÁSICO y otros
-                    if (question.level_tag && question.level_tag.includes('INTERMEDIO')) {
+                    let allQuestionTags = [...(question.tag01||[]), ...(question.tag02||[]), ...(question.tag03||[]), ...(question.tag04||[])].map(t => t.toUpperCase());
+                    if (allQuestionTags.includes('INTERMEDIO')) {
                         timeToSet = 120;
-                    } else if (question.level_tag && question.level_tag.includes('AVANZADO')) {
+                    } else if (allQuestionTags.includes('AVANZADO')) {
                         timeToSet = 180;
                     }
                     
@@ -4890,8 +4867,14 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 }
                 
                 questionIdDisplay.textContent = question.id || 'N/A';
-                uniTagsDisplay.innerHTML = (question.uni_tags || []).map(t => `<span class="uni-tag-display">${t}</span>`).join(' ');
-                levelTagDisplay.innerHTML = (question.level_tag || []).map(t => `<span class="level-tag-display">${t}</span>`).join(' ');
+                
+                let allTags = [];
+                if (question.tag01) allTags = allTags.concat(question.tag01);
+                if (question.tag02) allTags = allTags.concat(question.tag02);
+                if (question.tag03) allTags = allTags.concat(question.tag03);
+                if (question.tag04) allTags = allTags.concat(question.tag04);
+                
+                questionTagsDisplay.innerHTML = allTags.map(t => `<span class="uni-tag-display" style="margin-left: 5px;">${t}</span>`).join(' ');
                 questionText.style.whiteSpace = 'pre-line'; // Esta línea hace que el navegador respete los saltos de línea \n
                 let questionHTML = question.question;
                 questionText.innerHTML = questionHTML;
