@@ -12,6 +12,7 @@ Estos son los cambios que requiero:
 
 
 
+
 Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de código de referencia ya que no soy programador y necesito instrucciones detalladas para poder lograr los cambios solicitados. Es importante que me proporciones líneas de código de referencia, ya que en intentos previos he cometido errores al hacer cambios y con las líneas de referencia del código, solo copio y pego con la funcón de "ctrl + F". 
 
 
@@ -24,7 +25,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>💥 SIMULACROS ADMISIÓN PREPA 2026 😎</title>
+    <title>🟣 EJERCICIOS DE CLASE (UNI) 🙂</title>
     <link rel="icon" href="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/00-WEBLogo-circular-cepredix.png" type="image/png">
     
     <meta property="og:image" content="https://raw.githubusercontent.com/IALUMX/img_cepredix/main/Thumbnail-CEP-HTML.png">
@@ -33,7 +34,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
-    <meta property="og:title" content="💥 SIMULACROS ADMISIÓN PREPA 2026 😎 - CEPREDIX">
+    <meta property="og:title" content="🟣 EJERCICIOS DE CLASE (UNI) 🙂 - CEPREDIX">
     <meta property="og:description" content="Plataforma de evaluación educativa.">
     <meta property="og:type" content="website">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1472,7 +1473,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             <a href="https://simuladores.cepredix.com.mx/cepredix.html" target="_blank" title="Ir a Web CEPREDIX">
                 <div class="logo"></div>
             </a>
-            <h1 class="text-2xl sm:text-3xl font-bold">💥 SIMULACROS ADMISIÓN PREPA 2026 😎</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold">🟣 EJERCICIOS DE CLASE (UNI) 🙂</h1>
             <h2 class="text-xl sm:text-2xl">Diseñado con pasión 💜 por el CEPREDIX</h2>
             <p class="text-sm sm:text-base">Prueba tus conocimientos con este cuestionario interactivo de opción múltiple 🧠</p>
         </header>
@@ -2151,7 +2152,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
 				'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-MAT-CALCULO-uni.json',
 				'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-MAT-FINANC-uni.json',
 				'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-FISICA-uni.json',
-				'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-QUÍMICA-uni.json',
+				'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-QUIMICA-uni.json',
 				'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-BIOLOGIA-uni.json',
 				'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-SALUD-uni.json',
 				'https://raw.githubusercontent.com/IALUMX/Bancos_prueba/refs/heads/main/01-PREMEDICINA-uni.json',
@@ -4302,10 +4303,35 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 // --- LÓGICA PARA ETIQUETAS NUEVAS ---
                 const getSelected = (container) => Array.from(container.querySelectorAll('.selected')).map(el => el.textContent);
                 
-                const selTag01 = getSelected(tag01Container);
-                const selTag02 = getSelected(tag02Container);
-                const selTag03 = getSelected(tag03Container);
-                const selTag04 = getSelected(tag04Container);
+                let selTag01 = getSelected(tag01Container);
+                let selTag02 = getSelected(tag02Container);
+                let selTag03 = getSelected(tag03Container);
+                let selTag04 = getSelected(tag04Container);
+
+                // Control de visibilidad en cascada según selecciones previas
+                if (selTag01.length === 0) {
+                    tag02Wrapper.classList.add('hidden');
+                    tag02Container.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                    selTag02 = []; // Anular selecciones si el contenedor se oculta
+                } else {
+                    tag02Wrapper.classList.remove('hidden');
+                }
+
+                if (selTag02.length === 0) {
+                    tag03Wrapper.classList.add('hidden');
+                    tag03Container.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                    selTag03 = [];
+                } else {
+                    tag03Wrapper.classList.remove('hidden');
+                }
+
+                if (selTag03.length === 0) {
+                    tag04Wrapper.classList.add('hidden');
+                    tag04Container.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                    selTag04 = [];
+                } else {
+                    tag04Wrapper.classList.remove('hidden');
+                }
 
                 // Función auxiliar para actualizar UI de tags en cascada
                 const updateTagUI = (pool, tagKey, container) => {
@@ -4407,14 +4433,33 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                     let tags = [...new Set(dataSource.flatMap(q => q[tagKey] || []))].filter(t => t !== null && t !== '');
                     
                     if (shouldSort) {
-                        tags.sort((a, b) => {
-                            // Se remueven emojis (símbolos Unicode) y espacios iniciales para evaluar el texto real
-                            const cleanA = a.replace(/\p{Emoji}/gu, '').trim();
-                            const cleanB = b.replace(/\p{Emoji}/gu, '').trim();
-                            // numeric: true ordena números ascendentemente ("2" antes que "10") y letras alfabéticamente
-                            return cleanA.localeCompare(cleanB, 'es', { numeric: true, sensitivity: 'base' });
-                        });
-                    }
+                        tags.sort((a, b) => {
+                            // Limpieza extrema: elimina temporalmente todo lo que NO sea letra, número, espacio o guion
+                            // Esto garantiza que cualquier símbolo, emoji compuesto o ícono sea ignorado
+                            const cleanA = a.replace(/[^\p{L}\p{N}\s-]/gu, '').trim();
+                            const cleanB = b.replace(/[^\p{L}\p{N}\s-]/gu, '').trim();
+                            
+                            // Extraer el número al inicio si existe (ej. "01", "02-", "3 ", etc.)
+                            const matchA = cleanA.match(/^(\d+)/);
+                            const matchB = cleanB.match(/^(\d+)/);
+                            
+                            if (matchA && matchB) {
+                                // Si ambos inician con número, se ordenan matemáticamente
+                                const numA = parseInt(matchA[1], 10);
+                                const numB = parseInt(matchB[1], 10);
+                                if (numA === numB) {
+                                    return cleanA.localeCompare(cleanB, 'es', { sensitivity: 'base' });
+                                }
+                                return numA - numB;
+                            } else if (matchA) {
+                                return -1; // A tiene número, va primero
+                            } else if (matchB) {
+                                return 1;  // B tiene número, va primero
+                            } else {
+                                return cleanA.localeCompare(cleanB, 'es', { sensitivity: 'base' });
+                            }
+                        });
+                    }
 
                     container.innerHTML = '';
                     if (tags.length > 0) {
@@ -4423,7 +4468,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                             const tagEl = document.createElement('span');
                             tagEl.textContent = tag;
                             tagEl.className = 'tag';
-                            if (index === 0 || tag.toUpperCase() === 'GENERAL' || tag.toUpperCase() === 'BÁSICO') {
+                            if (tagKey === 'tag01' && tag.toUpperCase() === 'GENERAL') {
                                 tagEl.classList.add('selected');
                             }
                             tagEl.addEventListener('click', () => {
@@ -4535,10 +4580,10 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
                 const endIdVal = endIdInput ? endIdInput.value.trim().toUpperCase() : '';
 
                 let availableQuestions = allQuestions.filter(q => {
-                    const hasTag01 = !q.tag01 || q.tag01.length === 0 || q.tag01.some(tag => selTag01.includes(tag));
-                    const hasTag02 = !q.tag02 || q.tag02.length === 0 || q.tag02.some(tag => selTag02.includes(tag));
-                    const hasTag03 = !q.tag03 || q.tag03.length === 0 || q.tag03.some(tag => selTag03.includes(tag));
-                    const hasTag04 = !q.tag04 || q.tag04.length === 0 || q.tag04.some(tag => selTag04.includes(tag));
+                    const hasTag01 = selTag01.length === 0 || !q.tag01 || q.tag01.length === 0 || q.tag01.some(tag => selTag01.includes(tag));
+                    const hasTag02 = selTag02.length === 0 || !q.tag02 || q.tag02.length === 0 || q.tag02.some(tag => selTag02.includes(tag));
+                    const hasTag03 = selTag03.length === 0 || !q.tag03 || q.tag03.length === 0 || q.tag03.some(tag => selTag03.includes(tag));
+                    const hasTag04 = selTag04.length === 0 || !q.tag04 || q.tag04.length === 0 || q.tag04.some(tag => selTag04.includes(tag));
                     
                     let inIdRange = true;
                     if (startIdVal && endIdVal) {
@@ -5454,7 +5499,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             async function submitResults(stats, score, totalTime, idsString, numQuestions) {
                 // 1. Empaquetamos los datos en un objeto simple
                 const payload = {
-                    EvaluationName: "💥 SIMULACROS ADMISIÓN PREPA 2026 😎",
+                    EvaluationName: "🟣 EJERCICIOS DE CLASE (UNI) 🙂",
                     Name: currentUser.name || 'Invitado',
                     Email: currentUser.email || 'sin_email',
                     WhatsApp: currentUser.whatsapp || '0000000000',
@@ -5739,7 +5784,7 @@ Usaremos el sistema de "busca esto y reemplaza por esto" o dame líneas de códi
             }
             
             function populateSummaryBox(score, idsString, allAnsweredIds) {
-                summaryEvalName.textContent = "💥 SIMULACROS ADMISIÓN PREPA 2026 😎";
+                summaryEvalName.textContent = "🟣 EJERCICIOS DE CLASE (UNI) 🙂";
                 summaryDate.textContent = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                 summaryScore.textContent = `${score.toFixed(2)} / 10.00`;
                 summaryIds.textContent = idsString;
